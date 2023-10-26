@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'fragments/error-box.html' %}
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <div class="card">
+            <div class="card-header">
+                Game: {{game_data.course.name}}
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="fw-bold">Course:</div>
+                    <div class="ps-3">{{game_data.course.name}}</div>
+                </div>
+                <div class="mb-3">
+                    <div class="fw-bold">Status:</div>
+                    <div class="ps-3">{{game_data.get_status_display}}</div>
+                </div>
+                {% if game_data.status != "setup" %}
+                    <div class="mb-3">
+                        <div class="fw-bold">Date Played:</div>
+                        <div class="ps-3">{{game_data.date_played}}</div>
+                    </div>
+                {% endif %}
+                <div class="mb-3">
+                    <div class="fw-bold">Holes:</div>
+                    <div class="ps-3">{{game_data.holes_played}}</div>
+                </div>
+                
+                <hr />
+                <div class="mb-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                {% if game_data.status == "setup" %}
+                                    <th style="width: 5%;">&nbsp;</th>
+                                {% endif %}
+                                <th>Player</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for player_name, player_data in player_scores.items %}
+                            <tr>
+                                {% if game_data.status == "setup" %}
+                                    <td><input type="radio" data-player-id="{{player_data.id}}" name="player-selection"></td>
+                                {% endif %}
+                                <td>{{player_name}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <a href="{% url 'home:download-scorecard' game_data.id %}">Download Scorecard</a>
+                </div>
+            </div>
+            {% if game_data.status == "setup" %}
+                <div class="card-footer">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">
+                        Add Player
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm d-none" id="remove-player-button" data-bs-toggle="modal" data-bs-target="#remove-player-modal">
+                        Remove Player
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">
+                        Start Game
+                    </button>
+                </div>
+            {% elif game_data.status == "active" %}
+                <div class="card-footer">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#complete-game-modal">
+                        Complete Game
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% if game_data.status != "setup" %}
+    <div class="col-12 mb-3">
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between">
+                <span class="pt-1">Scores: Hole {{current_hole.order}}</span>
+                {% if game_data.status == "active" %}
+                    <button class="btn btn-outline-primary btn-sm" id="save-hole-scores">Save</button>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody class="align-middle">
+                    {% for hole in hole_scores %}
+                        <tr>
+                            <td>{{hole.player}}</td>
+                            {% if game_data.status == "active" %}
+                                <td>
+                                    <div class="input-group mb-3">
+                                        <button class="btn btn-outline-secondary adjust-hole-score" type="button" data-action="subtract-score" data-hole-score-id="{{hole.hole_score_id}}">-</button>                                        
+                                        <input type="text" class="form-control hole-score" size=1 value="{{hole.score}}" data-hole-score-id="{{hole.hole_score_id}}" />
+                                        <button class="btn btn-outline-secondary adjust-hole-score" type="button" data-action="add-score" data-hole-score-id="{{hole.hole_score_id}}">+</button>
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td>{{hole.score}}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                {% if prev_hole %}
+                    <a href="{% url 'home:game-detail' game_data.id %}?hole={{prev_hole.order}}" class="btn btn-primary btn-sm">Prev Hole</a>
+                {% else %}
+                    <button class="btn btn-primary btn-sm disabled">Prev Hole</button>
+                {% endif %}
+                <select class="form-select mx-2" id="hole-jump">
+                    {% for hole in hole_list %}
+                        {% if hole.order == current_hole.order %}
+                            <option value="{{hole.order}}" selected>{{hole.name}}</option>
+                        {% else %}
+                            <option value="{{hole.order}}">{{hole.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% if next_hole %}
+                    <a href="{% url 'home:game-detail' game_data.id %}?hole={{next_hole.order}}" class="btn btn-primary btn-sm">Next Hole</a>
+                {% else %}
+                    <button class="btn btn-primary btn-sm disabled">Next Hole</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="add-player-modal" tabindex="-1" aria-labelledby="add-player-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add-player-modal-label">Add Player</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <select class="form-select" id="player-select">
+                    <option value="none">Select a player...</option>
+                    {% for player in available_players %}
+                        <option value="{{player.id}}">{{player.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="add-player-button">Add Player</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="start-game-modal" tabindex="-1" aria-labelledby="start-game-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="example-modal-label">Confirm Start Game</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to start the game?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirm-start-game-button">Start Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="complete-game-modal" tabindex="-1" aria-labelledby="complete-game-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="complete-game-modal-label">Complete Game?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to mark this game as completed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirm-mark-game-completed-button">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remove-player-modal" tabindex="-1" aria-labelledby="remove-player-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="remove-player-modal-label">Remove Player?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this player from the game?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirm-remove-player-button">Save changes</button>
+            </div>
+        </div>
+      </div>
+</div>
+
+{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+{% endblock %}
+
+{% block page_scripts %}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+    const addPlayerUrl = "{% url 'api:game-add_player' game_data.id %}";
+    const removePlayerUrl = "{% url 'api:game-remove_player' game_data.id %}";
+    const addScoreUrl = "{% url 'api:game-set_score' game_data.id %}";
+    const manageGameUrl = "{% url 'home:ajax-manage-game' %}";
+    const startGameUrl = "{% url 'api:game-start' game_data.id %}";
+    const csrfToken = "{{csrf_token}}";
+    const gameId = "{{game_data.id}}";
+    const baseHoleUrl = "{% url 'home:game-detail' game_data.id %}?hole="
+
+    document.querySelectorAll("input[name='player-selection']").forEach((el) => {
+        el.addEventListener("click", (event) => {
+            console.log("changed!", event.target.dataset.playerId);
+            document.getElementById("remove-player-button").classList.remove("d-none");
+        });
+    });
+
+    document.getElementById("confirm-remove-player-button").addEventListener("click", async (event) => {
+        const playerId = document.querySelector("input[name='player-selection']:checked").dataset.playerId;
+        const data = {
+            "player": playerId
+        };
+
+        const response = await fetch(removePlayerUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            console.log("Error");
+            return;
+        }
+
+        window.location.reload(true);
+    });
+
+    document.getElementById("save-hole-scores")?.addEventListener("click", async (event) => {
+        const data = {"hole_number": 1, "score_list": []};
+        document.querySelectorAll(".hole-score").forEach((el) => {
+            const holeScore = {
+                "id": el.dataset.holeScoreId,
+                "score": el.value
+            }
+            data.score_list.push(holeScore);
+        });
+
+        const response = await fetch(addScoreUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const jsonData = await response.json();
+            Toastify({
+                text: "Error: " + jsonData.message,
+                duration: 2000,
+                gravity: "bottom", // `top` or `bottom`
+                position: "center", // `left`, `center` or `right`
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+            }).showToast();
+            
+            return;
+        }
+
+        Toastify({
+            text: "Scores Saved",
+            duration: 2000,
+            gravity: "bottom", // `top` or `bottom`
+            position: "center", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+        }).showToast();
+    });
+
+    document.getElementById("add-player-button").addEventListener("click", async () => {
+        const data = {
+            "player": document.getElementById("player-select").value
+        };
+
+        const response = await fetch(addPlayerUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            console.log("Error");
+            return;
+        }
+
+        window.location.reload(true);
+    });
+
+    document.getElementById("confirm-start-game-button").addEventListener("click", async (event) => {
+        const data = {
+            "game_id": gameId
+        };
+
+        const response = await fetch(startGameUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            console.log("Error");
+            return;
+        }
+        window.location.reload(true);
+    });
+
+    document.getElementById("confirm-mark-game-completed-button").addEventListener("click", async (event) => {
+        console.log("clicked");
+
+        const data = {
+            "game_id": gameId,
+            "action": "complete-game"
+        }
+
+        const response = await fetch(manageGameUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            console.log("Error");
+            return;
+        }
+
+        const jsonData = await response.json();
+        if (jsonData.status == "success") {
+            window.location.reload(true);
+        } else {
+            showError("error-alert-wrapper", jsonData.message);
+        }
+    });
+
+    document.getElementById("hole-jump")?.addEventListener("change", (event) => {
+        const newHole = event.target.value;
+        window.location.href = baseHoleUrl + newHole;
+    });
+
+    document.querySelectorAll(".adjust-hole-score").forEach((el) => {
+        el.addEventListener("click", (event) => {
+            const action = event.target.dataset.action;
+            const holeScoreId = event.target.dataset.holeScoreId;
+            const scoreEl = document.querySelector(".hole-score[data-hole-score-id='" + holeScoreId + "']");
+            
+            if (action == "add-score") {
+                scoreEl.value = parseInt(scoreEl.value) + 1;
+            } else if (action == "subtract-score") {
+                scoreEl.value = parseInt(scoreEl.value) - 1;
+            }
+        });
+    });
+</script>
+{% endblock %}

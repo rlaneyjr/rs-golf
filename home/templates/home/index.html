@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <h1>Home</h1>
+    {% if request.user.is_authenticated %}
+    <div class="card">
+      <div class="card-header">
+        Active Games
+      </div>
+      <div class="card-body">
+        {% if game_list %}
+        <ul class="list-group">
+          {% for game in game_list %}
+          <li class="list-group-item"><a class="text-decoration-none text-black" href="{% url 'home:game-detail' game.id %}">{{game.course}}: {{game.date_played}}</a></li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="card-text">You do not have any active games</p>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'home:my-game-list' %}" class="btn btn-primary btn-sm">View My Games</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% if request.user.is_authenticated %}
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Tee Times
+      </div>
+      <div class="card-body">
+        {% if tee_time_list %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>&nbsp;</th>
+              <th>Course</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for tee_time in tee_time_list %}
+            <tr>
+              <td><a href="{% url 'home:tee-time-detail' tee_time.id %}" class="btn btn-primary btn-sm">View</a></td>
+              <td>{{tee_time.course.name}}</td>
+              <td>{{tee_time.tee_time}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="card-text">No tee times found</p>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'home:create-tee-time' %}" class="btn btn-primary btn-sm">Add Tee Time</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}{% endblock %}

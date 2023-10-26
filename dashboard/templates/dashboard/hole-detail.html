@@ -1,0 +1,128 @@
+{% extends "base-dashboard.html" %}
+{% load crispy_forms_tags %}
+
+{% block button_bar %}
+    <a href="{% url 'dashboard:course_detail' course_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Course</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header fw-bold">
+                Hole Details: {{hole_data.order}}
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="fw-bold d-block">Name:</label>
+                    <span class="ps-3">{{course_data.name}}</span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold d-block">Holes:</label>
+                    <span class="ps-3">{{course_data.get_hole_count_display}}</span>
+                </div>
+                <div>
+                    <label class="fw-bold d-block">Par:</label>
+                    <span class="ps-3">{{hole_data.par}}</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#edit-par-modal">
+                      Edit Par
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header fw-bold">
+                Tees
+            </div>
+            <div class="card-body">
+                {% if tee_list %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">&nbsp;</th>
+                                <th>Color</th>
+                                <th>Distance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="align-middle">
+                        {% for tee in tee_list %}
+                            <tr>
+                                <td><a href="#" class="btn btn-danger btn-sm">Delete</a></td>
+                                <td>{{tee.color}}</td>
+                                <td>{{tee.distance}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="card-text">No tees found for this hole</p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'dashboard:create_tee' hole_data.id %}" class="btn btn-primary btn-sm">Add Tee</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="edit-par-modal" tabindex="-1" aria-labelledby="edit-par-modal-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="example-modal-label">Edit Par</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% crispy form %}
+                <div class="text-danger fw-bold d-none" id="par-error-message"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-par-number">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const holeId = "{{hole_data.id}}";
+    const holeParUrl = "{% url 'dashboard:ajax-save-par-to-hole' %}";
+    const csrfToken = "{{csrf_token}}";
+    const errorDiv = document.getElementById("par-error-message");
+    document.getElementById("save-par-number").addEventListener("click", async (event) => {
+        const parNum = document.getElementById("id_par").value;
+        const data = {
+            "hole_par": parNum,
+            "hole_id": holeId
+        };
+        
+        const response = await fetch(holeParUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            errorDiv.innerText = "Unknown error setting par value";
+            errorDiv.classList.remove("d-none");
+        }
+        const jsonData = await response.json();
+        if (jsonData.status == "success") {
+            window.location.reload(true);
+        } else {
+            errorDiv.innerText = jsonData.message;
+            errorDiv.classList.remove("d-none");
+        }
+    });
+</script>
+{% endblock %}

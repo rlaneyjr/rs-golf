@@ -1,0 +1,9 @@
+Django==4.2.5
+django-allauth==0.49.0
+django-tailwind==3.6.0
+django-environ==0.11.2
+django-htmx==1.16.0
+rich==13.6.0
+
+
+

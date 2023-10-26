@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                Location Testing
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label" for="note-text">Note</label>
+                    <input type="text" id="note-text" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="latitude-input">Latitude:</label>
+                    <input type="text" class="form-control" id="latitude-input">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="longitude-input">Longitude:</label>
+                    <input type="text" class="form-control" id="longitude-input">
+                </div>
+                <div class="text-danger" id="status-text"></div>
+            </div>
+            <div class="card-footer">
+                <button id="save-data-button" class="btn btn-primary btn-sm">Save</button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" id="get-location-button">Get Location</button>
+                <button class="btn btn-sm btn-danger" id="clear-storage">Clear Storage</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                Saved Locations
+            </div>
+            <div class="card-body">
+                <table id="saved-locations-table" class="table d-none">
+                    <thead>
+                        <tr>
+                            <th>Note</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="no-items-message" class="card-text">No Locations Found</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}
+<script>
+    const statusField = document.getElementById("status-text");
+    const locField = document.getElementById("location-text");
+    const storageKey = "location_items";
+
+    const saveToStorage = (item) => {
+        let existing = localStorage.getItem(storageKey);
+        existing = JSON.parse(existing);
+        existing.push(item);
+        localStorage.setItem(storageKey, JSON.stringify(existing));
+    }
+    
+    const onSuccess = (pos) => {  
+        const note = document.getElementById("note-text");
+        const latField = document.getElementById("latitude-input");
+        const longField = document.getElementById("longitude-input");
+
+        const latitude = pos.coords.latitude;
+        const longitude = pos.coords.longitude;
+
+        latField.value = latitude;
+        longField.value = longitude;
+
+        statusField.textContent = "Located";
+        statusField.classList.remove("d-none");
+    }
+
+    document.getElementById("save-data-button").addEventListener("click", (event) => {
+        const note = document.getElementById("note-text");
+        const latField = document.getElementById("latitude-input");
+        const longField = document.getElementById("longitude-input");
+
+        const dataToSave = {
+            "note": note.value, 
+            "latitude": latField.value, 
+            "longitude": longField.value
+        };
+
+        saveToStorage(dataToSave);
+        renderTable();
+
+        note.value = "";
+        latField.value = "";
+        longField.value = "";
+    })
+
+    const onError = () => {
+        console.log("ERROR!")
+        locField.textContent = "Error!"
+    }
+
+    document.getElementById("get-location-button").addEventListener("click", (event) => {
+        if (!navigator.geolocation) {
+            statusField.textContent = "Geolocation is not supported by your browser";
+        } else {
+            statusField.textContent = "Locating...";
+            navigator.geolocation.getCurrentPosition(onSuccess, onError);
+        }    
+    });
+
+    const generateRow = (data) => {
+        let row = "<tr>";
+        row += `<td>${data.note}</td>`;
+        row += `<td>${data.latitude}</td>`;
+        row += `<td>${data.longitude}</td>`;
+        row += "</tr>";
+
+        return row;
+    }
+
+    const renderTable = () => {
+        const table = document.getElementById("saved-locations-table");
+        const tableBody = table.querySelector("tbody");
+        const noLocationsFound = document.getElementById("no-items-message");
+
+        let existing = localStorage.getItem(storageKey);
+        existing = JSON.parse(existing);
+
+        if (existing.length) {
+            existing.forEach((item) => {
+                const itemRow = generateRow(item);
+                console.log(itemRow);
+                tableBody.innerHTML += itemRow
+            });
+
+            table.classList.remove("d-none");
+            noLocationsFound.classList.add("d-none");
+        } else {
+            table.classList.add("d-none");
+            tableBody.innerHTML = "";
+            noLocationsFound.classList.remove("d-none");
+        }
+    }
+
+    document.getElementById("clear-storage").addEventListener("click", (event) => {
+        localStorage.clear();
+        setupStorage();
+        renderTable();
+    });
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+        setupStorage();
+        renderTable();
+    });
+
+    const setupStorage = () => {
+        let existing = localStorage.getItem(storageKey);
+        if (!existing) {
+            localStorage.setItem(storageKey, JSON.stringify([]));
+        }
+    }
+</script>
+{% endblock %}

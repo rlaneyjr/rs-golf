@@ -1,0 +1,10 @@
+{% extends "registration/base-auth.html" %}
+
+{% block content %}
+<p>You do not have permission to view this page</p>
+<a href="{% url 'home:index' %}">Home</a>
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}{% endblock %}

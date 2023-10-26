@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags static %}
+
+{% block content %}
+{% crispy form %}
+{% endblock %}
+
+
+{% block page_styles %}
+<link href="{% static 'css/jquery.datetimepicker.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{% static 'js/jquery.datetimepicker.full.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    $('#id_tee_time').datetimepicker({
+        format: 'm-d-Y H:i',
+        hours12: false,
+        step: 15,
+    });        
+});
+</script>
+{% endblock %}

@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from . import serializers
-from home import models
-from home import utils
+from dashboard import models
+from dashboard import utils
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -96,12 +96,13 @@ class GameViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"], url_name="start")
+    @action(detail=True, methods=["post"], url_name="start_game")
     def start_game(self, request, pk=None):
         queryset = models.Game.objects.all()
         game = get_object_or_404(queryset, pk=pk)
         game.start()
-        utils.create_hole_scores_for_game(game)
+        holes_to_play = request.data.get("holes_to_play")
+        utils.create_hole_scores_for_game(game, holes_to_play)
 
         serializer = serializers.GameSerializer(game, many=False)
         return Response(serializer.data)

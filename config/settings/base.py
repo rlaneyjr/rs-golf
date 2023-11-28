@@ -59,12 +59,15 @@ SERVER_EMAIL = ""
 LOGIN_REDIRECT_URL = "/admin/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-# STATIC_URL is added to relevant STATIC_URL env setting in config/settings/*
-# If a STATIC_URL env var is set that will be what is used.
+# STATIC
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#static-root
+STATIC_ROOT = str(BASE_DIR / "staticfiles")
+# https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
+STATICFILES_DIRS = [str(BASE_DIR / "static")]
+
 # MEDIA_URL is added to relevant STATIC_URL env setting in config/settings/*
 # If a MEDIA_URL env var is set that will be what is used.
 MEDIA_URL = "/media/"
@@ -72,18 +75,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-# Tailwind Settings
-TAILWIND_APP_NAME = "theme"
-TAILWIND_CSS_PATH = "css/styles.css"
-
 # Application definition
-INSTALLED_APPS = [
-    "theme",
-    "dashboard",
-    "home",
-    "users",
+BASE_APPS = [
     "django.contrib.admin",
-
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -95,14 +89,22 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
-    "django_htmx",
-    "tailwind",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_htmx",
+    "drf_spectacular",
     "rest_framework",
     "rest_framework.authtoken",
-    "drf_spectacular",
 ]
+
+PROJECT_APPS = [
+    "core",
+    "dashboard",
+    "theme",
+    "users",
+]
+
+INSTALLED_APPS = BASE_APPS + PROJECT_APPS
 
 # Django crispy forms
 CRISPY_TEMPLATE_PACK = "bootstrap5"

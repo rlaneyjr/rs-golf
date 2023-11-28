@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-from home import models
+from dashboard import models
 from users.api import serializers as core_serializers
 
 

@@ -1,5 +1,5 @@
 from django import forms
-from home import models as home_models
+from .models import GolfCourse, Tee, Team, Player, Game, Hole, TeeTime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit
 
@@ -26,7 +26,7 @@ class GolfCourseForm(forms.ModelForm):
         )
 
     class Meta:
-        model = home_models.GolfCourse
+        model = GolfCourse
         fields = [
             "name",
             "initials",
@@ -63,7 +63,7 @@ class EditGolfCourseForm(forms.ModelForm):
         )
 
     class Meta:
-        model = home_models.GolfCourse
+        model = GolfCourse
         fields = [
             "name",
             "initials",
@@ -92,8 +92,25 @@ class TeeForm(forms.ModelForm):
         )
 
     class Meta:
-        model = home_models.Tee
+        model = Tee
         fields = ["color", "distance"]
+
+
+class TeamForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Create a new Team",
+                "game",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
+    class Meta:
+        model = Team
+        fields = ["game"]
 
 
 class PlayerForm(forms.ModelForm):
@@ -112,13 +129,8 @@ class PlayerForm(forms.ModelForm):
         )
 
     class Meta:
-        model = home_models.Player
-        fields = [
-            "name",
-            "handicap",
-            "photo",
-            "user_account",
-        ]
+        model = Player
+        exclude = ["added_by"]
 
 
 class GameForm(forms.ModelForm):
@@ -128,20 +140,67 @@ class GameForm(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 "Create a new Game",
+                "game_type",
                 "course",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
 
     class Meta:
-        model = home_models.Game
-        fields = ["course"]
+        model = Game
+        fields = ["game_type", "course"]
 
 
 class HoleForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Create a new Hole",
+                "name",
+                "nickname",
+                "par",
+                "course",
+                "order",
+                "handicap",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
     class Meta:
-        model = home_models.Hole
-        fields = ["par"]
+        model = Hole
+        fields = [
+            "name",
+            "nickname",
+            "par",
+            "course",
+            "order",
+            "handicap",
+        ]
+
+
+class EditHoleForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Edit Hole",
+                "nickname",
+                "par",
+                "handicap",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
+    class Meta:
+        model = Hole
+        fields = [
+            "nickname",
+            "par",
+            "handicap",
+        ]
 
 
 class TeeTimeForm(forms.ModelForm):
@@ -155,11 +214,13 @@ class TeeTimeForm(forms.ModelForm):
                 "Create a new Tee Time",
                 "course",
                 "tee_time",
-                "holes_to_play"
+                "players",
+                "holes_to_play",
+                "which_holes",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
 
     class Meta:
-        model = home_models.TeeTime
-        fields = ["course", "tee_time", "holes_to_play"]
+        model = TeeTime
+        fields = ["course", "tee_time", "players", "holes_to_play", "which_holes"]

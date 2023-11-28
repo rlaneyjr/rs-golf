@@ -3,7 +3,7 @@ from django.shortcuts import reverse
 from django.conf import settings
 from rest_framework.test import APIClient
 from rest_framework import status
-from home import models
+from dashboard import models
 
 
 @pytest.mark.django_db

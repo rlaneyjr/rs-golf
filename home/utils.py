@@ -1,6 +1,21 @@
 from home import models
 
 
+def create_holes_for_course(course):
+    hole_count = 9
+    if course.hole_count == "18":
+        hole_count = 18
+
+    for hole_num in range(1, hole_count + 1):
+        hole_obj = models.Hole(course=course, order=hole_num)
+        hole_obj.save()
+    return True
+
+
+def is_admin(user):
+    return user.is_superuser or user.groups.filter(name="Admin").exists()
+
+
 def get_players_for_game(user, game):
     return models.Player.objects.filter(added_by=user).exclude(game__in=[game.id])
 

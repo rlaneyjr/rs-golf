@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from home import models
 from home import pdf_utils
 from home import utils
-from dashboard import forms as dashboard_forms
+from home import forms
 
 
 def index(request):
@@ -128,13 +128,13 @@ def tee_time_detail(request, pk):
 @login_required
 def create_tee_time(request):
     if request.method == "POST":
-        form = dashboard_forms.TeeTimeForm(request.POST)
+        form = forms.TeeTimeForm(request.POST)
         if form.is_valid():
             item = form.save()
             item.players.add(request.user.player)
             return redirect("home:tee-time-detail", item.id)
     else:
-        form = dashboard_forms.TeeTimeForm()
+        form = forms.TeeTimeForm()
     return render(request, "home/create-tee-time.html", {"form": form})
 
 

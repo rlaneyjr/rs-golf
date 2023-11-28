@@ -26,9 +26,8 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("login/", account.views.LoginView.as_view(), name="login"),
     path("logout/", account.views.LogoutView.as_view(), name="logout"),
-    path("", include(("home.urls", "home"), namespace="home")),
-    # path("core/", include(("core.urls", "core"), namespace="core")),
-    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
+    # path("", include(("home.urls", "home"), namespace="home")),
+    path("", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     path("api/", include(("api.urls", "api"), namespace="api")),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(

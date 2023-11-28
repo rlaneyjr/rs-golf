@@ -1,0 +1,487 @@
+{% extends "base-dashboard.html" %}
+
+{% block page_name %}Game Detail{% endblock %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:games' %}" class="btn btn-sm btn-outline-secondary">Back to Game List</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-6">
+    <div class="card">
+      <div class="card-header fw-bold">
+        Game Detail
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="fw-bold d-block">Course:</label>
+          <span class="ps-2">{{game_data.course.name}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Date Played:</label>
+          <span class="ps-2">{{game_data.date_played}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Holes:</label>
+          <span class="ps-2">{{game_data.holes_played}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Current Status:</label>
+          <span class="ps-2">{{game_data.get_status_display}}</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        {% if game_data.status == "setup" and current_player_count > 0 %}
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
+        {% endif %}
+        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="card">
+      <div class="card-header">
+        Players
+      </div>
+      <div class="card-body">
+        {% if game_data.players.all %}
+        <table class="table">
+          <thead>
+            <tr>
+              {% if game_data.status == "setup" %}
+              <th style="width: 5%;">&nbsp;</th>
+              {% endif %}
+              <th>Name</th>
+              <th>Handicap</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for player in game_data.players.all %}
+            <tr>
+              {% if game_data.status == "setup" %}
+              <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-player-modal" data-player-id="{{player.id}}">Remove</button></td>
+              {% endif %}
+              <td>{{player.name}}</td>
+              <td>{{player.handicap}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="card-text">No Players Found</p>
+        {% endif %}
+      </div>
+      {% if game_data.status == "setup" %}
+      <div class="card-footer">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">Add Player</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if game_data.status == "active" or game_data.status ==  "completed" %}
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Game Scores
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              {% for hole_num in hole_list %}
+              <th>{{hole_num}}</th>
+              {% endfor %}
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for player_id, hole_obj in hole_data.items %}
+            <tr class="player-row" data-row-player-id="{{player_id}}">
+              <td>{{hole_obj.player_name}}</td>
+              {% for hole_item in hole_obj.hole_list %}
+                {% if game_data.status == "active" %}
+                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{hole_item.hole_score_id}}" value={{hole_item.hole_score}} /></td>
+                {% else %}
+                <td>{{hole_item.hole_score}}</td>
+                {% endif %}
+              {% endfor %}
+              <td>{{hole_obj.total_score}}/{{hole_obj.par}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if game_data.status == "active" or game_data.status ==  "completed" and team_data %}
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Team Scores
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Team</th>
+              {% for hole_num in hole_list %}
+              <th>{{hole_num}}</th>
+              {% endfor %}
+              <th>Skin</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for team_id, team_score in team_data.items %}
+            <tr class="team-row" data-row-team-id="{{team_id}}">
+              <td>{{team_score.team_name}}</td>
+              {% for hole_item in team_score.hole_list %}
+                {% if game_data.status == "active" %}
+                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{hole_item.hole_id}}" value={{hole_item.hole_score}} /></td>
+                {% else %}
+                <td>{{hole_item.hole_score}}</td>
+                {% endif %}
+                <td>{{hole_item.skin}}</td>
+              {% endfor %}
+              <td>{{team_score.team_score}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row mt-3 mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header fw-bold">
+        All Scores <span class="float-end">Show Only 0 Scores <input type="checkbox" id="hide-score-checkbox"></span>
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Hole #</th>
+              <th>Par</th>
+              <th>Handicap</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for score in all_scores %}
+            <tr>
+              
+              <td>{{score.game.player.name}}</td>
+              <td>{{score.hole.order}}</td>
+              <td>{{score.hole.par}}</td>
+              <td>{{score.hole.handicap}}</td>
+              <td>{{score.score}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="add-player-modal" tabindex="-1" aria-labelledby="add-player-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="add-player-modal-label">Add player to game</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label class="form-label">Player:</label>
+          <select id="add-player-select" class="form-select">
+            <option value="none">Select a player...</option>
+            {% for player in player_list %}
+            <option value="{{player.id}}">{{player.name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="add-player-button">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="remove-player-modal" tabindex="-1" aria-labelledby="remove-player-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="remove-player-modal-label">Modal title</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to remove this player from the game?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="confirm-remove-player-button">Yes, Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="delete-game-modal" tabindex="-1" aria-labelledby="delete-game-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delete-game-modal-label">Delete Game?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this game?  This cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" id="delete-game-button">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="start-game-modal" tabindex="-1" aria-labelledby="start-game-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="start-game-modal-label">Confirm Start Game</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        {% if game_data.course.hole_count == 18 %}
+        <div>
+          <label class="form-label">Select holes to play:</label>
+          <select id="add-holes-to-play-select" class="form-select">
+            <option value="all">All</option>
+            <option value="front">Front</option>
+            <option value="back">Back</option>
+          </select>
+        </div>
+        {% endif %}
+        <div>
+          <label class="form-label">Select game type:</label>
+          <select id="add-game-type-select" class="form-select">
+            <option value="best-ball">Best Ball</option>
+            <option value="stroke">Stroke</option>
+            <option value="skins">Skins</option>
+            <option value="stroke-skins">Stroke w/Skins</option>
+          </select>
+        </div>
+        <p>Are you sure you want to start the game?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="start-game-button">Start Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}
+<script>
+  const gameId = "{{game_data.id}}";
+  const managePlayerUrl = "{% url 'dashboard:ajax_manage_players_for_game' %}";
+  const manageGameUrl = "{% url 'dashboard:ajax_manage_game' %}";
+  const gameListUrl = "{% url 'dashboard:games' %}";
+  const recordScoreUrl = "{% url 'dashboard:ajax_record_score_for_hole' %}";
+
+  const csrfToken = "{{csrf_token}}";
+  let removePlayerId = null;
+
+  document.getElementById("add-player-button").addEventListener("click", async (event) => {
+    const playerId = document.getElementById("add-player-select").value;
+    if (playerId == "none") {
+      return;
+    }
+
+    const data = {
+      playerId: playerId,
+      game: gameId,
+      action: "add-player"
+    }
+
+    try {
+      const response = await fetch(managePlayerUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error("Error sending request");
+        return;
+      }
+      const jsonData = await response.json();
+      if (jsonData.status === "success") {
+        return window.location.reload(true);
+      }
+    } catch(e) {
+      alert("Error: " + e.message);
+    }
+  });
+
+  document.getElementById("remove-player-modal").addEventListener("show.bs.modal", (event) => {
+    const buttonClicked = event.relatedTarget;
+    removePlayerId = buttonClicked.dataset.playerId;
+  });
+
+  document.getElementById("remove-player-modal").addEventListener("hide.bs.modal", (event) => {
+    removePlayerId = null;
+  });
+
+  document.getElementById("confirm-remove-player-button").addEventListener("click", async (event) => {
+    if (removePlayerId === null) {
+      return;
+    }
+
+    const data = {
+      action: "remove-player",
+      playerId: removePlayerId,
+      game: gameId
+    }
+    try {
+      const response = await fetch(managePlayerUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error("Error sending request");
+        return;
+      }
+      const jsonData = await response.json();
+      if (jsonData.status === "success") {
+        return window.location.reload(true);
+      }
+    } catch(e) {
+      alert("Error: " + e.message);
+    }
+  });
+
+
+  document.getElementById("delete-game-button").addEventListener("click", async (event) => {
+    const data = {
+      gameId: gameId,
+      action: "delete-game"
+    }
+    try {
+      const response = await fetch(manageGameUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error("Error sending request");
+        return;
+      }
+      const jsonData = await response.json();
+
+      if (jsonData.status === "success") {
+        return window.location.replace(gameListUrl);
+      }
+    } catch(e) {
+      console.log("Error: ", e.message)
+    }
+  });
+
+
+  document.getElementById("start-game-button").addEventListener("click", async (event) => {
+    const holesToPlay = document.getElementById("add-holes-to-play-select").value;
+    const gameType = document.getElementById("add-game-type-select").value;
+    const data = {
+      game_id: gameId,
+      action: "start-game",
+      holes_to_play: holesToPlay,
+      game_type: gameType
+    };
+
+    const response = await fetch(manageGameUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      console.log("Error");
+      return;
+    }
+    window.location.reload(true);
+  });
+
+
+  document.querySelectorAll(".hole-input").forEach((el) => {
+    el.addEventListener("blur", async (event) => {
+      const data = {
+        hole_score_id: event.target.dataset.holeScoreId,
+        hole_score: event.target.value
+      }
+
+      try {
+        const response = await fetch(recordScoreUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          throw new Error("Error sending request");
+          return;
+        }
+        const jsonData = await response.json();
+        if (jsonData.status === "success") {
+          console.log("Worked")
+        }
+      } catch(e) {
+        console.log("Error: ", e.message)
+      }
+
+    });
+  });
+
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const showAllScores = {{filter_scores}};
+
+    if (showAllScores) {
+      document.getElementById("hide-score-checkbox").checked = true;
+    }
+  });
+</script>
+{% endblock page_scripts %}

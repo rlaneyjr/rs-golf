@@ -1,0 +1,108 @@
+{% extends "base-dashboard.html" %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:courses' %}" class="btn btn-sm btn-outline-secondary">Back to Course List</a>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+  <div class="col-6">
+    <div class="card">
+      <div class="card-header fw-bold">
+        Course Details
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="fw-bold d-block">Name:</label>
+          <span class="ps-2">{{course_data.name}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Holes:</label>
+          <span class="ps-2">{{course_data.get_hole_count_display}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Tee Time Link:</label>
+          {% if course_data.tee_time_link %}
+          <span class="ps-2"><a href="{{course_data.tee_time_link}}" class="btn btn-primary" target="new_page">Book Tee Time</a></span>
+          {% else %}
+          <p class="ps-2">Not Found</p>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Website:</label>
+          {% if course_data.website_link %}
+          <span class="ps-2"><a href="{{course_data.website_link}}" class="btn btn-success" target="new_page">Website</a></span>
+          {% else %}
+          <p class="ps-2">Not Found</p>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Location:</label>
+          {% if course_location %}
+          <span class="ps-2">{{course_location}}</span>
+          {% else %}
+          <p class="ps-2 card-text">Not Found</p>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Card:</label>
+          {% if course_data.card %}
+          <span class="ps-2"><img src="{{course_data.card.url}}" class="img-fluid" alt="{{course_data.name}} Card"></span>
+          {% else %}
+          <p class="ps-2">Not Found</p>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Overview:</label>
+          {% if course_data.overview %}
+          <span class="ps-2"><img src="{{course_data.overview.url}}" class="img-fluid" alt="{{course_data.name}} Overview"></span>
+          {% else %}
+          <p class="ps-2">Not Found</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'dashboard:edit_course' course_data.id %}" class="btn btn-primary btn-sm">Edit</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="card">
+      <div class="card-header fw-bold">
+        Holes
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>&nbsp;</th>
+              <th>Name</th>
+              <th>Nickname</th>
+              <th>Par</th>
+              <th>HCP</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for hole in hole_list %}
+            <tr>
+              <td><a href="{% url 'dashboard:hole_detail' hole.id %}" class="btn btn-primary btn-sm">View</a></td>
+                <td>{{hole.name}}</td>
+                <td>{{hole.nickname}}</td>
+                <td>{{hole.par}}</td>
+                <td>{{hole.handicap}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'dashboard:create_hole' course_data.id %}" class="btn btn-primary btn-sm">Create Hole</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block page_styles %}{% endblock page_styles %}
+
+{% block page_scripts %}{% endblock page_scripts %}

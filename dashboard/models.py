@@ -1,0 +1,294 @@
+from datetime import datetime
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+from dashboard import utils
+
+
+User = get_user_model()
+
+
+class GameTypeChoices(models.TextChoices):
+    BEST_BALL = "best-ball", _("Best Ball")
+    STROKE = "stroke", _("Stroke")
+    SKINS = "skins", _("Skins")
+    STROKE_SKINS = "stroke-skins", _("Stroke w/Skins")
+
+
+class HolesToPlayChoices(models.IntegerChoices):
+    HOLES_9 = 9, _("9 Holes")
+    HOLES_18 = 18, _("18 Holes")
+
+
+class WhichHolesChoices(models.TextChoices):
+    ALL = "all", _("All")
+    FRONT = "front", _("Front 9")
+    BACK = "back", _("Back 9")
+
+
+class ParChoices(models.IntegerChoices):
+    PAR_3 = 3, _("Par 3")
+    PAR_4 = 4, _("Par 4")
+    PAR_5 = 5, _("Par 5")
+
+
+class OrderChoices(models.IntegerChoices):
+    _1 = 1
+    _2 = 2
+    _3 = 3
+    _4 = 4
+    _5 = 5
+    _6 = 6
+    _7 = 7
+    _8 = 8
+    _9 = 9
+    _10 = 10
+    _11 = 11
+    _12 = 12
+    _13 = 13
+    _14 = 14
+    _15 = 15
+    _16 = 16
+    _17 = 17
+    _18 = 18
+
+
+class HoleNameChoices(models.TextChoices):
+    HOLE_1 = "Hole 1", _("Hole 1")
+    HOLE_2 = "Hole 2", _("Hole 2")
+    HOLE_3 = "Hole 3", _("Hole 3")
+    HOLE_4 = "Hole 4", _("Hole 4")
+    HOLE_5 = "Hole 5", _("Hole 5")
+    HOLE_6 = "Hole 6", _("Hole 6")
+    HOLE_7 = "Hole 7", _("Hole 7")
+    HOLE_8 = "Hole 8", _("Hole 8")
+    HOLE_9 = "Hole 9", _("Hole 9")
+    HOLE_10 = "Hole 10", _("Hole 10")
+    HOLE_11 = "Hole 11", _("Hole 11")
+    HOLE_12 = "Hole 12", _("Hole 12")
+    HOLE_13 = "Hole 13", _("Hole 13")
+    HOLE_14 = "Hole 14", _("Hole 14")
+    HOLE_15 = "Hole 15", _("Hole 15")
+    HOLE_16 = "Hole 16", _("Hole 16")
+    HOLE_17 = "Hole 17", _("Hole 17")
+    HOLE_18 = "Hole 18", _("Hole 18")
+
+
+class ScoreChoices(models.IntegerChoices):
+    _0 = 0
+    _1 = 1
+    _2 = 2
+    _3 = 3
+    _4 = 4
+    _5 = 5
+    _6 = 6
+    _7 = 7
+    _8 = 8
+    _9 = 9
+
+
+class GameStatusChoices(models.TextChoices):
+    SETUP = "setup", _("Setup")
+    ACTIVE = "active", _("Active"),
+    COMPLETED = "completed", _("Completed"),
+    NOT_FINISHED = "not_finished", _("Not Finished"),
+
+
+class GolfCourse(models.Model):
+    name = models.CharField(max_length=128)
+    initials = models.CharField(verbose_name="Course Initials", max_length=5, default="GC")
+    hole_count = models.PositiveSmallIntegerField(
+        choices=HolesToPlayChoices.choices, default=HolesToPlayChoices.HOLES_18
+    )
+    tee_time_link = models.URLField(blank=True)
+    website_link = models.URLField(blank=True)
+    city = models.CharField(max_length=128, blank=True)
+    state = models.CharField(max_length=64, blank=True)
+    zip_code = models.CharField(max_length=128, blank=True)
+    card = models.ImageField(upload_to="images", default=None, blank=True, null=True)
+    overview = models.ImageField(upload_to="images", default=None, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Hole(models.Model):
+    name = models.CharField(max_length=7, choices=HoleNameChoices.choices, default=HoleNameChoices.HOLE_1)
+    nickname = models.CharField(max_length=64, blank=True)
+    par = models.PositiveSmallIntegerField(choices=ParChoices.choices, default=ParChoices.PAR_4, blank=True)
+    course = models.ForeignKey(GolfCourse, on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(choices=OrderChoices.choices, default=OrderChoices._1, blank=True)
+    handicap = models.PositiveSmallIntegerField(choices=OrderChoices.choices, default=OrderChoices._1, blank=True)
+
+    class Meta:
+        unique_together = ["name", "course", "order", "handicap"]
+
+    def __str__(self):
+        return f"{self.course.initials} {self.name}"
+
+
+class Tee(models.Model):
+    TEE_COLORS = (
+        ("black", _("Black")),
+        ("blue", _("Blue")),
+        ("gold", _("Gold")),
+        ("white", _("White")),
+        ("red", _("Red")),
+    )
+
+    hole = models.ForeignKey(Hole, on_delete=models.CASCADE)
+    color = models.CharField(
+        verbose_name="Tee Color",
+        max_length=5,
+        choices=TEE_COLORS,
+        default=TEE_COLORS[1],
+    )
+    distance = models.CharField(verbose_name="Tee distance in yards", max_length=3)
+
+    class Meta:
+        unique_together = ["color", "hole"]
+
+    def __str__(self):
+        return f"{self.hole} - {self.color}"
+
+
+class Game(models.Model):
+    game_type = models.CharField(
+        max_length=32,
+        choices=GameTypeChoices.choices,
+        default=GameTypeChoices.STROKE
+    )
+    date_played = models.DateTimeField(blank=True, null=True)
+    course = models.ForeignKey(GolfCourse, on_delete=models.PROTECT)
+    holes_played = models.PositiveSmallIntegerField(
+        choices=HolesToPlayChoices.choices, default=HolesToPlayChoices.HOLES_18
+    )
+    which_holes = models.CharField(
+        max_length=5,
+        choices=WhichHolesChoices.choices,
+        default=WhichHolesChoices.ALL,
+    )
+    status = models.CharField(
+        max_length=64,
+        choices=GameStatusChoices.choices,
+        default=GameStatusChoices.SETUP,
+    )
+    players = models.ManyToManyField(
+        "Player", through="PlayerGameLink", through_fields=("game", "player")
+    )
+
+    def __str__(self):
+        return f"{self.course.initials} - {self.date_played} - {self.status}"
+
+    def start(self, holes_to_play=None, game_type=None):
+        if holes_to_play != None and self.course.hole_count == 18:
+            if holes_to_play == "all":
+                self.which_holes = WhichHolesChoices.ALL
+                self.holes_played = HolesToPlayChoices.HOLES_18
+            elif holes_to_play == "front":
+                self.which_holes = WhichHolesChoices.FRONT
+                self.holes_played = HolesToPlayChoices.HOLES_9
+            elif holes_to_play == "back":
+                self.which_holes = WhichHolesChoices.BACK
+                self.holes_played = HolesToPlayChoices.HOLES_9
+        else:
+            self.which_holes = WhichHolesChoices.ALL
+            self.holes_played = self.course.hole_count
+        if game_type:
+            self.game_type = game_type
+        self.status = GameStatusChoices.ACTIVE
+        if not self.date_played:
+            self.date_played = timezone.now()
+        utils.create_teams_for_game(self)
+        self.save()
+
+
+class Player(models.Model):
+    name = models.CharField(max_length=64)
+    handicap = models.DecimalField(
+        max_digits=3, decimal_places=1, default=20.0
+    )
+    photo = models.ImageField(
+        upload_to="images", default=None, blank=True, null=True
+    )
+    user_account = models.OneToOneField(
+        User, on_delete=models.CASCADE, default=None, blank=True, null=True
+    )
+    added_by = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name="added_by"
+    )
+
+    class Meta:
+        unique_together = ["name", "handicap", "user_account"]
+
+    def __str__(self):
+        return f"{self.name} - {self.handicap}"
+
+
+class PlayerGameLink(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+
+
+class Team(models.Model):
+    name = models.CharField(max_length=64)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    players = models.ManyToManyField(
+        "Player", through="TeamMembership", through_fields=("team", "player")
+    )
+    handicap = models.DecimalField(
+        max_digits=3, decimal_places=1, default=20.0
+    )
+
+    class Meta:
+        ordering = ["handicap"]
+        verbose_name_plural = "teams"
+
+    def __str__(self):
+        return self.name
+
+
+class TeamMembership(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+
+class HoleScore(models.Model):
+    game = models.ForeignKey(PlayerGameLink, on_delete=models.CASCADE)
+    # team = models.ForeignKey(TeamMembership, default=None, null=True, on_delete=models.SET_NULL)
+    hole = models.ForeignKey(Hole, on_delete=models.CASCADE)
+    score = models.PositiveSmallIntegerField(choices=ScoreChoices.choices, default=ScoreChoices._0)
+
+    def __str__(self):
+        return f"{self.hole} - {self.score - self.hole.par}"
+
+
+class TeeTime(models.Model):
+    WHICH_CHOICES = (
+        ("all", _("All")),
+        ("front", _("Front")),
+        ("back", _("Back")),
+    )
+    course = models.ForeignKey(GolfCourse, on_delete=models.CASCADE)
+    tee_time = models.DateTimeField()
+    players = models.ManyToManyField("Player")
+    holes_to_play = models.PositiveSmallIntegerField(
+        choices=HolesToPlayChoices.choices, default=HolesToPlayChoices.HOLES_18
+    )
+    which_holes = models.CharField(
+        max_length=5,
+        choices=WHICH_CHOICES,
+        default=WHICH_CHOICES[0],
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.course.initials} - {self.holes_to_play} - {self.tee_time}"
+
+    def clean(self):
+        if self.course.hole_count - self.holes_to_play == 9:
+            if self.which_holes == 'all':
+                raise ValidationError("Please choose front or back")

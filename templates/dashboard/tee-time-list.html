@@ -1,0 +1,42 @@
+{% extends "base-dashboard.html" %}
+
+{% block page_name %}Tee Times{% endblock %}
+
+{% block button_bar %}
+    <a href="{% url 'dashboard:create_tee_time' %}" class="btn btn-sm btn-outline-secondary">Create Tee Time</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        {% if tee_time_list %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>Course</th>
+                        <th>Time</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody class="align-middle">
+                    {% for tee_time in tee_time_list %}
+                    <tr>
+                        <td><a href="{% url 'dashboard:tee_time_detail' tee_time.id %}" class="btn btn-primary btn-sm">View</a></td>
+                        <td>{{tee_time.course.name}}</td>
+                        <td>{{tee_time.tee_time}}</td>
+                        <td>{{tee_time.is_active}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No tee times found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}{% endblock %}

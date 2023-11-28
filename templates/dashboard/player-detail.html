@@ -1,0 +1,30 @@
+{% extends "base-dashboard.html" %}
+
+{% block button_bar %}
+    <a href="{% url 'dashboard:players' %}" class="btn btn-sm btn-outline-secondary">Back to Player List</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                Player Details
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="fw-bold d-block">Name:</label>
+                    {{player_data.name}}
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'dashboard:edit_player' player_data.id %}" class="btn btn-primary btn-sm">Edit</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}{% endblock %}

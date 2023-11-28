@@ -1,0 +1,1162 @@
+- model: sites.site
+  pk: 1
+  fields:
+    domain: example.com
+    name: example.com
+- model: account.emailaddress
+  pk: 1
+  fields:
+    user: 1
+    email: rlaneyjr@gmail.com
+    verified: true
+    primary: true
+- model: dashboard.golfcourse
+  pk: 1
+  fields:
+    name: Tillery Tradition CC
+    initials: TTCC
+    hole_count: 18
+    tee_time_link: https://foreupsoftware.com/index.php/booking/21675/8524#/teetimes
+    website_link: https://www.tillerycc.com
+    city: Mt. Gilead
+    state: NC
+    zip_code: '27306'
+    card: images/ttcc_card.png
+    overview: images/ttcc_overview.png
+- model: dashboard.hole
+  pk: 1
+  fields:
+    name: Hole 1
+    nickname: Breakfast Time
+    par: 4
+    course: 6
+    order: 1
+    handicap: 14
+- model: dashboard.hole
+  pk: 2
+  fields:
+    name: Hole 2
+    nickname: Straight Pipe
+    par: 5
+    course: 6
+    order: 2
+    handicap: 2
+- model: dashboard.hole
+  pk: 3
+  fields:
+    name: Hole 3
+    nickname: Power Hill
+    par: 4
+    course: 6
+    order: 3
+    handicap: 16
+- model: dashboard.hole
+  pk: 4
+  fields:
+    name: Hole 4
+    nickname: Pin Location
+    par: 3
+    course: 6
+    order: 4
+    handicap: 12
+- model: dashboard.hole
+  pk: 5
+  fields:
+    name: Hole 5
+    nickname: Uptight
+    par: 4
+    course: 6
+    order: 5
+    handicap: 8
+- model: dashboard.hole
+  pk: 6
+  fields:
+    name: Hole 6
+    nickname: Redemption Hill
+    par: 4
+    course: 6
+    order: 6
+    handicap: 10
+- model: dashboard.hole
+  pk: 7
+  fields:
+    name: Hole 7
+    nickname: Rollout
+    par: 4
+    course: 6
+    order: 7
+    handicap: 4
+- model: dashboard.hole
+  pk: 8
+  fields:
+    name: Hole 8
+    nickname: Layup
+    par: 3
+    course: 6
+    order: 8
+    handicap: 18
+- model: dashboard.hole
+  pk: 9
+  fields:
+    name: Hole 9
+    nickname: Left and Long
+    par: 5
+    course: 6
+    order: 9
+    handicap: 6
+- model: dashboard.hole
+  pk: 10
+  fields:
+    name: Hole 10
+    nickname: Slight Left
+    par: 5
+    course: 6
+    order: 10
+    handicap: 9
+- model: dashboard.hole
+  pk: 11
+  fields:
+    name: Hole 11
+    nickname: Straight is Safe
+    par: 4
+    course: 6
+    order: 11
+    handicap: 7
+- model: dashboard.hole
+  pk: 12
+  fields:
+    name: Hole 12
+    nickname: Left is Death
+    par: 3
+    course: 6
+    order: 12
+    handicap: 15
+- model: dashboard.hole
+  pk: 13
+  fields:
+    name: Hole 13
+    nickname: Right Delight
+    par: 4
+    course: 6
+    order: 13
+    handicap: 13
+- model: dashboard.hole
+  pk: 14
+  fields:
+    name: Hole 14
+    nickname: Straight is Safe
+    par: 4
+    course: 6
+    order: 14
+    handicap: 1
+- model: dashboard.hole
+  pk: 15
+  fields:
+    name: Hole 15
+    nickname: Club Selection
+    par: 4
+    course: 6
+    order: 15
+    handicap: 3
+- model: dashboard.hole
+  pk: 16
+  fields:
+    name: Hole 16
+    nickname: Killer Beast
+    par: 4
+    course: 6
+    order: 16
+    handicap: 11
+- model: dashboard.hole
+  pk: 17
+  fields:
+    name: Hole 17
+    nickname: Stay Under Pin
+    par: 3
+    course: 6
+    order: 17
+    handicap: 17
+- model: dashboard.hole
+  pk: 18
+  fields:
+    name: Hole 18
+    nickname: Last Chance
+    par: 5
+    course: 6
+    order: 18
+    handicap: 5
+- model: dashboard.tee
+  pk: 1
+  fields:
+    hole: 1
+    color: blue
+    distance: '377'
+- model: dashboard.tee
+  pk: 2
+  fields:
+    hole: 2
+    color: blue
+    distance: '541'
+- model: dashboard.tee
+  pk: 3
+  fields:
+    hole: 3
+    color: blue
+    distance: '316'
+- model: dashboard.tee
+  pk: 4
+  fields:
+    hole: 4
+    color: blue
+    distance: '162'
+- model: dashboard.tee
+  pk: 5
+  fields:
+    hole: 5
+    color: blue
+    distance: '351'
+- model: dashboard.tee
+  pk: 6
+  fields:
+    hole: 6
+    color: blue
+    distance: '343'
+- model: dashboard.tee
+  pk: 7
+  fields:
+    hole: 7
+    color: blue
+    distance: '425'
+- model: dashboard.tee
+  pk: 8
+  fields:
+    hole: 8
+    color: blue
+    distance: '175'
+- model: dashboard.tee
+  pk: 9
+  fields:
+    hole: 9
+    color: blue
+    distance: '427'
+- model: dashboard.tee
+  pk: 10
+  fields:
+    hole: 10
+    color: blue
+    distance: '479'
+- model: dashboard.tee
+  pk: 11
+  fields:
+    hole: 11
+    color: blue
+    distance: '400'
+- model: dashboard.tee
+  pk: 12
+  fields:
+    hole: 12
+    color: blue
+    distance: '167'
+- model: dashboard.tee
+  pk: 13
+  fields:
+    hole: 13
+    color: blue
+    distance: '379'
+- model: dashboard.tee
+  pk: 14
+  fields:
+    hole: 14
+    color: blue
+    distance: '410'
+- model: dashboard.tee
+  pk: 15
+  fields:
+    hole: 15
+    color: blue
+    distance: '429'
+- model: dashboard.tee
+  pk: 16
+  fields:
+    hole: 16
+    color: blue
+    distance: '325'
+- model: dashboard.tee
+  pk: 17
+  fields:
+    hole: 17
+    color: blue
+    distance: '120'
+- model: dashboard.tee
+  pk: 18
+  fields:
+    hole: 18
+    color: blue
+    distance: '483'
+- model: dashboard.tee
+  pk: 19
+  fields:
+    hole: 1
+    color: black
+    distance: '390'
+- model: dashboard.tee
+  pk: 20
+  fields:
+    hole: 1
+    color: gold
+    distance: '334'
+- model: dashboard.tee
+  pk: 21
+  fields:
+    hole: 1
+    color: white
+    distance: '304'
+- model: dashboard.tee
+  pk: 22
+  fields:
+    hole: 1
+    color: red
+    distance: '282'
+- model: dashboard.tee
+  pk: 23
+  fields:
+    hole: 2
+    color: black
+    distance: '561'
+- model: dashboard.tee
+  pk: 24
+  fields:
+    hole: 2
+    color: gold
+    distance: '531'
+- model: dashboard.tee
+  pk: 25
+  fields:
+    hole: 2
+    color: white
+    distance: '485'
+- model: dashboard.tee
+  pk: 26
+  fields:
+    hole: 2
+    color: red
+    distance: '440'
+- model: dashboard.tee
+  pk: 27
+  fields:
+    hole: 3
+    color: black
+    distance: '329'
+- model: dashboard.tee
+  pk: 28
+  fields:
+    hole: 3
+    color: gold
+    distance: '296'
+- model: dashboard.tee
+  pk: 29
+  fields:
+    hole: 3
+    color: white
+    distance: '289'
+- model: dashboard.tee
+  pk: 30
+  fields:
+    hole: 3
+    color: red
+    distance: '265'
+- model: dashboard.tee
+  pk: 31
+  fields:
+    hole: 4
+    color: black
+    distance: '181'
+- model: dashboard.tee
+  pk: 32
+  fields:
+    hole: 4
+    color: gold
+    distance: '150'
+- model: dashboard.tee
+  pk: 33
+  fields:
+    hole: 4
+    color: white
+    distance: '140'
+- model: dashboard.tee
+  pk: 34
+  fields:
+    hole: 4
+    color: red
+    distance: '111'
+- model: dashboard.player
+  pk: 1
+  fields:
+    name: Ricky Laney
+    handicap: '9.3'
+    photo: images/neteng_logo.png
+    user_account: 1
+    added_by: 1
+- model: dashboard.player
+  pk: 2
+  fields:
+    name: Dan Lewis
+    handicap: '8.8'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 3
+  fields:
+    name: Steven Mounce
+    handicap: '7.9'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 4
+  fields:
+    name: Flint McDonald
+    handicap: '9.2'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 5
+  fields:
+    name: Austin Patterson
+    handicap: '16.1'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 6
+  fields:
+    name: Kyle West
+    handicap: '7.1'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 7
+  fields:
+    name: Cody McSwain
+    handicap: '12.3'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 8
+  fields:
+    name: Chris Barbee
+    handicap: '5.9'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 9
+  fields:
+    name: Darren McCraw
+    handicap: '7.0'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 10
+  fields:
+    name: Jeremy Valler
+    handicap: '4.6'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: dashboard.player
+  pk: 11
+  fields:
+    name: Bill Haywood
+    handicap: '9.9'
+    photo: ''
+    user_account: null
+    added_by: 1
+- model: users.customuser
+  pk: 1
+  fields:
+    password: pbkdf2_sha256$600000$u6MTRPIp69nRovrQ413fad$iK7BoVye7oWgsCkmwSsWKd2iOD8CPTnwc37J1BHLGJo=
+    last_login: 2023-11-16 01:23:43.052297+00:00
+    is_superuser: true
+    username: rlaney
+    first_name: Ricky
+    last_name: Laney
+    email: rlaneyjr@gmail.com
+    is_staff: true
+    is_active: true
+    date_joined: 2023-11-13 02:55:00.145388+00:00
+    user_type: SUPERUSER
+    groups: []
+    user_permissions: []
+- model: contenttypes.contenttype
+  pk: 1
+  fields:
+    app_label: admin
+    model: logentry
+- model: contenttypes.contenttype
+  pk: 2
+  fields:
+    app_label: auth
+    model: permission
+- model: contenttypes.contenttype
+  pk: 3
+  fields:
+    app_label: auth
+    model: group
+- model: contenttypes.contenttype
+  pk: 4
+  fields:
+    app_label: contenttypes
+    model: contenttype
+- model: contenttypes.contenttype
+  pk: 5
+  fields:
+    app_label: sessions
+    model: session
+- model: contenttypes.contenttype
+  pk: 6
+  fields:
+    app_label: sites
+    model: site
+- model: contenttypes.contenttype
+  pk: 7
+  fields:
+    app_label: account
+    model: emailaddress
+- model: contenttypes.contenttype
+  pk: 8
+  fields:
+    app_label: account
+    model: emailconfirmation
+- model: contenttypes.contenttype
+  pk: 9
+  fields:
+    app_label: socialaccount
+    model: socialaccount
+- model: contenttypes.contenttype
+  pk: 10
+  fields:
+    app_label: socialaccount
+    model: socialapp
+- model: contenttypes.contenttype
+  pk: 11
+  fields:
+    app_label: socialaccount
+    model: socialtoken
+- model: contenttypes.contenttype
+  pk: 12
+  fields:
+    app_label: authtoken
+    model: token
+- model: contenttypes.contenttype
+  pk: 13
+  fields:
+    app_label: authtoken
+    model: tokenproxy
+- model: contenttypes.contenttype
+  pk: 14
+  fields:
+    app_label: dashboard
+    model: game
+- model: contenttypes.contenttype
+  pk: 15
+  fields:
+    app_label: dashboard
+    model: golfcourse
+- model: contenttypes.contenttype
+  pk: 16
+  fields:
+    app_label: dashboard
+    model: hole
+- model: contenttypes.contenttype
+  pk: 17
+  fields:
+    app_label: dashboard
+    model: holescore
+- model: contenttypes.contenttype
+  pk: 18
+  fields:
+    app_label: dashboard
+    model: player
+- model: contenttypes.contenttype
+  pk: 19
+  fields:
+    app_label: dashboard
+    model: teetime
+- model: contenttypes.contenttype
+  pk: 20
+  fields:
+    app_label: dashboard
+    model: tee
+- model: contenttypes.contenttype
+  pk: 21
+  fields:
+    app_label: dashboard
+    model: playergamelink
+- model: contenttypes.contenttype
+  pk: 22
+  fields:
+    app_label: users
+    model: customuser
+- model: contenttypes.contenttype
+  pk: 23
+  fields:
+    app_label: dashboard
+    model: team
+- model: auth.permission
+  pk: 1
+  fields:
+    name: Can add log entry
+    content_type: 1
+    codename: add_logentry
+- model: auth.permission
+  pk: 2
+  fields:
+    name: Can change log entry
+    content_type: 1
+    codename: change_logentry
+- model: auth.permission
+  pk: 3
+  fields:
+    name: Can delete log entry
+    content_type: 1
+    codename: delete_logentry
+- model: auth.permission
+  pk: 4
+  fields:
+    name: Can view log entry
+    content_type: 1
+    codename: view_logentry
+- model: auth.permission
+  pk: 5
+  fields:
+    name: Can add permission
+    content_type: 2
+    codename: add_permission
+- model: auth.permission
+  pk: 6
+  fields:
+    name: Can change permission
+    content_type: 2
+    codename: change_permission
+- model: auth.permission
+  pk: 7
+  fields:
+    name: Can delete permission
+    content_type: 2
+    codename: delete_permission
+- model: auth.permission
+  pk: 8
+  fields:
+    name: Can view permission
+    content_type: 2
+    codename: view_permission
+- model: auth.permission
+  pk: 9
+  fields:
+    name: Can add group
+    content_type: 3
+    codename: add_group
+- model: auth.permission
+  pk: 10
+  fields:
+    name: Can change group
+    content_type: 3
+    codename: change_group
+- model: auth.permission
+  pk: 11
+  fields:
+    name: Can delete group
+    content_type: 3
+    codename: delete_group
+- model: auth.permission
+  pk: 12
+  fields:
+    name: Can view group
+    content_type: 3
+    codename: view_group
+- model: auth.permission
+  pk: 13
+  fields:
+    name: Can add content type
+    content_type: 4
+    codename: add_contenttype
+- model: auth.permission
+  pk: 14
+  fields:
+    name: Can change content type
+    content_type: 4
+    codename: change_contenttype
+- model: auth.permission
+  pk: 15
+  fields:
+    name: Can delete content type
+    content_type: 4
+    codename: delete_contenttype
+- model: auth.permission
+  pk: 16
+  fields:
+    name: Can view content type
+    content_type: 4
+    codename: view_contenttype
+- model: auth.permission
+  pk: 17
+  fields:
+    name: Can add session
+    content_type: 5
+    codename: add_session
+- model: auth.permission
+  pk: 18
+  fields:
+    name: Can change session
+    content_type: 5
+    codename: change_session
+- model: auth.permission
+  pk: 19
+  fields:
+    name: Can delete session
+    content_type: 5
+    codename: delete_session
+- model: auth.permission
+  pk: 20
+  fields:
+    name: Can view session
+    content_type: 5
+    codename: view_session
+- model: auth.permission
+  pk: 21
+  fields:
+    name: Can add site
+    content_type: 6
+    codename: add_site
+- model: auth.permission
+  pk: 22
+  fields:
+    name: Can change site
+    content_type: 6
+    codename: change_site
+- model: auth.permission
+  pk: 23
+  fields:
+    name: Can delete site
+    content_type: 6
+    codename: delete_site
+- model: auth.permission
+  pk: 24
+  fields:
+    name: Can view site
+    content_type: 6
+    codename: view_site
+- model: auth.permission
+  pk: 25
+  fields:
+    name: Can add email address
+    content_type: 7
+    codename: add_emailaddress
+- model: auth.permission
+  pk: 26
+  fields:
+    name: Can change email address
+    content_type: 7
+    codename: change_emailaddress
+- model: auth.permission
+  pk: 27
+  fields:
+    name: Can delete email address
+    content_type: 7
+    codename: delete_emailaddress
+- model: auth.permission
+  pk: 28
+  fields:
+    name: Can view email address
+    content_type: 7
+    codename: view_emailaddress
+- model: auth.permission
+  pk: 29
+  fields:
+    name: Can add email confirmation
+    content_type: 8
+    codename: add_emailconfirmation
+- model: auth.permission
+  pk: 30
+  fields:
+    name: Can change email confirmation
+    content_type: 8
+    codename: change_emailconfirmation
+- model: auth.permission
+  pk: 31
+  fields:
+    name: Can delete email confirmation
+    content_type: 8
+    codename: delete_emailconfirmation
+- model: auth.permission
+  pk: 32
+  fields:
+    name: Can view email confirmation
+    content_type: 8
+    codename: view_emailconfirmation
+- model: auth.permission
+  pk: 33
+  fields:
+    name: Can add social account
+    content_type: 9
+    codename: add_socialaccount
+- model: auth.permission
+  pk: 34
+  fields:
+    name: Can change social account
+    content_type: 9
+    codename: change_socialaccount
+- model: auth.permission
+  pk: 35
+  fields:
+    name: Can delete social account
+    content_type: 9
+    codename: delete_socialaccount
+- model: auth.permission
+  pk: 36
+  fields:
+    name: Can view social account
+    content_type: 9
+    codename: view_socialaccount
+- model: auth.permission
+  pk: 37
+  fields:
+    name: Can add social application
+    content_type: 10
+    codename: add_socialapp
+- model: auth.permission
+  pk: 38
+  fields:
+    name: Can change social application
+    content_type: 10
+    codename: change_socialapp
+- model: auth.permission
+  pk: 39
+  fields:
+    name: Can delete social application
+    content_type: 10
+    codename: delete_socialapp
+- model: auth.permission
+  pk: 40
+  fields:
+    name: Can view social application
+    content_type: 10
+    codename: view_socialapp
+- model: auth.permission
+  pk: 41
+  fields:
+    name: Can add social application token
+    content_type: 11
+    codename: add_socialtoken
+- model: auth.permission
+  pk: 42
+  fields:
+    name: Can change social application token
+    content_type: 11
+    codename: change_socialtoken
+- model: auth.permission
+  pk: 43
+  fields:
+    name: Can delete social application token
+    content_type: 11
+    codename: delete_socialtoken
+- model: auth.permission
+  pk: 44
+  fields:
+    name: Can view social application token
+    content_type: 11
+    codename: view_socialtoken
+- model: auth.permission
+  pk: 45
+  fields:
+    name: Can add Token
+    content_type: 12
+    codename: add_token
+- model: auth.permission
+  pk: 46
+  fields:
+    name: Can change Token
+    content_type: 12
+    codename: change_token
+- model: auth.permission
+  pk: 47
+  fields:
+    name: Can delete Token
+    content_type: 12
+    codename: delete_token
+- model: auth.permission
+  pk: 48
+  fields:
+    name: Can view Token
+    content_type: 12
+    codename: view_token
+- model: auth.permission
+  pk: 49
+  fields:
+    name: Can add token
+    content_type: 13
+    codename: add_tokenproxy
+- model: auth.permission
+  pk: 50
+  fields:
+    name: Can change token
+    content_type: 13
+    codename: change_tokenproxy
+- model: auth.permission
+  pk: 51
+  fields:
+    name: Can delete token
+    content_type: 13
+    codename: delete_tokenproxy
+- model: auth.permission
+  pk: 52
+  fields:
+    name: Can view token
+    content_type: 13
+    codename: view_tokenproxy
+- model: auth.permission
+  pk: 53
+  fields:
+    name: Can add game
+    content_type: 14
+    codename: add_game
+- model: auth.permission
+  pk: 54
+  fields:
+    name: Can change game
+    content_type: 14
+    codename: change_game
+- model: auth.permission
+  pk: 55
+  fields:
+    name: Can delete game
+    content_type: 14
+    codename: delete_game
+- model: auth.permission
+  pk: 56
+  fields:
+    name: Can view game
+    content_type: 14
+    codename: view_game
+- model: auth.permission
+  pk: 57
+  fields:
+    name: Can add golf course
+    content_type: 15
+    codename: add_golfcourse
+- model: auth.permission
+  pk: 58
+  fields:
+    name: Can change golf course
+    content_type: 15
+    codename: change_golfcourse
+- model: auth.permission
+  pk: 59
+  fields:
+    name: Can delete golf course
+    content_type: 15
+    codename: delete_golfcourse
+- model: auth.permission
+  pk: 60
+  fields:
+    name: Can view golf course
+    content_type: 15
+    codename: view_golfcourse
+- model: auth.permission
+  pk: 61
+  fields:
+    name: Can add hole
+    content_type: 16
+    codename: add_hole
+- model: auth.permission
+  pk: 62
+  fields:
+    name: Can change hole
+    content_type: 16
+    codename: change_hole
+- model: auth.permission
+  pk: 63
+  fields:
+    name: Can delete hole
+    content_type: 16
+    codename: delete_hole
+- model: auth.permission
+  pk: 64
+  fields:
+    name: Can view hole
+    content_type: 16
+    codename: view_hole
+- model: auth.permission
+  pk: 65
+  fields:
+    name: Can add hole score
+    content_type: 17
+    codename: add_holescore
+- model: auth.permission
+  pk: 66
+  fields:
+    name: Can change hole score
+    content_type: 17
+    codename: change_holescore
+- model: auth.permission
+  pk: 67
+  fields:
+    name: Can delete hole score
+    content_type: 17
+    codename: delete_holescore
+- model: auth.permission
+  pk: 68
+  fields:
+    name: Can view hole score
+    content_type: 17
+    codename: view_holescore
+- model: auth.permission
+  pk: 69
+  fields:
+    name: Can add player
+    content_type: 18
+    codename: add_player
+- model: auth.permission
+  pk: 70
+  fields:
+    name: Can change player
+    content_type: 18
+    codename: change_player
+- model: auth.permission
+  pk: 71
+  fields:
+    name: Can delete player
+    content_type: 18
+    codename: delete_player
+- model: auth.permission
+  pk: 72
+  fields:
+    name: Can view player
+    content_type: 18
+    codename: view_player
+- model: auth.permission
+  pk: 73
+  fields:
+    name: Can add tee time
+    content_type: 19
+    codename: add_teetime
+- model: auth.permission
+  pk: 74
+  fields:
+    name: Can change tee time
+    content_type: 19
+    codename: change_teetime
+- model: auth.permission
+  pk: 75
+  fields:
+    name: Can delete tee time
+    content_type: 19
+    codename: delete_teetime
+- model: auth.permission
+  pk: 76
+  fields:
+    name: Can view tee time
+    content_type: 19
+    codename: view_teetime
+- model: auth.permission
+  pk: 77
+  fields:
+    name: Can add tee
+    content_type: 20
+    codename: add_tee
+- model: auth.permission
+  pk: 78
+  fields:
+    name: Can change tee
+    content_type: 20
+    codename: change_tee
+- model: auth.permission
+  pk: 79
+  fields:
+    name: Can delete tee
+    content_type: 20
+    codename: delete_tee
+- model: auth.permission
+  pk: 80
+  fields:
+    name: Can view tee
+    content_type: 20
+    codename: view_tee
+- model: auth.permission
+  pk: 81
+  fields:
+    name: Can add player game link
+    content_type: 21
+    codename: add_playergamelink
+- model: auth.permission
+  pk: 82
+  fields:
+    name: Can change player game link
+    content_type: 21
+    codename: change_playergamelink
+- model: auth.permission
+  pk: 83
+  fields:
+    name: Can delete player game link
+    content_type: 21
+    codename: delete_playergamelink
+- model: auth.permission
+  pk: 84
+  fields:
+    name: Can view player game link
+    content_type: 21
+    codename: view_playergamelink
+- model: auth.permission
+  pk: 85
+  fields:
+    name: Can add user
+    content_type: 22
+    codename: add_customuser
+- model: auth.permission
+  pk: 86
+  fields:
+    name: Can change user
+    content_type: 22
+    codename: change_customuser
+- model: auth.permission
+  pk: 87
+  fields:
+    name: Can delete user
+    content_type: 22
+    codename: delete_customuser
+- model: auth.permission
+  pk: 88
+  fields:
+    name: Can view user
+    content_type: 22
+    codename: view_customuser
+- model: auth.permission
+  pk: 89
+  fields:
+    name: Can add team
+    content_type: 23
+    codename: add_team
+- model: auth.permission
+  pk: 90
+  fields:
+    name: Can change team
+    content_type: 23
+    codename: change_team
+- model: auth.permission
+  pk: 91
+  fields:
+    name: Can delete team
+    content_type: 23
+    codename: delete_team
+- model: auth.permission
+  pk: 92
+  fields:
+    name: Can view team
+    content_type: 23
+    codename: view_team

@@ -1,0 +1,32 @@
+<div id="holes" class="col-6" hx-confirm="Are you sure you want to delete this hole?" hx-target="#holes" hx-swap="outerHTML">
+  <div class="card">
+    <div class="card-header fw-bold">
+      Holes
+    </div>
+    <div class="card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>&nbsp;</th>
+            <th>Name</th>
+            <th>Par</th>
+            <th>&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody class="align-middle">
+          {% for hole in hole_list %}
+          <tr>
+            <td><a href="{% url 'dashboard:hole_detail' hole.id %}" class="btn btn-primary btn-sm">View</a>
+              <td>{{hole.name}}</td>
+              <td>{{hole.par}}</td>
+              <td><a hx-delete="{% url 'dashboard:delete_hole' hole.id %}" class="btn btn-danger btn-sm">Delete</a>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer">
+      <a href="{% url 'dashboard:create_hole' course_data.id %}" class="btn btn-primary btn-sm">Create Hole</a>
+    </div>
+  </div>
+</div>

@@ -35,8 +35,16 @@ def view_my_games(request):
 
 @login_required
 def my_profile(request):
+    player_data = models.Player.objects.filter(user_account=request.user).first()
     game_count = models.Game.objects.filter(players__in=[request.user.player]).count()
-    return render(request, "dashboard/profile.html", {"game_count": game_count})
+    return render(
+        request,
+        "dashboard/profile.html",
+        {
+            "player_data": player_data,
+            "game_count": game_count,
+        },
+    )
 
 
 @login_required
@@ -76,7 +84,7 @@ def course_list(request):
 )
 def create_course(request):
     if request.method == "POST":
-        form = forms.GolfCourseForm(request.POST)
+        form = forms.GolfCourseForm(request.POST, request.FILES)
         if form.is_valid():
             course = form.save()
             utils.create_holes_for_course(course)
@@ -95,7 +103,7 @@ def create_course(request):
 def edit_course(request, pk):
     course_data = get_object_or_404(models.GolfCourse, pk=pk)
     if request.method == "POST":
-        form = forms.EditGolfCourseForm(request.POST, instance=course_data)
+        form = forms.EditGolfCourseForm(request.POST, request.FILES, instance=course_data)
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.INFO, "Course updated.")
@@ -213,6 +221,24 @@ def game_list(request):
     login_url="/dashboard/no-permission/",
     redirect_field_name=None
 )
+def create_game(request):
+    if request.method == "POST":
+        form = forms.GameForm(request.POST)
+        if form.is_valid():
+            game = form.save(commit=False)
+            game.date_played = timezone.now()
+            game.save()
+            return redirect("dashboard:game_detail", game.id)
+    form = forms.GameForm()
+    return render(request, "dashboard/create-game.html", {"form": form})
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/dashboard/no-permission/",
+    redirect_field_name=None
+)
 def game_detail(request, pk):
     game_data = get_object_or_404(models.Game, pk=pk)
     current_player_count = game_data.players.count()
@@ -227,17 +253,20 @@ def game_detail(request, pk):
     for player in game_data.players.all():
         hole_data[player.id] = {
             "player_name": player.name,
+            "team": None,
             "hole_list": [],
             "total_score": 0,
             "par": 0,
         }
-        player_game_link = models.PlayerGameLink.objects.filter(
+        player_game_link = models.PlayerMembership.objects.filter(
             game=game_data, player=player
         ).first()
-        hole_score_list = models.HoleScore.objects.filter(game=player_game_link)
+        if player_game_link.team:
+            hole_data[player.id]["team"] = player_game_link.team.name
+        hole_score_list = models.HoleScore.objects.filter(player=player_game_link)
 
         if filter_scores == "true":
-            filtered_scores = models.HoleScore.objects.filter(game=player_game_link, score__gt=0)
+            filtered_scores = models.HoleScore.objects.filter(player=player_game_link, score__gt=0)
             all_scores.extend(filtered_scores)
         else:
             all_scores.extend(hole_score_list)
@@ -247,7 +276,7 @@ def game_detail(request, pk):
                 {
                     "hole_score_id": hole_item.id,
                     "hole_score": hole_item.score,
-                    "hole_name": hole_item.name,
+                    "hole_name": hole_item.hole.name,
                     "hole_par": hole_item.hole.par,
                     "hole_handicap": hole_item.hole.handicap,
                 }
@@ -310,7 +339,7 @@ def player_detail(request, pk):
 )
 def create_player(request):
     if request.method == "POST":
-        form = forms.PlayerForm(request.POST)
+        form = forms.PlayerForm(request.POST, request.FILES)
         if form.is_valid():
             item = form.save(commit=False)
             item.added_by = request.user
@@ -331,32 +360,14 @@ def create_player(request):
 def edit_player(request, pk):
     player_data = get_object_or_404(models.Player, pk=pk)
     if request.method == "POST":
-        form = forms.PlayerForm(request.POST, instance=player_data)
+        form = forms.EditPlayerForm(request.POST, request.FILES, instance=player_data)
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.INFO, "Player Saved.")
             return redirect("dashboard:player_detail", pk)
     else:
-        form = forms.PlayerForm(instance=player_data)
-    return render(request, "dashboard/create-player.html", {"form": form})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def create_game(request):
-    if request.method == "POST":
-        form = forms.GameForm(request.POST)
-        if form.is_valid():
-            game = form.save(commit=False)
-            game.date_played = timezone.now()
-            game.save()
-            return redirect("dashboard:game_detail", game.id)
-    form = forms.GameForm()
-    return render(request, "dashboard/create-game.html", {"form": form})
+        form = forms.EditPlayerForm(instance=player_data)
+    return render(request, "dashboard/edit-player.html", {"form": form})
 
 
 @login_required
@@ -426,3 +437,37 @@ def create_hole(request, pk):
         "dashboard/create-hole.html",
         {"form": form, "course_data": course_data},
     )
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/dashboard/no-permission/",
+    redirect_field_name=None
+)
+def hole_score_detail(request, pk):
+    hole_score_data = get_object_or_404(models.HoleScore, pk=pk)
+    return render(
+        request,
+        "dashboard/hole-score-detail.html",
+        {"hole_score_data": hole_score_data},
+    )
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/dashboard/no-permission/",
+    redirect_field_name=None
+)
+def edit_hole_score(request, pk):
+    hole_score_data = get_object_or_404(models.HoleScore, pk=pk)
+    if request.method == "POST":
+        form = forms.EditHoleScoreForm(request.POST, instance=hole_score_data)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, "Hole score updated.")
+            return redirect("dashboard:hole_score_detail", pk)
+    form = forms.EditHoleScoreForm(instance=hole_score_data)
+    return render(request, "dashboard/edit-hole-score.html",
+                  {"form": form, "hole_data": hole_data})

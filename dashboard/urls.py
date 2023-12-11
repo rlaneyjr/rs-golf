@@ -29,6 +29,8 @@ urlpatterns =  [
     path("players/<int:pk>/", views.player_detail, name="player_detail"),
     path("players/add/", views.create_player, name="create_player"),
     path("players/<int:pk>/edit/", views.edit_player, name="edit_player"),
+    path("holescores/<int:pk>/", views.hole_score_detail, name="hole_score_detail"),
+    path("holescores/<int:pk>/edit/", views.edit_hole_score, name="edit_hole_score"),
     path("tee-times/", views.tee_time_list, name="tee_times"),
     path("tee-times/add/", views.create_tee_time, name="create_tee_time"),
     path("tee-times/<int:pk>/", views.tee_time_detail, name="tee_time_detail"),
@@ -46,6 +48,11 @@ urlpatterns =  [
     ),
     path(
         "ajax/edit-hole/", views.ajax_edit_hole, name="ajax_edit_hole"
+    ),
+    path(
+        "ajax/edit-hole-score/",
+        views.ajax_edit_hole_score,
+        name="ajax_edit_hole_score"
     ),
     path("ajax/manage-tee-time/", views.ajax_manage_tee_time, name="ajax-manage-tee-time"),
     path("ajax/delete-hole-score/", views.ajax_delete_hole_score, name="ajax-delete-hole-score"),

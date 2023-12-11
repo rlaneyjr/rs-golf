@@ -1,5 +1,5 @@
 from django import forms
-from .models import GolfCourse, Tee, Team, Player, Game, Hole, TeeTime
+from .models import GolfCourse, Tee, Team, Player, Game, Hole, HoleScore, TeeTime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit
 
@@ -96,21 +96,23 @@ class TeeForm(forms.ModelForm):
         fields = ["color", "distance"]
 
 
-class TeamForm(forms.ModelForm):
+class EditTeamForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new Team",
-                "game",
+                "Edit Team",
+                "name",
+                "players",
+                "handicap",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
 
     class Meta:
         model = Team
-        fields = ["game"]
+        exclude = ["game"]
 
 
 class PlayerForm(forms.ModelForm):
@@ -133,6 +135,26 @@ class PlayerForm(forms.ModelForm):
         exclude = ["added_by"]
 
 
+class EditPlayerForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Edit Player",
+                "name",
+                "handicap",
+                "photo",
+                "user_account",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
+    class Meta:
+        model = Player
+        exclude = ["added_by"]
+
+
 class GameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -140,7 +162,6 @@ class GameForm(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 "Create a new Game",
-                "game_type",
                 "course",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
@@ -148,7 +169,7 @@ class GameForm(forms.ModelForm):
 
     class Meta:
         model = Game
-        fields = ["game_type", "course"]
+        fields = ["course"]
 
 
 class HoleForm(forms.ModelForm):
@@ -201,6 +222,23 @@ class EditHoleForm(forms.ModelForm):
             "par",
             "handicap",
         ]
+
+
+class EditHoleScoreForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Edit Hole Score",
+                "score",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
+    class Meta:
+        model = HoleScore
+        fields = ["score"]
 
 
 class TeeTimeForm(forms.ModelForm):

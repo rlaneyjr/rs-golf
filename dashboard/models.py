@@ -57,24 +57,24 @@ class OrderChoices(models.IntegerChoices):
 
 
 class HoleNameChoices(models.TextChoices):
-    HOLE_1 = "Hole 1", _("Hole 1")
-    HOLE_2 = "Hole 2", _("Hole 2")
-    HOLE_3 = "Hole 3", _("Hole 3")
-    HOLE_4 = "Hole 4", _("Hole 4")
-    HOLE_5 = "Hole 5", _("Hole 5")
-    HOLE_6 = "Hole 6", _("Hole 6")
-    HOLE_7 = "Hole 7", _("Hole 7")
-    HOLE_8 = "Hole 8", _("Hole 8")
-    HOLE_9 = "Hole 9", _("Hole 9")
-    HOLE_10 = "Hole 10", _("Hole 10")
-    HOLE_11 = "Hole 11", _("Hole 11")
-    HOLE_12 = "Hole 12", _("Hole 12")
-    HOLE_13 = "Hole 13", _("Hole 13")
-    HOLE_14 = "Hole 14", _("Hole 14")
-    HOLE_15 = "Hole 15", _("Hole 15")
-    HOLE_16 = "Hole 16", _("Hole 16")
-    HOLE_17 = "Hole 17", _("Hole 17")
-    HOLE_18 = "Hole 18", _("Hole 18")
+    HOLE_1 = "Hole1", _("Hole 1")
+    HOLE_2 = "Hole2", _("Hole 2")
+    HOLE_3 = "Hole3", _("Hole 3")
+    HOLE_4 = "Hole4", _("Hole 4")
+    HOLE_5 = "Hole5", _("Hole 5")
+    HOLE_6 = "Hole6", _("Hole 6")
+    HOLE_7 = "Hole7", _("Hole 7")
+    HOLE_8 = "Hole8", _("Hole 8")
+    HOLE_9 = "Hole9", _("Hole 9")
+    HOLE_10 = "Hole10", _("Hole 10")
+    HOLE_11 = "Hole11", _("Hole 11")
+    HOLE_12 = "Hole12", _("Hole 12")
+    HOLE_13 = "Hole13", _("Hole 13")
+    HOLE_14 = "Hole14", _("Hole 14")
+    HOLE_15 = "Hole15", _("Hole 15")
+    HOLE_16 = "Hole16", _("Hole 16")
+    HOLE_17 = "Hole17", _("Hole 17")
+    HOLE_18 = "Hole18", _("Hole 18")
 
 
 class ScoreChoices(models.IntegerChoices):
@@ -159,7 +159,9 @@ class Game(models.Model):
     game_type = models.CharField(
         max_length=32,
         choices=GameTypeChoices.choices,
-        default=GameTypeChoices.STROKE
+        default=None,
+        blank=True,
+        null=True,
     )
     date_played = models.DateTimeField(blank=True, null=True)
     course = models.ForeignKey(GolfCourse, on_delete=models.PROTECT)
@@ -177,33 +179,45 @@ class Game(models.Model):
         default=GameStatusChoices.SETUP,
     )
     players = models.ManyToManyField(
-        "Player", through="PlayerGameLink", through_fields=("game", "player")
+        "Player", through="PlayerMembership", through_fields=("game", "player")
     )
 
-    def __str__(self):
-        return f"{self.course.initials} - {self.date_played} - {self.status}"
+    class Meta:
+        ordering = ["date_played", "status"]
+        verbose_name_plural = "games"
 
     def start(self, holes_to_play=None, game_type=None):
-        if holes_to_play != None and self.course.hole_count == 18:
-            if holes_to_play == "all":
-                self.which_holes = WhichHolesChoices.ALL
-                self.holes_played = HolesToPlayChoices.HOLES_18
-            elif holes_to_play == "front":
+        # if not any([game_type, self.game_type]):
+        #     raise ValidationError("You must provide a game type")
+        utils.create_teams_for_game(self)
+        if self.course.hole_count == 18:
+            if holes_to_play == "front":
                 self.which_holes = WhichHolesChoices.FRONT
                 self.holes_played = HolesToPlayChoices.HOLES_9
             elif holes_to_play == "back":
                 self.which_holes = WhichHolesChoices.BACK
                 self.holes_played = HolesToPlayChoices.HOLES_9
+            else:
+                self.which_holes = WhichHolesChoices.ALL
+                self.holes_played = HolesToPlayChoices.HOLES_18
         else:
             self.which_holes = WhichHolesChoices.ALL
-            self.holes_played = self.course.hole_count
-        if game_type:
-            self.game_type = game_type
+            self.holes_played = HolesToPlayChoices.HOLES_9
+        if game_type == "best-ball":
+            self.game_type = GameTypeChoices.BEST_BALL
+        elif game_type == "stroke-skins":
+            self.game_type = GameTypeChoices.STROKE_SKINS
+        elif game_type == "skins":
+            self.game_type = GameTypeChoices.SKINS
+        else:
+            self.game_type = GameTypeChoices.STROKE
         self.status = GameStatusChoices.ACTIVE
         if not self.date_played:
             self.date_played = timezone.now()
-        utils.create_teams_for_game(self)
         self.save()
+
+    def __str__(self):
+        return f"{self.course.initials} - {self.date_played} - {self.status}"
 
 
 class Player(models.Model):
@@ -224,46 +238,61 @@ class Player(models.Model):
     class Meta:
         unique_together = ["name", "handicap", "user_account"]
 
+    @property
+    def first_name(self):
+        return self.name.split()[0]
+
+    @property
+    def last_name(self):
+        return self.name.split()[1]
+
     def __str__(self):
-        return f"{self.name} - {self.handicap}"
-
-
-class PlayerGameLink(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+        return f"{self.name}"
 
 
 class Team(models.Model):
     name = models.CharField(max_length=64)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     players = models.ManyToManyField(
-        "Player", through="TeamMembership", through_fields=("team", "player")
+        "Player", through="PlayerMembership", through_fields=("team", "player")
     )
     handicap = models.DecimalField(
         max_digits=3, decimal_places=1, default=20.0
     )
 
     class Meta:
-        ordering = ["handicap"]
+        ordering = ["game", "name", "handicap"]
         verbose_name_plural = "teams"
 
     def __str__(self):
-        return self.name
+        return f"{self.game} - {self.name}"
 
 
-class TeamMembership(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+class PlayerMembership(models.Model):
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.SET_DEFAULT,
+        default=None,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        if self.team:
+            return f"{self.game} - {self.player} - {self.team.name}"
+        else:
+            return f"{self.game} - {self.player}"
 
 
 class HoleScore(models.Model):
-    game = models.ForeignKey(PlayerGameLink, on_delete=models.CASCADE)
-    # team = models.ForeignKey(TeamMembership, default=None, null=True, on_delete=models.SET_NULL)
+    player = models.ForeignKey(PlayerMembership, on_delete=models.CASCADE)
     hole = models.ForeignKey(Hole, on_delete=models.CASCADE)
     score = models.PositiveSmallIntegerField(choices=ScoreChoices.choices, default=ScoreChoices._0)
 
     def __str__(self):
-        return f"{self.hole} - {self.score - self.hole.par}"
+        return f"{self.player} - {self.hole} - {self.score}"
 
 
 class TeeTime(models.Model):

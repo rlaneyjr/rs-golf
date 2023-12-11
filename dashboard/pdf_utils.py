@@ -70,7 +70,7 @@ def generate_score_data(game):
     for header in headers:
         data.append(header)
 
-    player_link_list = models.PlayerGameLink.objects.filter(game=game)
+    player_link_list = models.PlayerMembership.objects.filter(game=game)
 
     for player_link in player_link_list:
         player_row = []

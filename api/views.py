@@ -100,9 +100,10 @@ class GameViewSet(viewsets.ModelViewSet):
     def start_game(self, request, pk=None):
         queryset = models.Game.objects.all()
         game = get_object_or_404(queryset, pk=pk)
-        game.start()
+        game_type = request.data.get("game_type")
         holes_to_play = request.data.get("holes_to_play")
-        utils.create_hole_scores_for_game(game, holes_to_play)
+        game.start(game_type=game_type, holes_to_play=holes_to_play)
+        utils.create_hole_scores_for_game(game)
 
         serializer = serializers.GameSerializer(game, many=False)
         return Response(serializer.data)

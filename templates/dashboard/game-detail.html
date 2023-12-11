@@ -136,26 +136,35 @@
               {% for hole_num in hole_list %}
               <th>{{hole_num}}</th>
               {% endfor %}
-              <th>Skin</th>
               <th>Score</th>
             </tr>
           </thead>
           <tbody>
             {% for team_id, team_score in team_data.items %}
             <tr class="team-row" data-row-team-id="{{team_id}}">
-              <td>{{team_score.team_name}}</td>
+              <td>{{team_score.name}}</td>
               {% for hole_item in team_score.hole_list %}
-                {% if game_data.status == "active" %}
-                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{hole_item.hole_id}}" value={{hole_item.hole_score}} /></td>
-                {% else %}
                 <td>{{hole_item.hole_score}}</td>
-                {% endif %}
-                <td>{{hole_item.skin}}</td>
               {% endfor %}
               <td>{{team_score.team_score}}</td>
             </tr>
             {% endfor %}
           </tbody>
+          <tfoot>
+            {% for team_id, team_score in team_data.items %}
+            <tr>
+              <td>Skins</td>
+              <!-- <td>&#38;nbsp;</td> -->
+              {% for hole_item in team_score.hole_list %}
+                {% if hole_item.skin %}
+                <td>{{hole_item.player_name}}</td>
+                {% else %}
+                <td>&nbsp;</td>
+                {% endif %}
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tfoot>
         </table>
       </div>
     </div>
@@ -174,6 +183,7 @@
           <thead>
             <tr>
               <th>Player</th>
+              <th>Team</th>
               <th>Hole #</th>
               <th>Par</th>
               <th>Handicap</th>
@@ -184,7 +194,8 @@
             {% for score in all_scores %}
             <tr>
               
-              <td>{{score.game.player.name}}</td>
+              <td>{{score.player.player.name}}</td>
+              <td>{{score.player.team.name}}</td>
               <td>{{score.hole.order}}</td>
               <td>{{score.hole.par}}</td>
               <td>{{score.hole.handicap}}</td>
@@ -389,7 +400,7 @@
 
   document.getElementById("delete-game-button").addEventListener("click", async (event) => {
     const data = {
-      gameId: gameId,
+      game_id: gameId,
       action: "delete-game"
     }
     try {

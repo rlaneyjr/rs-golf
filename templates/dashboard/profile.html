@@ -7,16 +7,20 @@
       </div>
       <div class="card">
         <div class="card-header">
-          Profile
+          Player Profile
         </div>
         <div class="card-body">
           <div class="mb-3">
             <div class="fw-bold">Name:</div>
-            <div class="ps-3">{{request.user.first_name}} {{request.user.last_name}}</div>
+            <div class="ps-3">{{player_data.name}}</div>
           </div>
           <div class="mb-3">
-            <div class="fw-bold">Email:</div>
-            <div class="ps-3">{{request.user.email}}</div>
+            <div class="fw-bold">Handicap:</div>
+            <div class="ps-3">{{player_data.handicap}}</div>
+          </div>
+          <div class="mb-3">
+            <div class="fw-bold">Photo:</div>
+            <div class="ps-3"><img src="{{player_data.photo.url}}" class="img-fluid" alt="{{player_data.name}} Photo"></div>
           </div>
           <div class="mb-3">
             <div class="fw-bold">Games:</div>

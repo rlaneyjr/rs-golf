@@ -71,7 +71,7 @@ def test_adding_player_late_doesnt_create_duplicate_holes(
     response = client.post(manage_game_url, data, content_type="application/json")
     assert response.status_code == 200
 
-    player_one_game_link = models.PlayerGameLink.objects.get(
+    player_one_game_link = models.PlayerMembership.objects.get(
         player=player, game=golf_game_with_player
     )
     player_one_holes = models.HoleScore.objects.filter(game=player_one_game_link)

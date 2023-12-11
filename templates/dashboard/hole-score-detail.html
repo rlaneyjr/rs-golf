@@ -1,0 +1,81 @@
+{% extends "base-dashboard.html" %}
+{% load crispy_forms_tags %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:game_detail' hole_score_data.player.game.id %}" class="btn btn-sm btn-outline-secondary">Back to Game</a>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-6">
+    <div class="card">
+      <div class="card-header fw-bold">
+        Hole Score Details for: {{hole_score_data.player.player.name}}
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="fw-bold d-block">Hole:</label>
+          <span class="ps-3">{{hole_score_data.hole.name}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Score:</label>
+          <span class="ps-3">{{hole_score_data.score}}</span>
+        </div>
+        <div>
+          <label class="fw-bold d-block">Par:</label>
+          <span class="ps-3">{{hole_score_data.hole.par}}</span>
+        </div>
+        <div>
+          <label class="fw-bold d-block">Handicap:</label>
+          <span class="ps-3">{{hole_score_data.hole.handicap}}</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'dashboard:edit_hole_score' hole_score_data.id %}" class="btn btn-primary btn-sm">Edit Score</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}
+<!-- <script> -->
+<!--   const holeId = "{{hole_data.id}}"; -->
+<!--   const holeHcp = "{{hole_data.handicap}}"; -->
+<!--   const holeOrd = "{{hole_data.order}}"; -->
+<!--   const holeParUrl = "{% url 'dashboard:ajax_edit_hole' %}"; -->
+<!--   const csrfToken = "{{csrf_token}}"; -->
+<!--   const errorDiv = document.getElementById("par-error-message"); -->
+<!--   document.getElementById("save-hole").addEventListener("click", async (event) => { -->
+<!--     const parNum = document.getElementById("id_par").value; -->
+<!--     const data = { -->
+<!--       "hole_par": parNum, -->
+<!--       "hole_id": holeId, -->
+<!--       "hole_order": holeOrd, -->
+<!--       "hole_handicap": holeHcp -->
+<!--     }; -->
+<!--  -->
+<!--     const response = await fetch(holeParUrl, { -->
+<!--       method: "POST", -->
+<!--       headers: { -->
+<!--         "X-CSRFToken": csrfToken, -->
+<!--         "Content-Type": "application/json" -->
+<!--       }, -->
+<!--       body: JSON.stringify(data) -->
+<!--     }); -->
+<!--     if (!response.ok) { -->
+<!--       errorDiv.innerText = "Unknown error setting par value"; -->
+<!--       errorDiv.classList.remove("d-none"); -->
+<!--     } -->
+<!--     const jsonData = await response.json(); -->
+<!--     if (jsonData.status == "success") { -->
+<!--       window.location.reload(true); -->
+<!--     } else { -->
+<!--       errorDiv.innerText = jsonData.message; -->
+<!--       errorDiv.classList.remove("d-none"); -->
+<!--     } -->
+<!--   }); -->
+<!-- </script> -->
+{% endblock %}

@@ -9,7 +9,7 @@ def is_admin(user):
 def create_holes_for_course(course):
     for hole_num in range(1, int(course.hole_count) + 1):
         hole_obj = models.Hole(
-            name=f"Hole {hole_num}",
+            name=f"Hole{hole_num}",
             course=course,
             order=hole_num,
             handicap=hole_num,
@@ -28,75 +28,45 @@ def get_players_avg_hcp(players):
     return round(avg_hcp, 1)
 
 
+def get_team_hcp(team):
+    all_hcps = [_p.handicap for _p in team.players.all()]
+    avg_hcp = sum(all_hcps)/len(all_hcps)
+    return round(avg_hcp, 1)
+
+
 def get_teams_for_game(game):
     return models.Team.objects.filter(game__in=[game.id])
 
 
-def get_team_score(team):
-    team_score = {
-        "name": team.name,
-        "handicap": team.handicap,
-        "hole_list": [],
-        "team_score": 0,
-    }
-    for player in team.players.all():
-        player_game_link = models.PlayerGameLink.objects.filter(
-            game=team.game, player=player
-        ).first()
-        player_score_list = models.HoleScore.objects.filter(
-            game=player_game_link,
-            score__gt=0,
-        )
-        for hole in player_score_list:
-            hole_data = {
-                "hole_id": hole.id,
-                "player_name": player.name,
-                "hole_name": hole.name,
-                "hole_score": hole.score,
-                "hole_par": hole.par,
-                "hole_handicap": hole.handicap,
-                "skin": True,
-            }
-            current_hole_filter = filter(
-                lambda h: h["hole_name"] == hole.name,
-                team_score["hole_list"],
-            )
-            current_holes = list(current_hole_filter)
-            if current_holes and len(current_holes) == 1:
-                current_hole = current_holes[0]
-                if current_hole.score > hole.score:
-                    team_score["hole_list"].remove(current_hole)
-                    team_score["hole_list"].append(hole_data)
-                elif current_hole.score == hole.score:
-                    hole_data.update(player_name="Multiple")
-                    hole_data.update(skin=False)
-                    team_score["hole_list"].remove(current_hole)
-                    team_score["hole_list"].append(hole_data)
-            else:
-                team_score["hole_list"].append(hole_data)
-    team_score["team_score"] = sum([_h["hole_score"] for _h in team_score["hole_list"]])
-    return team_score
-
-
-def get_team_data_for_game(game):
-    team_list = get_teams_for_game(game=game)
-    team_data = False
-    if team_list:
-        team_data = {}
-        for team in team_list:
-            team_data[team.id] = get_team_score(team)
-    return team_data
+def calculate_teams(player_count):
+    if player_count == 4:
+        return 2, 2
+    if player_count < 4:
+        return 1, player_count
+    if player_count % 4 == 0:
+        return round(player_count/4), 4
+    if player_count % 3 == 0:
+        return round(player_count/3), 3
+    if player_count % 2 == 0:
+        return round(player_count/2), 2
+    num_teams, num_players = calculate_teams(player_count - 1)
+    if num_teams == 1:
+        return 1, player_count
+    return num_teams, num_players, 1
 
 
 def get_holes_for_game(game):
     hole_list = models.Hole.objects.filter(course=game.course).order_by("order")
-    if game.which_holes == "all" or game.course.hole_count == 9:
-        return hole_list
     if game.which_holes == "front":
-        return hole_list.filter(order__gte=1, order__lt=10)
-    if game.which_holes == "back":
-        return hole_list.filter(order__gte=10)
-    return None
+        hole_list = hole_list.filter(order__gte=1, order__lt=10)
+    elif game.which_holes == "back":
+        hole_list = hole_list.filter(order__gte=10)
+    return hole_list
+
+
+def delete_teams_for_game(game):
+    for team in get_teams_for_game(game):
+        team.delete()
 
 
 def create_teams_for_game(game):
@@ -115,55 +85,118 @@ def create_teams_for_game(game):
     Effectively, one player from the 50% of players with lower handicaps will be paired with one player from
     the 50% with higher handicaps.
     '''
-    players = game.players.all().order_by("handicap")
+    all_teams = []
     num_teams = None
     num_players = None
-    while num_teams == None:
-        # Try 4 man teams
-        for team_num in range(2, 11):
-            if players.count()/4 % team_num == 0:
-                num_teams = team_num
-                num_players = 4
-        # Try 3 man teams
-        for team_num in range(2, 11):
-            if players.count()/3 % team_num == 0:
-                num_teams = team_num
-                num_players = 3
-        # Try 2 man teams
-        for team_num in range(2, 11):
-            if players.count()/2 % team_num == 0:
-                num_teams = team_num
-                num_players = 2
-        else:
-            num_teams = 1
-            num_players = players.count()
-    for _team in range(1, num_teams + 1):
-        new_team = models.Team(name=f"Team {_team}", game=game)
+    remainder = None
+    players = game.players.all().order_by("handicap")
+    calculated_teams = calculate_teams(players.count())
+    if len(calculated_teams) == 3:
+        num_teams, num_players, remainder = calculated_teams
+    else:
+        num_teams, num_players = calculated_teams
+    for team_num in range(1, num_teams + 1):
+        new_team = models.Team(name=f"Team{team_num}", game=game)
         new_team.save()
-        for _player in range(1, num_players + 1):
-            _man = random.choice(players)
-            team_mem = models.TeamMembership(new_team, _man)
-            team_mem.save()
-            players = players.exclude(id=_man.id)
-        new_team.handicap = get_players_avg_hcp(new_team.players)
+        for _ in range(1, num_players + 1):
+            if players.count() > 0:
+                _player = random.choice(players)
+                player_mem = models.PlayerMembership.objects.filter(
+                    game=game, player=_player, team=None
+                ).first()
+                player_mem.team = new_team
+                player_mem.save()
+                players = players.exclude(id=_player.id)
         new_team.save()
+        all_teams.append(new_team)
+    if remainder and players.count() == 1:
+        rem_player = players[0]
+        rem_mem = models.PlayerMembership.objects.filter(
+            game=game, player=rem_player, team=None
+        ).first()
+        random_team = random.choice(all_teams)
+        rem_mem.team = random_team
+        rem_mem.save()
+    for team in all_teams:
+        team.handicap = get_team_hcp(team)
+        team.save()
 
 
 def create_hole_scores_for_game(game):
-    """
-        Unused at the moment
-    """
     hole_list = get_holes_for_game(game)
     for hole in hole_list:
         for player in game.players.all():
-            game_link = models.PlayerGameLink.objects.filter(
+            player_mem = models.PlayerMembership.objects.filter(
                 player=player, game=game
             ).first()
             existing_hole_score = models.HoleScore.objects.filter(
-                hole=hole, game=game_link
+                player=player_mem, hole=hole
             )
             if existing_hole_score:
                 continue
-
-            hole_score = models.HoleScore(hole=hole, game=game_link)
+            hole_score = models.HoleScore(player=player_mem, hole=hole)
             hole_score.save()
+
+
+def get_team_score(team):
+    team_score = {
+        "name": team.name,
+        "handicap": team.handicap,
+        "hole_list": [],
+        "team_score": 0,
+    }
+    for player in team.players.all():
+        player_mem = models.PlayerMembership.objects.filter(
+            game=team.game, player=player, team=team
+        ).first()
+        player_score_list = models.HoleScore.objects.filter(
+            player=player_mem,
+            score__gt=0,
+        )
+        for hole_score in player_score_list:
+            hole_data = {
+                "hole_score_id": hole_score.id,
+                "player_name": player.name,
+                "hole_id": hole_score.hole.id,
+                "hole_name": hole_score.hole.name,
+                "hole_score": hole_score.score,
+                "hole_par": hole_score.hole.par,
+                "hole_handicap": hole_score.hole.handicap,
+                "skin": True,
+            }
+            current_hole_filter = filter(
+                lambda h: h["hole_id"] == hole_score.hole.id,
+                team_score["hole_list"],
+            )
+            current_holes = list(current_hole_filter)
+            if current_holes and len(current_holes) == 1:
+                current_hole = current_holes[0]
+                if current_hole["hole_score"] > hole_score.score:
+                    team_score["hole_list"].remove(current_hole)
+                    team_score["hole_list"].append(hole_data)
+                elif current_hole["hole_score"] == hole_score.score:
+                    hole_data.update(player_name="Multiple")
+                    hole_data.update(skin=False)
+                    team_score["hole_list"].remove(current_hole)
+                    team_score["hole_list"].append(hole_data)
+            else:
+                team_score["hole_list"].append(hole_data)
+    team_score["team_score"] = sum([_h["hole_score"] for _h in team_score["hole_list"]])
+    return team_score
+
+
+def get_skins(team_data):
+    all_holes = [_h["hole_list"] for _, _h in team_data.items()]
+    skin_holes = [h for h in all_holes if h["skin"] == True]
+    for hole in skin_holes:
+        cur_skin = filter(lambda h: h["hole_id"] == hole["hole_id"], skin_holes)
+
+
+def get_team_data_for_game(game):
+    team_list = get_teams_for_game(game=game)
+    team_data = False
+    if team_list:
+        team_data = {}
+        for team in team_list:
+            team_data[team.id] = get_team_score(team)
+    return team_data

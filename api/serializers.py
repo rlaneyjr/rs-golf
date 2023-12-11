@@ -46,39 +46,45 @@ class HoleScoreSerializer(serializers.ModelSerializer):
     #     return value
 
 
-class SimplePlayerGameLinkSerializer(serializers.ModelSerializer):
+class SimplePlayerMembershipSerializer(serializers.ModelSerializer):
     player = PlayerSerializer(many=False, read_only=True)
 
     class Meta:
-        model = models.PlayerGameLink
+        model = models.PlayerMembership
         fields = [
             "id",
             "player",
         ]
 
 
-class PlayerGameLinkSerializer(serializers.ModelSerializer):
+class PlayerMembershipSerializer(serializers.ModelSerializer):
     player = PlayerSerializer(many=False, read_only=True)
     scores = serializers.SerializerMethodField()
 
     class Meta:
-        model = models.PlayerGameLink
+        model = models.PlayerMembership
         fields = [
             "id",
             "player",
+            "team",
             "scores"
             # "game_set",
             # "holescore_set"
         ]
 
     def get_scores(self, obj):
-        queryset = models.HoleScore.objects.filter(game=obj)
+        if type(obj) == "Team":
+            queryset = models.HoleScore.objects.filter(team=obj)
+        elif type(obj) == "Player":
+            queryset = models.HoleScore.objects.filter(player=obj)
+        else:
+            queryset = models.HoleScore.objects.filter(game=obj)
         return [HoleScoreSerializer(m).data for m in queryset]
 
 
 class GameSerializer(serializers.ModelSerializer):
     # course = GolfCourseSerializer(many=False, read_only=True)
-    # players = PlayerGameLinkSerializer(many=True)
+    # players = PlayerMembershipSerializer(many=True)
     player_list = serializers.SerializerMethodField()
     detail_url = serializers.SerializerMethodField()
 
@@ -98,18 +104,25 @@ class GameSerializer(serializers.ModelSerializer):
         # depth = 1
 
     def create(self, validated_data):
+        game_type_data = validated_data.pop("game_type")
         course_data = validated_data.pop("course")
-        game = models.Game.objects.create(course=course_data, **validated_data)
+        game = models.Game.objects.create(
+            game_type=game_type_data,
+            course=course_data,
+            **validated_data
+        )
         return game
 
     def get_player_list(self, obj):
-        queryset = models.PlayerGameLink.objects.filter(game=obj)
-        return [SimplePlayerGameLinkSerializer(m).data for m in queryset]
+        queryset = models.PlayerMembership.objects.filter(game=obj)
+        return [SimplePlayerMembershipSerializer(m).data for m in queryset]
 
     def get_detail_url(self, obj):
         if "request" in self.context:
             return reverse(
-                "home:game-detail", request=self.context["request"], args={obj.id}
+                "dashboard:game-detail",
+                request=self.context["request"],
+                args={obj.id}
             )
         return ""
 
@@ -120,7 +133,15 @@ class TeeTimeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.TeeTime
-        fields = ["id", "course", "tee_time", "holes_to_play", "is_active", "players"]
+        fields = [
+            "id",
+            "course",
+            "tee_time",
+            "holes_to_play",
+            "which_holes",
+            "is_active",
+            "players",
+        ]
 
 
 class TeeSerializer(serializers.ModelSerializer):

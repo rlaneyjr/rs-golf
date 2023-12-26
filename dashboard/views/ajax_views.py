@@ -10,6 +10,17 @@ import json
 
 
 @login_required
+def ajax_record_score_for_hole(request):
+    data = json.loads(request.body)
+    hole_score_id = data["hole_score_id"]
+    hole_score_val = data["hole_score"]
+    hole_score = models.HoleScore.objects.filter(pk=hole_score_id).first()
+    hole_score.score = hole_score_val
+    hole_score.save()
+    return JsonResponse({"status": "success"})
+
+
+@login_required
 @user_passes_test(
     utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
 )
@@ -47,17 +58,10 @@ def ajax_manage_game(request):
         messages.add_message(request, messages.INFO, "Game Deleted.")
         return JsonResponse({"status": "success"})
     elif data["action"] == "start-game":
-        holes_to_play = data["holes_to_play"] or None
-        game_type = data["game_type"] or None
-        game_data.start(holes_to_play=holes_to_play, game_type=game_type)
-        hole_list = utils.get_holes_for_game(game=game_data)
-        for hole in hole_list:
-            for player in game_data.players.all():
-                game_link = models.PlayerMembership.objects.filter(
-                    player=player, game=game_data
-                ).first()
-                hole_score = models.HoleScore(hole=hole, player=game_link)
-                hole_score.save()
+        holes_to_play = data.get("holes_to_play", None)
+        game_type = data.get("game_type", None)
+        buy_in = data.get("buy_in", None)
+        game_data.start(holes_to_play=holes_to_play, game_type=game_type, buy_in=buy_in)
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({"status": "success"})
     return HttpResponseBadRequest("Unknown Action")
@@ -67,26 +71,12 @@ def ajax_manage_game(request):
 @user_passes_test(
     utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
 )
-def ajax_record_score_for_hole(request):
-    data = json.loads(request.body)
-    hole_score_id = data["hole_score_id"]
-    hole_score_val = data["hole_score"]
-    hole_score = models.HoleScore.objects.filter(pk=hole_score_id).first()
-    hole_score.score = hole_score_val
-    hole_score.save()
-    return JsonResponse({"status": "success"})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
-)
 def ajax_edit_hole_score(request):
     data = json.loads(request.body)
+    if not all([data["score_id"], data["score"]]):
+        return HttpResponseBadRequest("Missing Data")
     score_id = data["score_id"]
     score = data["score"]
-    if not score:
-        return JsonResponse({"status": "failed", "message": "Must provide score"})
     score_data = models.HoleScore.objects.filter(pk=score_id).first()
     if not score_data:
         return JsonResponse({"status": "failed", "message": f"Unable to find hole id: {score_id}"})
@@ -158,10 +148,14 @@ def ajax_manage_tee_time(request):
         if tee_time is None:
             return JsonResponse({"status": "failed"})
 
+        holes_to_play = data.get("holes_to_play", tee_time.holes_to_play)
+        game_type = data.get("game_type", None)
+        buy_in = data.get("buy_in", None)
+
         new_game = models.Game.objects.create(
             date_played=tee_time.tee_time,
             course=tee_time.course,
-            holes_played=tee_time.holes_to_play,
+            holes_played=holes_to_play,
             which_holes=tee_time.which_holes,
         )
 
@@ -172,6 +166,8 @@ def ajax_manage_tee_time(request):
         tee_time.is_active = False
         tee_time.save()
 
+        new_game.start(holes_to_play=holes_to_play, game_type=game_type, buy_in=buy_in)
+        messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({
             "status": "success",
             "game_url": settings.BASE_URL + reverse("dashboard:game-detail", args=[new_game.id])}
@@ -186,7 +182,6 @@ def ajax_manage_tee_time(request):
 def ajax_delete_hole_score(request):
     data = json.loads(request.body)
     score_id = data["score_id"]
-
     score_data = models.HoleScore.objects.filter(pk=score_id).first()
     if score_data:
         score_data.delete()

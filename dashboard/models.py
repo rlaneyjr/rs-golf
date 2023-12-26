@@ -16,6 +16,7 @@ class GameTypeChoices(models.TextChoices):
     STROKE = "stroke", _("Stroke")
     SKINS = "skins", _("Skins")
     STROKE_SKINS = "stroke-skins", _("Stroke w/Skins")
+    BEST_BALL_SKINS = "best-ball-skins", _("Best Ball w/Skins")
 
 
 class HolesToPlayChoices(models.IntegerChoices):
@@ -181,39 +182,32 @@ class Game(models.Model):
     players = models.ManyToManyField(
         "Player", through="PlayerMembership", through_fields=("game", "player")
     )
+    buy_in = models.DecimalField(
+        max_digits=3,
+        decimal_places=0,
+        default=None,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         ordering = ["date_played", "status"]
         verbose_name_plural = "games"
 
-    def start(self, holes_to_play=None, game_type=None):
+    def start(self, holes_to_play=None, game_type=None, buy_in=None):
         # if not any([game_type, self.game_type]):
         #     raise ValidationError("You must provide a game type")
-        utils.create_teams_for_game(self)
-        if self.course.hole_count == 18:
-            if holes_to_play == "front":
-                self.which_holes = WhichHolesChoices.FRONT
-                self.holes_played = HolesToPlayChoices.HOLES_9
-            elif holes_to_play == "back":
-                self.which_holes = WhichHolesChoices.BACK
-                self.holes_played = HolesToPlayChoices.HOLES_9
-            else:
-                self.which_holes = WhichHolesChoices.ALL
-                self.holes_played = HolesToPlayChoices.HOLES_18
-        else:
-            self.which_holes = WhichHolesChoices.ALL
-            self.holes_played = HolesToPlayChoices.HOLES_9
-        if game_type == "best-ball":
-            self.game_type = GameTypeChoices.BEST_BALL
-        elif game_type == "stroke-skins":
-            self.game_type = GameTypeChoices.STROKE_SKINS
-        elif game_type == "skins":
-            self.game_type = GameTypeChoices.SKINS
-        else:
-            self.game_type = GameTypeChoices.STROKE
+        if holes_to_play != None:
+            self.holes_to_play = holes_to_play
+        if game_type != None:
+            self.game_type = game_type
+        if buy_in != None:
+            self.buy_in = buy_in
         self.status = GameStatusChoices.ACTIVE
         if not self.date_played:
             self.date_played = timezone.now()
+        utils.create_teams_for_game(self)
+        utils.create_hole_scores_for_game(self)
         self.save()
 
     def __str__(self):

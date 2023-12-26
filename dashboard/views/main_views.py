@@ -66,16 +66,173 @@ def no_permission(request):
 
 
 @login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
 def course_list(request):
     course_list = models.GolfCourse.objects.all()
     return render(request, "dashboard/courses.html", {"course_list": course_list})
 
 
+@login_required
+def game_list(request):
+    game_list = models.Game.objects.all()
+    return render(request, "dashboard/game-list.html", {"game_list": game_list})
+
+
+@login_required
+def player_list(request):
+    player_list = models.Player.objects.all()
+    return render(request, "dashboard/players.html", {"player_list": player_list})
+
+
+@login_required
+def course_detail(request, pk):
+    course_data = get_object_or_404(models.GolfCourse, pk=pk)
+    course_location = None
+    hole_list = models.Hole.objects.filter(course=course_data).order_by("order")
+    if all([course_data.city, course_data.state, course_data.zip_code]):
+        course_location = (
+            f"{course_data.city}, {course_data.state}, {course_data.zip_code}"
+        )
+    return render(
+        request,
+        "dashboard/course-detail.html",
+        {
+            "course_data": course_data,
+            "course_location": course_location,
+            "hole_list": hole_list,
+        },
+    )
+
+
+@login_required
+def hole_detail(request, pk):
+    hole_data = get_object_or_404(models.Hole, pk=pk)
+    tee_list = models.Tee.objects.filter(hole=hole_data)
+    course_data = hole_data.course
+    form = forms.HoleForm(instance=hole_data)
+    return render(
+        request,
+        "dashboard/hole-detail.html",
+        {
+            "hole_data": hole_data,
+            "course_data": course_data,
+            "tee_list": tee_list,
+            "form": form,
+        },
+    )
+
+
+@login_required
+def game_detail(request, pk):
+    game_data = get_object_or_404(models.Game, pk=pk)
+    current_player_count = game_data.players.count()
+    player_list = utils.get_players_not_in_game(game_data)
+    hole_list = utils.get_hole_list_for_game(game_data)
+    hole_data = utils.get_hole_data_for_game(game_data)
+    return render(
+        request,
+        "dashboard/game-detail.html",
+        {
+            "user_is_admin": utils.is_admin(request.user),
+            "game_data": game_data,
+            "player_list": player_list,
+            "current_player_count": current_player_count,
+            "hole_data": hole_data,
+            "hole_list": hole_list,
+        },
+    )
+
+
+@login_required
+def game_score(request, pk):
+    game_data = get_object_or_404(models.Game, pk=pk)
+    hole_list = utils.get_hole_list_for_game(game_data)
+    hole_data, team_data, skin_data = utils.score_game(game_data)
+    return render(
+        request,
+        "dashboard/game-score.html",
+        {
+            "game_data": game_data,
+            "hole_data": hole_data,
+            "team_data": team_data,
+            "skin_data": skin_data,
+            "hole_list": hole_list,
+        },
+    )
+
+
+@login_required
+def game_score_detail(request, pk):
+    game_data = get_object_or_404(models.Game, pk=pk)
+    all_scores = []
+    filter_scores = request.GET.get("filter_scores", "false")
+    for player in game_data.players.all():
+        player_game_link = models.PlayerMembership.objects.filter(
+            game=game_data, player=player
+        ).first()
+        if filter_scores == "true":
+            hole_score_list = models.HoleScore.objects.filter(player=player_game_link, score__gt=0)
+        else:
+            hole_score_list = models.HoleScore.objects.filter(player=player_game_link)
+        all_scores.extend(hole_score_list)
+    return render(
+        request,
+        "dashboard/game-score-detail.html",
+        {
+            "game_data": game_data,
+            "all_scores": all_scores,
+            "filter_scores": filter_scores,
+        },
+    )
+
+
+@login_required
+def player_detail(request, pk):
+    player_data = get_object_or_404(models.Player, pk=pk)
+    return render(request, "dashboard/player-detail.html", {"player_data": player_data})
+
+
+@login_required
+def tee_time_list(request):
+    tee_times = models.TeeTime.objects.all()
+    return render(request, "dashboard/tee-time-list.html", {"tee_time_list": tee_times})
+
+
+@login_required
+def create_tee_time(request):
+    if request.method == "POST":
+        form = forms.TeeTimeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("dashboard:tee_times")
+    else:
+        form = forms.TeeTimeForm()
+    return render(request, "dashboard/create-tee-time.html", {"form": form})
+
+
+@login_required
+def tee_time_detail(request, pk):
+    teetime_data = get_object_or_404(models.TeeTime, pk=pk)
+    potential_player_list = models.Player.objects.all().exclude(teetime__in=[teetime_data.id])
+    return render(
+        request,
+        "dashboard/tee-time-detail.html",
+        {"teetime_data": teetime_data, "potential_player_list": potential_player_list}
+    )
+
+
+@login_required
+def hole_score_detail(request, pk):
+    hole_score_data = get_object_or_404(models.HoleScore, pk=pk)
+    return render(
+        request,
+        "dashboard/hole-score-detail.html",
+        {"hole_score_data": hole_score_data},
+    )
+
+
+##############################
+# Admin permissions required #
+##############################
 @login_required
 @user_passes_test(
     utils.is_admin,
@@ -111,54 +268,6 @@ def edit_course(request, pk):
     form = forms.EditGolfCourseForm(instance=course_data)
     return render(request, "dashboard/edit-course.html",
                   {"form": form, "course_data": course_data})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def course_detail(request, pk):
-    course_data = get_object_or_404(models.GolfCourse, pk=pk)
-    course_location = None
-    hole_list = models.Hole.objects.filter(course=course_data).order_by("order")
-    if all([course_data.city, course_data.state, course_data.zip_code]):
-        course_location = (
-            f"{course_data.city}, {course_data.state}, {course_data.zip_code}"
-        )
-    return render(
-        request,
-        "dashboard/course-detail.html",
-        {
-            "course_data": course_data,
-            "course_location": course_location,
-            "hole_list": hole_list,
-        },
-    )
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def hole_detail(request, pk):
-    hole_data = get_object_or_404(models.Hole, pk=pk)
-    tee_list = models.Tee.objects.filter(hole=hole_data)
-    course_data = hole_data.course
-    form = forms.HoleForm(instance=hole_data)
-    return render(
-        request,
-        "dashboard/hole-detail.html",
-        {
-            "hole_data": hole_data,
-            "course_data": course_data,
-            "tee_list": tee_list,
-            "form": form,
-        },
-    )
 
 
 @login_required
@@ -210,17 +319,6 @@ def create_tee(request, hole_pk):
     login_url="/dashboard/no-permission/",
     redirect_field_name=None
 )
-def game_list(request):
-    game_list = models.Game.objects.all()
-    return render(request, "dashboard/game-list.html", {"game_list": game_list})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
 def create_game(request):
     if request.method == "POST":
         form = forms.GameForm(request.POST)
@@ -231,104 +329,6 @@ def create_game(request):
             return redirect("dashboard:game_detail", game.id)
     form = forms.GameForm()
     return render(request, "dashboard/create-game.html", {"form": form})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def game_detail(request, pk):
-    game_data = get_object_or_404(models.Game, pk=pk)
-    current_player_count = game_data.players.count()
-    player_list = utils.get_players_not_in_game(game=game_data)
-    team_data = utils.get_team_data_for_game(game=game_data)
-    hole_data = {}
-    hole_list = []
-    all_scores = []
-
-    filter_scores = request.GET.get("filter_scores", "false")
-    # Always keep track of each players score
-    for player in game_data.players.all():
-        hole_data[player.id] = {
-            "player_name": player.name,
-            "team": None,
-            "hole_list": [],
-            "total_score": 0,
-            "par": 0,
-        }
-        player_game_link = models.PlayerMembership.objects.filter(
-            game=game_data, player=player
-        ).first()
-        if player_game_link.team:
-            hole_data[player.id]["team"] = player_game_link.team.name
-        hole_score_list = models.HoleScore.objects.filter(player=player_game_link)
-
-        if filter_scores == "true":
-            filtered_scores = models.HoleScore.objects.filter(player=player_game_link, score__gt=0)
-            all_scores.extend(filtered_scores)
-        else:
-            all_scores.extend(hole_score_list)
-
-        for hole_item in hole_score_list:
-            hole_data[player.id]["hole_list"].append(
-                {
-                    "hole_score_id": hole_item.id,
-                    "hole_score": hole_item.score,
-                    "hole_name": hole_item.hole.name,
-                    "hole_par": hole_item.hole.par,
-                    "hole_handicap": hole_item.hole.handicap,
-                }
-            )
-            hole_data[player.id]["total_score"] += hole_item.score
-            hole_data[player.id]["par"] += hole_item.hole.par
-
-    if game_data.which_holes == "front":
-        for hole_num in range(1, 10):
-            hole_list.append(f"{hole_num}")
-    elif game_data.which_holes == "back":
-        for hole_num in range(10, 19):
-            hole_list.append(f"{hole_num}")
-    else:
-        for hole_num in range(1, game_data.holes_played + 1):
-            hole_list.append(f"{hole_num}")
-    return render(
-        request,
-        "dashboard/game-detail.html",
-        {
-            "game_data": game_data,
-            "team_data": team_data,
-            "player_list": player_list,
-            "current_player_count": current_player_count,
-            "hole_data": hole_data,
-            "hole_list": hole_list,
-            "all_scores": all_scores,
-            "filter_scores": filter_scores,
-        },
-    )
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def player_list(request):
-    player_list = models.Player.objects.all()
-    return render(request, "dashboard/players.html", {"player_list": player_list})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def player_detail(request, pk):
-    player_data = get_object_or_404(models.Player, pk=pk)
-    return render(request, "dashboard/player-detail.html", {"player_data": player_data})
 
 
 @login_required
@@ -376,50 +376,6 @@ def edit_player(request, pk):
     login_url="/dashboard/no-permission/",
     redirect_field_name=None
 )
-def tee_time_list(request):
-    tee_times = models.TeeTime.objects.all()
-    return render(request, "dashboard/tee-time-list.html", {"tee_time_list": tee_times})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def create_tee_time(request):
-    if request.method == "POST":
-        form = forms.TeeTimeForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("dashboard:tee_times")
-    else:
-        form = forms.TeeTimeForm()
-    return render(request, "dashboard/create-tee-time.html", {"form": form})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
-def tee_time_detail(request, pk):
-    teetime_data = get_object_or_404(models.TeeTime, pk=pk)
-    potential_player_list = models.Player.objects.all().exclude(teetime__in=[teetime_data.id])
-    return render(
-        request,
-        "dashboard/tee-time-detail.html",
-        {"teetime_data": teetime_data, "potential_player_list": potential_player_list}
-    )
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
 def create_hole(request, pk):
     course_data = get_object_or_404(models.GolfCourse, pk=pk)
     if request.method == "POST":
@@ -445,21 +401,6 @@ def create_hole(request, pk):
     login_url="/dashboard/no-permission/",
     redirect_field_name=None
 )
-def hole_score_detail(request, pk):
-    hole_score_data = get_object_or_404(models.HoleScore, pk=pk)
-    return render(
-        request,
-        "dashboard/hole-score-detail.html",
-        {"hole_score_data": hole_score_data},
-    )
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/dashboard/no-permission/",
-    redirect_field_name=None
-)
 def edit_hole_score(request, pk):
     hole_score_data = get_object_or_404(models.HoleScore, pk=pk)
     if request.method == "POST":
@@ -470,4 +411,4 @@ def edit_hole_score(request, pk):
             return redirect("dashboard:hole_score_detail", pk)
     form = forms.EditHoleScoreForm(instance=hole_score_data)
     return render(request, "dashboard/edit-hole-score.html",
-                  {"form": form, "hole_data": hole_data})
+                  {"form": form, "hole_score_data": hole_score_data})

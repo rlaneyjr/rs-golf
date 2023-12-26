@@ -1,0 +1,52 @@
+{% extends "base-dashboard.html" %}
+
+{% block page_name %}Game Score Detail{% endblock %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:game_detail' game_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Game Detail</a>
+{% endblock %}
+
+{% block content %}
+<div class="row mt-3 mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header fw-bold">
+        All Scores
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 5%;">&nbsp;</th>
+              <th>Player</th>
+              <th>Team</th>
+              <th>Hole #</th>
+              <th>Par</th>
+              <th>Handicap</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for score in all_scores %}
+            <tr>
+              <td><a href="{% url 'dashboard:edit_hole_score' score.id %}" class="btn btn-primary btn-sm">Edit</a></td>
+              <td>{{score.player.player.name}}</td>
+              <td>{{score.player.team.name}}</td>
+              <td>{{score.hole.order}}</td>
+              <td>{{score.hole.par}}</td>
+              <td>{{score.hole.handicap}}</td>
+              <td>{{score.score}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block page_styles %}{% endblock %}
+
+{% block page_scripts %}
+{% endblock page_scripts %}

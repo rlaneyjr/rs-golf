@@ -1,0 +1,118 @@
+{% extends "base-dashboard.html" %}
+
+{% block page_name %}Game Scores{% endblock %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:game_detail' game_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Game Detail</a>
+{% endblock %}
+
+{% block content %}
+{% if team_data %}
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Team Scores
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Team</th>
+              {% for hole_num in hole_list %}
+              <th>{{hole_num}}</th>
+              {% endfor %}
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for team in team_data %}
+            <tr>
+              <td>{{team.name}}</td>
+              {% for hole_item in team.hole_list %}
+              <td>{{hole_item.hole_score}}</td>
+              {% endfor %}
+              <td>{{team.team_score}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Game Scores
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Team</th>
+              <th>HCP</th>
+              {% for hole_num in hole_list %}
+              <th>{{hole_num}}</th>
+              {% endfor %}
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for player_id, hole_obj in hole_data.items %}
+            <tr class="player-row" data-row-player-id="{{player_id}}">
+              <td>{{hole_obj.player_name}}</td>
+              <td>{{hole_obj.team}}</td>
+              <td>{{hole_obj.hcp}}</td>
+              {% for hole_item in hole_obj.hole_list %}
+              <td>{{hole_item.hole_score}}</td>
+              {% endfor %}
+              <td>{{hole_obj.total_score}}/{{hole_obj.par}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if skin_data %}
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Skins
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Hole</th>
+              <th>Player</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for skin in skin_data %}
+            <tr>
+              <td>{{skin.hole}}</td>
+              <td>{{skin.player}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock content %}
+
+{% block page_styles %}{% endblock page_styles %}
+
+{% block page_scripts %}
+{% endblock page_scripts %}

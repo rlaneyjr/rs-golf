@@ -95,6 +95,8 @@ BASE_APPS = [
     "drf_spectacular",
     "rest_framework",
     "rest_framework.authtoken",
+    "djmoney",
+    "django_json_widget",
 ]
 
 PROJECT_APPS = [
@@ -105,6 +107,11 @@ PROJECT_APPS = [
 ]
 
 INSTALLED_APPS = BASE_APPS + PROJECT_APPS
+
+# Django money settings
+CURRENCIES = ('USD')
+CURRENCY_CHOICES = [('USD', 'USD $')]
+SERIALIZATION_MODULES = {"json": "djmoney.serializers"}
 
 # Django crispy forms
 CRISPY_TEMPLATE_PACK = "bootstrap5"

@@ -10,3 +10,4 @@ djangorestframework==3.14.0
 drf-spectacular==0.26.5
 reportlab==4.0.7
 django-money==3.4.1
+django-json-widget==1.1.1

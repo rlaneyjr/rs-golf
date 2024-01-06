@@ -123,8 +123,14 @@ def hole_detail(request, pk):
 
 @login_required
 def game_detail(request, pk):
+    game_pot = False
+    team_list = False
     game_data = get_object_or_404(models.Game, pk=pk)
     current_player_count = game_data.players.count()
+    if game_data.status != "setup":
+        game_pot = game_data.buy_in * current_player_count
+        if utils.game_has_teams(game_data):
+            team_list = utils.get_team_list_for_game(game_data)
     player_list = utils.get_players_not_in_game(game_data)
     hole_list = utils.get_hole_list_for_game(game_data)
     hole_data = utils.get_hole_data_for_game(game_data)
@@ -134,6 +140,8 @@ def game_detail(request, pk):
         {
             "user_is_admin": utils.is_admin(request.user),
             "game_data": game_data,
+            "game_pot": game_pot,
+            "team_list": team_list,
             "player_list": player_list,
             "current_player_count": current_player_count,
             "hole_data": hole_data,
@@ -145,17 +153,18 @@ def game_detail(request, pk):
 @login_required
 def game_score(request, pk):
     game_data = get_object_or_404(models.Game, pk=pk)
+    if game_data.status != "completed":
+        game_data.stop()
+    game_pot = game_data.buy_in * game_data.players.count()
     hole_list = utils.get_hole_list_for_game(game_data)
-    hole_data, team_data, skin_data = utils.score_game(game_data)
     return render(
         request,
         "dashboard/game-score.html",
         {
             "game_data": game_data,
-            "hole_data": hole_data,
-            "team_data": team_data,
-            "skin_data": skin_data,
+            "game_pot": game_pot,
             "hole_list": hole_list,
+            "scores": game_data.score
         },
     )
 
@@ -329,6 +338,25 @@ def create_game(request):
             return redirect("dashboard:game_detail", game.id)
     form = forms.GameForm()
     return render(request, "dashboard/create-game.html", {"form": form})
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/dashboard/no-permission/",
+    redirect_field_name=None
+)
+def edit_game(request, pk):
+    game_data = get_object_or_404(models.Game, pk=pk)
+    if request.method == "POST":
+        form = forms.EditGameForm(request.POST, instance=game_data)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, "Game Saved.")
+            return redirect("dashboard:game_detail", pk)
+    else:
+        form = forms.EditGameForm(instance=game_data)
+    return render(request, "dashboard/edit-game.html", {"form": form})
 
 
 @login_required

@@ -1,7 +1,8 @@
 from django import forms
-from .models import GolfCourse, Tee, Team, Player, Game, Hole, HoleScore, TeeTime
+from django_json_widget.widgets import JSONEditorWidget
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Submit
+from .models import GolfCourse, Tee, Team, Player, Game, Hole, HoleScore, TeeTime
 
 
 class GolfCourseForm(forms.ModelForm):
@@ -163,13 +164,46 @@ class GameForm(forms.ModelForm):
             Fieldset(
                 "Create a new Game",
                 "course",
+                "buy_in",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
 
     class Meta:
         model = Game
-        fields = ["course"]
+        fields = ["course", "buy_in"]
+
+
+class EditGameForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Edit Game",
+                "game_type",
+                "holes_played",
+                "which_holes",
+                "status",
+                "players",
+                "buy_in",
+                "score",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
+    class Meta:
+        model = Game
+        fields = [
+            "game_type",
+            "holes_played",
+            "which_holes",
+            "status",
+            "players",
+            "buy_in",
+            "score",
+        ]
+        widgets = {"score": JSONEditorWidget}
 
 
 class HoleForm(forms.ModelForm):

@@ -1,11 +1,3 @@
-{% extends "base-dashboard.html" %}
-
-{% block page_name %}Game Scores{% endblock %}
-
-{% block button_bar %}
-<a href="{% url 'dashboard:game_detail' game_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Game Detail</a>
-{% endblock %}
-
 {% load score_parser %}
 {% get_team_scores game_data as team_scores %}
 {% get_scores game_data as scores %}
@@ -25,24 +17,26 @@
           <thead>
             <tr>
               <th>Team</th>
+              <th>Players</th>
               <th>Team HCP</th>
               {% for hole_num in hole_list %}
-              <th>{{hole_num}}</th>
+              <th>{{ hole_num }}</th>
               {% endfor %}
-              <th>Team Score</th>
+              <th>Score</th>
               <th>Winner</th>
             </tr>
           </thead>
           <tbody>
             {% for team in team_scores %}
             <tr>
-              <td>{{team.team_name}}</td>
-              <td>{{team.handicap}}</td>
+              <td>{{ team.team_name }}</td>
+              <td>{{ team.players }}</td>
+              <td>{{ team.handicap }}</td>
               {% for hole_item in team.hole_list %}
-              <td>{{hole_item.hole_score}}/{{hole_item.player_name}}</td>
+              <td>{{ hole_item.hole_score }}</td>
               {% endfor %}
-              <td>{{team.team_score}}</td>
-              <td>{{team.winner}}</td>
+              <td>{{ team.team_score }}</td>
+              <td>{{ team.winner }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -65,7 +59,7 @@
               <th>Player</th>
               <th>HCP</th>
               {% for hole_num in hole_list %}
-              <th>{{hole_num}}</th>
+              <th>{{ hole_num }}</th>
               {% endfor %}
               <th>Score</th>
               <th>Winner</th>
@@ -74,13 +68,13 @@
           <tbody>
             {% for score in scores %}
             <tr>
-              <td>{{score.player_name}}</td>
-              <td>{{score.hcp}}</td>
+              <td>{{ score.player_name }}</td>
+              <td>{{ score.hcp }}</td>
               {% for hole_item in hole_obj.hole_list %}
-              <td>{{score.hole_score}}</td>
+              <td>{{ score.hole_score }}</td>
               {% endfor %}
-              <td>{{score.total_score}}/{{score.par}}</td>
-              <td>{{score.winner}}</td>
+              <td>{{ score.total_score }}/{{ score.par }}</td>
+              <td>{{ score.winner }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -109,8 +103,8 @@
           <tbody>
             {% for skin in skins %}
             <tr>
-              <td>{{skin.hole}}</td>
-              <td>{{skin.player}}</td>
+              <td>{{ skin.hole }}</td>
+              <td>{{ skin.player }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -121,8 +115,3 @@
 </div>
 {% endif %}
 {% endblock content %}
-
-{% block page_styles %}{% endblock page_styles %}
-
-{% block page_scripts %}
-{% endblock page_scripts %}

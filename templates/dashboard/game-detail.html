@@ -1,4 +1,5 @@
 {% extends "base-dashboard.html" %}
+{% load djmoney %}
 
 {% block page_name %}Game Detail{% endblock %}
 
@@ -16,31 +17,73 @@
       <div class="card-body">
         <div class="mb-3">
           <label class="fw-bold d-block">Course:</label>
-          <span class="ps-2">{{game_data.course.name}}</span>
+          <span class="ps-2">{{ game_data.course.name }}</span>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Date Played:</label>
-          <span class="ps-2">{{game_data.date_played}}</span>
+          <span class="ps-2">{{ game_data.date_played }}</span>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Holes:</label>
-          <span class="ps-2">{{game_data.holes_played}}</span>
+          <span class="ps-2">{{ game_data.holes_played }}</span>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Current Status:</label>
-          <span class="ps-2">{{game_data.get_status_display}}</span>
+          <span class="ps-2">{{ game_data.get_status_display }}</span>
         </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Buy-in:</label>
+          <span class="ps-2">{{ game_data.buy_in }}</span>
+        </div>
+        {% if game_pot %}
+        <div class="mb-3">
+          <label class="fw-bold d-block">Pot:</label>
+          <span class="ps-2">{{ game_pot }}</span>
+        </div>
+        {% endif %}
       </div>
       <div class="card-footer">
         {% if game_data.status == "setup" and current_player_count > 0 %}
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
         {% elif game_data.status == "active" %}
         <button class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
+        {% elif game_data.status == "completed" %}
+        <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Game Scores</a>
         {% endif %}
+        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-secondary btn-sm">Edit Game</a>
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
       </div>
     </div>
   </div>
+  {% if team_list %}
+  <div class="col-6">
+    <div class="card">
+      <div class="card-header">
+        Teams
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Players</th>
+              <th>Handicap</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for team in team_list %}
+            <tr>
+              <td>{{ team.name }}</td>
+              <td>{{ team.players }}</td>
+              <td>{{ team.handicap }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
   <div class="col-6">
     <div class="card">
       <div class="card-header">
@@ -62,10 +105,10 @@
             {% for player in game_data.players.all %}
             <tr>
               {% if game_data.status == "setup" %}
-              <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-player-modal" data-player-id="{{player.id}}">Remove</button></td>
+              <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-player-modal" data-player-id="{{ player.id }}">Remove</button></td>
               {% endif %}
-              <td>{{player.name}}</td>
-              <td>{{player.handicap}}</td>
+              <td>{{ player.name }}</td>
+              <td>{{ player.handicap }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -81,9 +124,12 @@
       {% endif %}
     </div>
   </div>
+  {% endif %}
 </div>
 
-{% if game_data.status == "active" %}
+{% if game_data.status == "completed" %}
+  {% include "dashboard/game-scores.html" %}
+{% elif game_data.status == "active" %}
 <div class="row mt-3">
   <div class="col-12">
     <div class="card">
@@ -98,25 +144,25 @@
               <th>Team</th>
               <th>HCP</th>
               {% for hole_num in hole_list %}
-              <th>{{hole_num}}</th>
+              <th>{{ hole_num }}</th>
               {% endfor %}
               <th>Score</th>
             </tr>
           </thead>
           <tbody>
             {% for player_id, hole_obj in hole_data.items %}
-            <tr class="player-row" data-row-player-id="{{player_id}}">
-              <td>{{hole_obj.player_name}}</td>
-              <td>{{hole_obj.team}}</td>
-              <td>{{hole_obj.hcp}}</td>
+            <tr class="player-row" data-row-player-id="{{ player_id }}">
+              <td>{{ hole_obj.player_name }}</td>
+              <td>{{ hole_obj.team }}</td>
+              <td>{{ hole_obj.hcp }}</td>
               {% for hole_item in hole_obj.hole_list %}
                 {% if hole_obj.user_account == request.user or user_is_admin %}
-                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{hole_item.hole_score_id}}" value={{hole_item.hole_score}} /></td>
+                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{ hole_item.hole_score_id }}" value="{{ hole_item.hole_score }}" /></td>
                 {% else %}
-                <td>{{hole_item.hole_score}}</td>
+                <td>{{ hole_item.hole_score }}</td>
                 {% endif %}
               {% endfor %}
-              <td>{{hole_obj.total_score}}/{{hole_obj.par}}</td>
+              <td>{{ hole_obj.total_score }}/{{ hole_obj.par }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -124,44 +170,6 @@
       </div>
       <div class="card-footer">
         <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-sm btn-primary">Score Details</a>
-      </div>
-    </div>
-  </div>
-</div>
-{% else %}
-<div class="row mt-3">
-  <div class="col-12">
-    <div class="card">
-      <div class="card-header">
-        Game Scores
-      </div>
-      <div class="card-body">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Team</th>
-              <th>HCP</th>
-              {% for hole_num in hole_list %}
-              <th>{{hole_num}}</th>
-              {% endfor %}
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for player_id, hole_obj in hole_data.items %}
-            <tr class="player-row" data-row-player-id="{{player_id}}">
-              <td>{{hole_obj.player_name}}</td>
-              <td>{{hole_obj.team}}</td>
-              <td>{{hole_obj.hcp}}</td>
-              {% for hole_item in hole_obj.hole_list %}
-              <td>{{hole_item.hole_score}}</td>
-              {% endfor %}
-              <td>{{hole_obj.total_score}}/{{hole_obj.par}}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
@@ -181,7 +189,7 @@
           <select id="add-player-select" class="form-select">
             <option value="none">Select a player...</option>
             {% for player in player_list %}
-            <option value="{{player.id}}">{{player.name}}</option>
+            <option value="{{ player.id }}">{{ player.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -295,13 +303,13 @@
 
 {% block page_scripts %}
 <script>
-  const gameId = "{{game_data.id}}";
+  const gameId = "{{ game_data.id }}";
   const managePlayerUrl = "{% url 'dashboard:ajax_manage_players_for_game' %}";
   const manageGameUrl = "{% url 'dashboard:ajax_manage_game' %}";
   const gameListUrl = "{% url 'dashboard:games' %}";
   const recordScoreUrl = "{% url 'dashboard:ajax_record_score_for_hole' %}";
 
-  const csrfToken = "{{csrf_token}}";
+  const csrfToken = "{{ csrf_token }}";
   let removePlayerId = null;
 
   document.getElementById("add-player-button").addEventListener("click", async (event) => {

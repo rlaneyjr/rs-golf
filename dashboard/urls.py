@@ -23,6 +23,7 @@ urlpatterns =  [
     path("tees/<int:hole_pk>/", views.create_tee, name="create_tee"),
     path("games/", views.game_list, name="games"),
     path("games/<int:pk>/", views.game_detail, name="game_detail"),
+    path("games/<int:pk>/edit", views.edit_game, name="edit_game"),
     path("games/<int:pk>/score", views.game_score, name="game_score"),
     path("games/<int:pk>/score_details", views.game_score_detail, name="game_score_detail"),
     path("games/add/", views.create_game, name="create_game"),

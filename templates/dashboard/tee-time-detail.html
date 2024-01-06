@@ -2,88 +2,102 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                Tee Time Detail
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="fw-bold d-block">Course Name:</label>
-                    <span class="ps-2">{{teetime_data.course.name}}</span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold d-block">Game Time:</label>
-                    <span class="ps-2">{{teetime_data.tee_time}}</span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold d-block">Holes to Play:</label>
-                    <span class="ps-2">{{teetime_data.get_holes_to_play_display}}</span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold d-block">Status:</label>
-                    <span class="ps-2">{{teetime_data.is_active|yesno:"Yes,No"}}</span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold d-block">Players:</label>
-                    {% if teetime_data.players.all %}
-                        {% for player in teetime_data.players.all %}
-                            <p class="ps-2 mb-0">{{player.name}}</p>    
-                        {% endfor %}
-                    {% else %}
-                        <span class="ps-2">No Players Added Yet</span>
-                    {% endif %}
-                </div>
-            </div>
-            {% if teetime_data.is_active %}
-            <div class="card-footer">
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">Add Player</button>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
-            </div>
-            {% endif %}
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        Tee Time Detail
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="fw-bold d-block">Course Name:</label>
+          <span class="ps-2">{{ teetime_data.course.name }}</span>
         </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Game Time:</label>
+          <span class="ps-2">{{ teetime_data.tee_time }}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Holes to Play:</label>
+          <span class="ps-2">{{ teetime_data.get_holes_to_play_display }}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Active:</label>
+          <span class="ps-2">{{ teetime_data.is_active|yesno:"Yes,No"}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Players:</label>
+          {% if teetime_data.players.all %}
+          {% for player in teetime_data.players.all %}
+          <p class="ps-2 mb-0">{{ player.name }}</p>    
+          {% endfor %}
+          {% else %}
+          <span class="ps-2">No Players Added Yet</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if teetime_data.is_active %}
+      <div class="card-footer">
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">Add Player</button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
+      </div>
+      {% endif %}
     </div>
+  </div>
 </div>
 
 <div class="modal fade" id="add-player-modal" tabindex="-1" aria-labelledby="example-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="example-modal-label">Add Player to Tee Time</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <label class="form-label" for="potential-players">Players</label>
-                <select class="form-select" id="potential-players">
-                    {% for player in potential_player_list %}
-                        <option value="{{player.id}}">{{player.name}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="add-player-button">Add</button>
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="example-modal-label">Add Player to Tee Time</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="potential-players">Players</label>
+        <select class="form-select" id="potential-players">
+          {% for player in potential_player_list %}
+          <option value="{{ player.id }}">{{ player.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="add-player-button">Add</button>
+      </div>
     </div>
+  </div>
 </div>
 
 <div class="modal fade" id="start-game-modal" tabindex="-1" aria-labelledby="start-game-modal-label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="start-game-modal-label">Start game?</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to start this game?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="start-game-confirm-button">Start</button>
-            </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="start-game-modal-label">Start game?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label class="form-label">Select game type:</label>
+          <select id="add-game-type-select" class="form-select">
+            <option value="best-ball">Best Ball</option>
+            <option value="stroke">Stroke</option>
+            <option value="skins">Skins</option>
+            <option value="stroke-skins">Stroke w/Skins</option>
+            <option value="best-ball-skins">Best Ball w/Skins</option>
+          </select>
         </div>
+        <div>
+          <label class="form-label">Game Buy-in amount:</label>
+          <input id="game-buy-in" type="number" placeholder="Dollars x5" step="5" min="0" max="100" />
+        </div>
+        <p>Are you sure you want to start the game?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="start-game-confirm-button">Start</button>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -91,60 +105,65 @@
 
 {% block page_scripts %}
 <script>
-    const teeTimeId = "{{teetime_data.id}}";
-    const teeTimeManageUrl = "{% url 'dashboard:ajax-manage-tee-time' %}";
-    const csrfToken = "{{csrf_token}}";
-    document.getElementById("add-player-button").addEventListener("click", async (event) => {
-        const data = {
-            "player_id": document.getElementById("potential-players").value,
-            "tee_time_id": teeTimeId,
-            "action": "add-player",
-        };
+  const teeTimeId = "{{ teetime_data.id }}";
+  const teeTimeManageUrl = "{% url 'dashboard:ajax-manage-tee-time' %}";
+  const csrfToken = "{{ csrf_token }}";
+  document.getElementById("add-player-button").addEventListener("click", async (event) => {
+    const data = {
+      "player_id": document.getElementById("potential-players").value,
+      "tee_time_id": teeTimeId,
+      "action": "add-player",
+    };
 
-        const response = await fetch(teeTimeManageUrl, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": csrfToken,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            console.log("Error");
-            return;
-        }
-
-        const jsonData = await response.json();
-        if (jsonData.status == "success") {
-            window.location.reload(true);
-        }
+    const response = await fetch(teeTimeManageUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
     });
 
-    document.getElementById("start-game-confirm-button").addEventListener("click", async () => {
-        const data = {
-            "tee_time_id": teeTimeId,
-            "action": "start-game",
-        };
+    if (!response.ok) {
+      console.log("Error");
+      return;
+    }
 
-        const response = await fetch(teeTimeManageUrl, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": csrfToken,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
+    const jsonData = await response.json();
+    if (jsonData.status == "success") {
+      window.location.reload(true);
+    }
+  });
 
-        if (!response.ok) {
-            console.log("Error");
-            return;
-        }
+  document.getElementById("start-game-confirm-button").addEventListener("click", async () => {
+    const gameType = document.getElementById("add-game-type-select").value;
+    const buyIn = document.getElementById("game-buy-in").value;
+    const data = {
+      tee_time_id: teeTimeId,
+      action: "start-game",
+      game_type: gameType,
+      buy_in: buyIn
+    };
 
-        const jsonData = await response.json();
-        if (jsonData.status == "success") {
-            window.location.replace(jsonData.game_url);
-        }
+    const response = await fetch(teeTimeManageUrl, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
     });
+
+    if (!response.ok) {
+      console.log("Error");
+      return;
+    }
+
+    const jsonData = await response.json();
+    if (jsonData.status == "success") {
+      window.location.replace(jsonData.game_url);
+    }
+  });
+
 </script>
 {% endblock %}

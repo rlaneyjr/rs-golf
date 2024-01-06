@@ -148,15 +148,16 @@ def ajax_manage_tee_time(request):
         if tee_time is None:
             return JsonResponse({"status": "failed"})
 
-        holes_to_play = data.get("holes_to_play", tee_time.holes_to_play)
         game_type = data.get("game_type", None)
         buy_in = data.get("buy_in", None)
 
         new_game = models.Game.objects.create(
+            game_type=game_type,
             date_played=tee_time.tee_time,
             course=tee_time.course,
-            holes_played=holes_to_play,
+            holes_played=tee_time.holes_to_play,
             which_holes=tee_time.which_holes,
+            buy_in=buy_in,
         )
 
         # add players from tee time to game
@@ -166,7 +167,7 @@ def ajax_manage_tee_time(request):
         tee_time.is_active = False
         tee_time.save()
 
-        new_game.start(holes_to_play=holes_to_play, game_type=game_type, buy_in=buy_in)
+        new_game.start()
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({
             "status": "success",

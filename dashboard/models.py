@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from djmoney.models.fields import MoneyField
+from djmoney.models.validators import MaxMoneyValidator, MinMoneyValidator
 
 from dashboard import utils
 
@@ -95,7 +97,6 @@ class GameStatusChoices(models.TextChoices):
     SETUP = "setup", _("Setup")
     ACTIVE = "active", _("Active"),
     COMPLETED = "completed", _("Completed"),
-    NOT_FINISHED = "not_finished", _("Not Finished"),
 
 
 class GolfCourse(models.Model):
@@ -160,9 +161,7 @@ class Game(models.Model):
     game_type = models.CharField(
         max_length=32,
         choices=GameTypeChoices.choices,
-        default=None,
-        blank=True,
-        null=True,
+        default=GameTypeChoices.BEST_BALL,
     )
     date_played = models.DateTimeField(blank=True, null=True)
     course = models.ForeignKey(GolfCourse, on_delete=models.PROTECT)
@@ -182,13 +181,19 @@ class Game(models.Model):
     players = models.ManyToManyField(
         "Player", through="PlayerMembership", through_fields=("game", "player")
     )
-    buy_in = models.DecimalField(
+    buy_in = MoneyField(
+        name="buy_in",
+        verbose_name="Per-player buy-in",
         max_digits=3,
         decimal_places=0,
-        default=None,
-        blank=True,
-        null=True,
+        default=10,
+        default_currency="USD",
+        validators=[
+            MinMoneyValidator({"USD": 10}),
+            MaxMoneyValidator({"USD": 100}),
+        ],
     )
+    score = models.JSONField(blank=True, null=True)
 
     class Meta:
         ordering = ["date_played", "status"]
@@ -203,12 +208,18 @@ class Game(models.Model):
             self.game_type = game_type
         if buy_in != None:
             self.buy_in = buy_in
-        self.status = GameStatusChoices.ACTIVE
         if not self.date_played:
             self.date_played = timezone.now()
         utils.create_teams_for_game(self)
         utils.create_hole_scores_for_game(self)
+        self.status = GameStatusChoices.ACTIVE
         self.save()
+
+    def stop(self):
+        if self.status != GameStatusChoices.COMPLETED:
+            self.score = utils.score_game(self)
+            self.status = GameStatusChoices.COMPLETED
+            self.save()
 
     def __str__(self):
         return f"{self.course.initials} - {self.date_played} - {self.status}"

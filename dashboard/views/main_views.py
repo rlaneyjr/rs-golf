@@ -27,6 +27,10 @@ def index(request):
     )
 
 
+def no_permission(request):
+    return render(request, "dashboard/no-permission.html", {})
+
+
 @login_required
 def view_my_games(request):
     game_list = models.Game.objects.filter(players__in=[request.user.player])
@@ -59,10 +63,6 @@ def download_scorecard(request, game_pk):
 @login_required
 def location_test(request):
     return render(request, "dashboard/location-test.html", {})
-
-
-def no_permission(request):
-    return render(request, "dashboard/no-permission.html", {})
 
 
 @login_required
@@ -127,10 +127,8 @@ def game_detail(request, pk):
     team_list = False
     game_data = get_object_or_404(models.Game, pk=pk)
     current_player_count = game_data.players.count()
-    if game_data.status != "setup":
-        game_pot = game_data.buy_in * current_player_count
-        if utils.game_has_teams(game_data):
-            team_list = utils.get_team_list_for_game(game_data)
+    if utils.game_has_teams(game_data):
+        team_list = utils.get_team_list_for_game(game_data)
     player_list = utils.get_players_not_in_game(game_data)
     hole_list = utils.get_hole_list_for_game(game_data)
     hole_data = utils.get_hole_data_for_game(game_data)
@@ -140,7 +138,7 @@ def game_detail(request, pk):
         {
             "user_is_admin": utils.is_admin(request.user),
             "game_data": game_data,
-            "game_pot": game_pot,
+            "game_pot": game.pot,
             "team_list": team_list,
             "player_list": player_list,
             "current_player_count": current_player_count,
@@ -155,16 +153,12 @@ def game_score(request, pk):
     game_data = get_object_or_404(models.Game, pk=pk)
     if game_data.status != "completed":
         game_data.stop()
-    game_pot = game_data.buy_in * game_data.players.count()
-    hole_list = utils.get_hole_list_for_game(game_data)
     return render(
         request,
         "dashboard/game-score.html",
         {
             "game_data": game_data,
-            "game_pot": game_pot,
-            "hole_list": hole_list,
-            "scores": game_data.score
+            "game_pot": game.pot,
         },
     )
 

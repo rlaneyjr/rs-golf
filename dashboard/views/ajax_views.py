@@ -36,6 +36,10 @@ def ajax_manage_players_for_game(request):
     if data["action"] == "add-player":
         if player_data in game_data.players.all():
             return HttpResponseBadRequest("Player already part of game")
+        if data.get("skins", False):
+            player_mem = models.PlayerMembership.objects.filter(game=game_data, player=player_data).first()
+            player_mem.skins = True
+            player_mem.save()
         game_data.players.add(player_data)
     elif data["action"] == "remove-player":
         game_data.players.remove(player_data)
@@ -138,6 +142,10 @@ def ajax_manage_tee_time(request):
         player_data = models.Player.objects.filter(pk=player_id).first()
         if tee_time is None or player_data is None:
             return JsonResponse({"status": "failed"})
+        if data.get("skins", False):
+            player_mem = models.PlayerMembership.objects.filter(game=game_data, player=player_data).first()
+            player_mem.skins = True
+            player_mem.save()
         tee_time.players.add(player_data)
         return JsonResponse({"status": "success"})
     elif action == "start-game":

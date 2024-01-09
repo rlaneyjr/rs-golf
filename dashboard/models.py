@@ -224,6 +224,10 @@ class Game(models.Model):
     def __str__(self):
         return f"{self.course.initials} - {self.date_played} - {self.status}"
 
+    @property
+    def pot(self):
+        return self.buy_in * self.players.count()
+
 
 class Player(models.Model):
     name = models.CharField(max_length=64)
@@ -283,12 +287,15 @@ class PlayerMembership(models.Model):
         blank=True,
         null=True
     )
+    skins = models.BooleanField(default=False)
 
     def __str__(self):
+        string = f"{self.player}"
         if self.team:
-            return f"{self.game} - {self.player} - {self.team.name}"
-        else:
-            return f"{self.game} - {self.player}"
+            string = f"{string} - {self.team}"
+        if self.skins:
+            string = f"{string} - Skins"
+        return string
 
 
 class HoleScore(models.Model):

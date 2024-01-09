@@ -1,5 +1,6 @@
 {% extends "base-dashboard.html" %}
 {% load djmoney %}
+{% load custom_parser %}
 
 {% block page_name %}Game Detail{% endblock %}
 
@@ -35,12 +36,10 @@
           <label class="fw-bold d-block">Buy-in:</label>
           <span class="ps-2">{{ game_data.buy_in }}</span>
         </div>
-        {% if game_pot %}
         <div class="mb-3">
           <label class="fw-bold d-block">Pot:</label>
-          <span class="ps-2">{{ game_pot }}</span>
+          <span class="ps-2">{{ game.pot }}</span>
         </div>
-        {% endif %}
       </div>
       <div class="card-footer">
         {% if game_data.status == "setup" and current_player_count > 0 %}
@@ -67,14 +66,15 @@
             <tr>
               <th>Name</th>
               <th>Players</th>
-              <th>Handicap</th>
+              <th>Team HCP</th>
             </tr>
           </thead>
           <tbody class="align-middle">
             {% for team in team_list %}
             <tr>
               <td>{{ team.name }}</td>
-              <td>{{ team.players }}</td>
+              {% format_players team.players as team_players %}
+              <td>{{ team_players }}</td>
               <td>{{ team.handicap }}</td>
             </tr>
             {% endfor %}
@@ -99,6 +99,7 @@
               {% endif %}
               <th>Name</th>
               <th>Handicap</th>
+              <th>Skins</th>
             </tr>
           </thead>
           <tbody class="align-middle">
@@ -109,6 +110,8 @@
               {% endif %}
               <td>{{ player.name }}</td>
               <td>{{ player.handicap }}</td>
+              {% player_in_skins player game_data as skin_player %}
+              <td>{{ skin_player }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -141,7 +144,6 @@
           <thead>
             <tr>
               <th>Player</th>
-              <th>Team</th>
               <th>HCP</th>
               {% for hole_num in hole_list %}
               <th>{{ hole_num }}</th>
@@ -153,7 +155,6 @@
             {% for player_id, hole_obj in hole_data.items %}
             <tr class="player-row" data-row-player-id="{{ player_id }}">
               <td>{{ hole_obj.player_name }}</td>
-              <td>{{ hole_obj.team }}</td>
               <td>{{ hole_obj.hcp }}</td>
               {% for hole_item in hole_obj.hole_list %}
                 {% if hole_obj.user_account == request.user or user_is_admin %}
@@ -191,6 +192,13 @@
             {% for player in player_list %}
             <option value="{{ player.id }}">{{ player.name }}</option>
             {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Skins:</label>
+          <select id="player-skins" class="form-select">
+            <option value="True">True</option>
+            <option value="False">False</option>
           </select>
         </div>
       </div>
@@ -314,12 +322,14 @@
 
   document.getElementById("add-player-button").addEventListener("click", async (event) => {
     const playerId = document.getElementById("add-player-select").value;
+    const playerSkins = document.getElementById("player-skins").value;
     if (playerId == "none") {
       return;
     }
 
     const data = {
       playerId: playerId,
+      player_skins: playerSkins,
       game: gameId,
       action: "add-player"
     }

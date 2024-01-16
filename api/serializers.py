@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from dashboard import models
 from users.api import serializers as core_serializers
+from djmoney.contrib.django_rest_framework import MoneyField
 
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -10,7 +11,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Player
-        fields = ["id", "name", "handicap", "photo", "added_by", "user_account"]
+        fields = "__all__"
 
     def create(self, validated_data):
         return models.Player.objects.create(**validated_data)
@@ -19,31 +20,28 @@ class PlayerSerializer(serializers.ModelSerializer):
 class GolfCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.GolfCourse
-        fields = [
-            "id",
-            "name",
-            "initials",
-            "hole_count",
-            "tee_time_link",
-            "website_link",
-            "city",
-            "state",
-            "zip_code",
-            "card",
-            "overview",
-        ]
+        fields = "__all__"
 
 
 class HoleScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.HoleScore
-        fields = ["id", "hole", "score", "game"]
+        fields = "__all__"
 
-    # def validate_game(self, value):
-    #     print("VALIDATE", value)
-    #     if value == "":
-    #         raise serializers.ValidationError()
-    #     return value
+
+class TeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Tee
+        fields = "__all__"
+
+
+class TeeTimeSerializer(serializers.ModelSerializer):
+    course = GolfCourseSerializer(many=False)
+    players = PlayerSerializer(many=True)
+
+    class Meta:
+        model = models.TeeTime
+        fields = "__all__"
 
 
 class SimplePlayerMembershipSerializer(serializers.ModelSerializer):
@@ -51,10 +49,7 @@ class SimplePlayerMembershipSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.PlayerMembership
-        fields = [
-            "id",
-            "player",
-        ]
+        fields = ["id", "player"]
 
 
 class PlayerMembershipSerializer(serializers.ModelSerializer):
@@ -66,52 +61,52 @@ class PlayerMembershipSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "player",
+            "game",
             "team",
             "scores"
-            # "game_set",
-            # "holescore_set"
         ]
 
     def get_scores(self, obj):
         if type(obj) == "Team":
-            queryset = models.HoleScore.objects.filter(team=obj)
+            players = models.PlayerMembership.objects.filter(team=obj)
         elif type(obj) == "Player":
-            queryset = models.HoleScore.objects.filter(player=obj)
+            players = models.PlayerMembership.objects.filter(player=obj)
         else:
-            queryset = models.HoleScore.objects.filter(game=obj)
+            players = models.PlayerMembership.objects.filter(game=obj)
+        queryset = models.HoleScore.objects.filter(player__in=[players])
         return [HoleScoreSerializer(m).data for m in queryset]
 
 
 class GameSerializer(serializers.ModelSerializer):
-    # course = GolfCourseSerializer(many=False, read_only=True)
-    # players = PlayerMembershipSerializer(many=True)
+    course = GolfCourseSerializer(many=False, read_only=True)
+    players = PlayerMembershipSerializer(many=True)
+    buy_in = MoneyField(max_digits=3, decimal_places=0)
+    skin_cost = MoneyField(max_digits=2, decimal_places=0)
     player_list = serializers.SerializerMethodField()
     detail_url = serializers.SerializerMethodField()
+    score = serializers.JSONField(read_only=True, source="score", allow_null=True)
 
     class Meta:
         model = models.Game
         fields = [
             "id",
+            "game_type",
             "date_played",
             "course",
+            "players",
             "holes_played",
+            "which_holes",
             "status",
+            "buy_in",
+            "skin_cost",
+            "score",
             "player_list",
             "detail_url",
         ]
-        # extra_kwargs = {"course": ""}
-        # fields = "__all__"
-        # depth = 1
+        depth = 1
 
     def create(self, validated_data):
-        game_type_data = validated_data.pop("game_type")
-        course_data = validated_data.pop("course")
-        game = models.Game.objects.create(
-            game_type=game_type_data,
-            course=course_data,
-            **validated_data
-        )
-        return game
+        return models.Game.objects.create(**validated_data)
 
     def get_player_list(self, obj):
         queryset = models.PlayerMembership.objects.filter(game=obj)
@@ -127,24 +122,23 @@ class GameSerializer(serializers.ModelSerializer):
         return ""
 
 
-class TeeTimeSerializer(serializers.ModelSerializer):
-    course = GolfCourseSerializer(many=False)
-    players = PlayerSerializer(many=True)
+class TeamSerializer(serializers.ModelSerializer):
+    game = GameSerializer(many=False, read_only=True)
+    players = PlayerMembershipSerializer(many=True)
+    scores = serializers.SerializerMethodField()
 
     class Meta:
-        model = models.TeeTime
+        model = models.PlayerMembership
         fields = [
             "id",
-            "course",
-            "tee_time",
-            "holes_to_play",
-            "which_holes",
-            "is_active",
+            "name",
+            "game",
             "players",
+            "handicap",
+            "scores"
         ]
 
-
-class TeeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Tee
-        fields = ["id", "color", "distance", "hole"]
+    def get_scores(self, obj):
+        team_players = models.PlayerMembership.objects.filter(team=obj)
+        queryset = models.HoleScore.objects.filter(player__in=[team_players])
+        return [HoleScoreSerializer(m).data for m in queryset]

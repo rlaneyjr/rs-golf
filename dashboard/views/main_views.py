@@ -123,7 +123,6 @@ def hole_detail(request, pk):
 
 @login_required
 def game_detail(request, pk):
-    game_pot = False
     team_list = False
     game_data = get_object_or_404(models.Game, pk=pk)
     current_player_count = game_data.players.count()
@@ -138,7 +137,6 @@ def game_detail(request, pk):
         {
             "user_is_admin": utils.is_admin(request.user),
             "game_data": game_data,
-            "game_pot": game.pot,
             "team_list": team_list,
             "player_list": player_list,
             "current_player_count": current_player_count,
@@ -151,14 +149,12 @@ def game_detail(request, pk):
 @login_required
 def game_score(request, pk):
     game_data = get_object_or_404(models.Game, pk=pk)
-    if game_data.status != "completed":
-        game_data.stop()
+    game_data.stop()
     return render(
         request,
         "dashboard/game-score.html",
         {
             "game_data": game_data,
-            "game_pot": game.pot,
         },
     )
 

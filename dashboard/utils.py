@@ -1,5 +1,6 @@
 import random
 from dashboard import models
+from djmoney.money import Money
 
 
 def is_admin(user):
@@ -83,12 +84,12 @@ def game_has_teams(game):
 
 
 def get_holes_for_game(game):
-    hole_list = models.Hole.objects.filter(course=game.course).order_by("order")
+    holes = models.Hole.objects.filter(course=game.course).order_by("order")
     if game.which_holes == "front":
-        hole_list = hole_list.filter(order__gte=1, order__lt=10)
+        holes = hole_list.filter(order__gte=1, order__lt=10)
     elif game.which_holes == "back":
-        hole_list = hole_list.filter(order__gte=10)
-    return hole_list
+        holes = hole_list.filter(order__gte=10)
+    return holes
 
 
 def delete_teams_for_game(game):
@@ -258,7 +259,7 @@ def score_teams(game):
         ti = team_data.index(tw)
         team = team_data.pop(ti)
         team.update({"winner": True})
-        team.update({"money": money})
+        team.update({"money": str(money)})
         team_data.insert(ti, team)
     return team_data
 
@@ -288,15 +289,11 @@ def get_hole_data_for_game(game):
             "hole_list": [],
             "total_score": 0,
             "par": 0,
-            "skins": False,
-            "winner": False,
         }
-        player_game_link = models.PlayerMembership.objects.filter(
+        player_mem = models.PlayerMembership.objects.filter(
             game=game, player=player
         ).first()
-        if player_game_link.skins:
-            hole_data[player.id].update({"skins": player_game_link.skins})
-        hole_score_list = models.HoleScore.objects.filter(player=player_game_link)
+        hole_score_list = models.HoleScore.objects.filter(player=player_mem)
         for hole_item in hole_score_list:
             hole_data[player.id]["hole_list"].append(
                 {
@@ -330,14 +327,15 @@ def get_all_scores_for_game(game):
             hole_score = models.HoleScore.objects.filter(
                 player=player_mem, hole=hole
             ).first()
-            hole_data["scores"].append(
-                {
-                    "player": player.name,
-                    "score": hole_score.score
-                }
-            )
+            hole_score = {
+                "player": player.name,
+                "score": hole_score.score,
+                "skins": player_mem.skins,
+            }
+            hole_data["scores"].append(hole_score)
+        hole_data["scores"].sort(key=lambda s: s["score"])
         all_scores.append(hole_data)
-    all_scores.sort(key=lambda s: s["order"])
+    all_scores.sort(key=lambda h: h["order"])
     return all_scores
 
 
@@ -350,36 +348,101 @@ def all_holes_from_hole_data(hole_data):
     return all_holes
 
 
-def skin_holes_from_hole_data(hole_data):
+def filter_skins_from_all_scores(all_scores):
     skin_holes = []
-    for _, d in hole_data.items():
-        if d["skins"]:
-            for h in d["hole_list"]:
-                h.update({"player_name": d["player_name"]})
-                skin_holes.append(h)
+    for hole in all_scores:
+        skin_filter = filter(lambda s: s["skins"] == True, hole["scores"])
+        hole.update({"scores": list(skin_filter)})
+        skin_holes.append(hole)
     return skin_holes
 
 
-def get_skins_hole_data(hole_data):
+def get_skins_all_scores(all_scores, skin_cost):
     skins = []
-    skin_holes = skin_holes_from_hole_data(hole_data)
+    carry_money = None
+    skin_holes = filter_skins_from_all_scores(all_scores)
     for hole in skin_holes:
-        hole_filter = filter(lambda h: h["hole_order"] == hole["hole_order"], skin_holes)
-        same_holes = list(hole_filter)
-        low_score = min([h["hole_score"] for h in same_holes])
-        low_filter = filter(lambda h: h["hole_score"] == low_score, same_holes)
-        low_holes = list(low_filter)
-        if low_holes and len(low_holes) == 1:
-            player = low_holes[0]["player_name"]
+        hole_money = skin_cost * len(hole["scores"])
+        low_score = min([h["score"] for h in hole["scores"]])
+        low_filter = filter(lambda h: h["score"] == low_score, hole["scores"])
+        low_scores = list(low_filter)
+        if low_scores and len(low_scores) == 1:
+            player = low_scores[0]["player"]
+            if carry_money == None:
+                money = hole_money
+            else:
+                money = hole_money + carry_money
+                carry_money = None
         else:
             player = "carry"
-        skin_hole = {"hole": hole["hole_name"], "player": player}
-        if skin_hole not in skins:
-            skins.append(skin_hole)
+            money = Money(0, "USD")
+            if carry_money == None:
+                carry_money = hole_money
+            else:
+                carry_money = hole_money + carry_money
+        skins.append({"hole": hole["name"], "player": player, "money": str(money)})
     return skins
 
 
-def score_hole_data(hole_data):
+# def skin_holes_from_game(game):
+#     skin_holes = []
+#     holes = get_holes_for_game(game)
+#     for hole in holes:
+#         hole_data = {
+#             "order": hole.order,
+#             "name": hole.name,
+#             "scores": [],
+#             "par": hole.par,
+#             "handicap": str(hole.handicap),
+#         }
+#         for player in game.players.all():
+#             player_mem = models.PlayerMembership.objects.filter(
+#                 game=game, player=player
+#             ).first()
+#             if player_mem.skins:
+#                 hole_score = models.HoleScore.objects.filter(
+#                     player=player_mem, hole=hole
+#                 ).first()
+#                 hole_data["scores"].append(
+#                     {
+#                         "player": player.name,
+#                         "score": hole_score.score
+#                     }
+#                 )
+#         skin_holes.append(hole_data)
+#     skin_holes.sort(key=lambda s: s["order"])
+#     return skin_holes
+
+
+# def get_skins(game):
+#     skins = []
+#     carry_money = None
+#     skin_holes = skin_holes_from_game(game)
+#     for hole in skin_holes:
+#         if len(hole["scores"]):
+#             hole_money = game.skin_cost * len(hole["scores"])
+#             low_score = min([h["score"] for h in hole["scores"]])
+#             low_filter = filter(lambda h: h["score"] == low_score, hole["scores"])
+#             low_scores = list(low_filter)
+#             if low_scores and len(low_scores) == 1:
+#                 player = low_scores[0]["player"]
+#                 if carry_money == None:
+#                     money = hole_money
+#                 else:
+#                     money = hole_money + carry_money
+#                     carry_money = None
+#             else:
+#                 player = "carry"
+#                 money = Money(0, "USD")
+#                 if carry_money == None:
+#                     carry_money = hole_money
+#                 else:
+#                     carry_money = hole_money + carry_money
+#             skins.append({"hole": hole["name"], "player": player, "money": str(money)})
+#     return skins
+
+
+def score_hole_data(hole_data, game_pot):
     scores = []
     for _, player_data in hole_data.items():
         scores.append(player_data)
@@ -387,30 +450,30 @@ def score_hole_data(hole_data):
     low_score = min([h["total_score"] for h in scores])
     low_filter = filter(lambda h: h["total_score"] == low_score, scores)
     low_scores = list(low_filter)
+    winnings = game_pot/len(low_scores)
     for ls in low_scores:
         si = scores.index(ls)
         score = scores.pop(si)
         score.update({"winner": True})
+        score.update({"money": winnings.amount.to_eng_string()})
         scores.insert(si, score)
     return scores
 
 
 def score_game(game):
     hole_list = get_hole_list_for_game(game)
-    all_scores = get_all_scores_for_game(game)
     hole_data = get_hole_data_for_game(game)
-    all_holes = all_holes_from_hole_data(hole_data)
-    skins = get_skins_hole_data(hole_data)
+    all_scores = get_all_scores_for_game(game)
+    skins = get_skins_all_scores(all_scores, game.skin_cost)
     game_score = {
-        "all_holes": all_holes,
         "all_scores": all_scores,
         "hole_list": hole_list,
-        "skins": skins
+        "skins": skins,
     }
     if game_has_teams(game):
         scores = score_teams(game)
         game_score.update({"team_scores": scores})
     else:
-        scores = score_hole_data(hole_data)
+        scores = score_hole_data(hole_data, game.pot)
         game_score.update({"scores": scores})
     return game_score

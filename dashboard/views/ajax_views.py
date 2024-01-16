@@ -34,12 +34,11 @@ def ajax_manage_players_for_game(request):
         return HttpResponseBadRequest("Unable to find either game or player")
 
     if data["action"] == "add-player":
+        player_mem = models.PlayerMembership.objects.filter(game=game_data, player=player_data).first()
+        player_mem.skins = data["skins"]
+        player_mem.save()
         if player_data in game_data.players.all():
             return HttpResponseBadRequest("Player already part of game")
-        if data.get("skins", False):
-            player_mem = models.PlayerMembership.objects.filter(game=game_data, player=player_data).first()
-            player_mem.skins = True
-            player_mem.save()
         game_data.players.add(player_data)
     elif data["action"] == "remove-player":
         game_data.players.remove(player_data)
@@ -65,7 +64,13 @@ def ajax_manage_game(request):
         holes_to_play = data.get("holes_to_play", None)
         game_type = data.get("game_type", None)
         buy_in = data.get("buy_in", None)
-        game_data.start(holes_to_play=holes_to_play, game_type=game_type, buy_in=buy_in)
+        skin_cost = data.get("skin_cost", None)
+        game_data.start(
+            holes_to_play=holes_to_play,
+            game_type=game_type,
+            buy_in=buy_in,
+            skin_cost=skin_cost,
+        )
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({"status": "success"})
     return HttpResponseBadRequest("Unknown Action")
@@ -138,13 +143,14 @@ def ajax_manage_tee_time(request):
     if action == "add-player":
         tee_time_id = data["tee_time_id"]
         player_id = data["player_id"]
+        skins = data.get("skins", None)
         tee_time = models.TeeTime.objects.filter(pk=tee_time_id).first()
         player_data = models.Player.objects.filter(pk=player_id).first()
         if tee_time is None or player_data is None:
             return JsonResponse({"status": "failed"})
-        if data.get("skins", False):
+        if skins != None:
             player_mem = models.PlayerMembership.objects.filter(game=game_data, player=player_data).first()
-            player_mem.skins = True
+            player_mem.skins = skins
             player_mem.save()
         tee_time.players.add(player_data)
         return JsonResponse({"status": "success"})
@@ -158,6 +164,7 @@ def ajax_manage_tee_time(request):
 
         game_type = data.get("game_type", None)
         buy_in = data.get("buy_in", None)
+        skin_cost = data.get("skin_cost", None)
 
         new_game = models.Game.objects.create(
             game_type=game_type,
@@ -166,6 +173,7 @@ def ajax_manage_tee_time(request):
             holes_played=tee_time.holes_to_play,
             which_holes=tee_time.which_holes,
             buy_in=buy_in,
+            skin_cost=skin_cost,
         )
 
         # add players from tee time to game

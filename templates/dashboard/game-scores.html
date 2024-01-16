@@ -1,8 +1,8 @@
+{% load djmoney %}
 {% load custom_parser %}
 {% get_team_scores game_data as team_scores %}
 {% get_scores game_data as scores %}
 {% get_skins game_data as skins %}
-{% get_all_holes game_data as all_holes %}
 {% get_all_scores game_data as all_scores %}
 {% get_hole_list game_data as hole_list %}
 {% block content %}
@@ -18,22 +18,27 @@
           <thead>
             <tr>
               <th>Team</th>
+              <th>Players</th>
               {% for hole_num in hole_list %}
               <th>{{ hole_num }}</th>
               {% endfor %}
               <th>Score</th>
               <th>Winner</th>
+              <th>Money</th>
             </tr>
           </thead>
           <tbody>
             {% for team in team_scores %}
             <tr>
               <td>{{ team.team_name }}</td>
+              {% format_players team.players as team_players %}
+              <td>{{ team_players }}</td>
               {% for hole_item in team.hole_list %}
               <td>{{ hole_item.hole_score }}</td>
               {% endfor %}
               <td>{{ team.team_score }}</td>
               <td>{{ team.winner }}</td>
+              <td>{{ team.money }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -42,7 +47,9 @@
     </div>
   </div>
 </div>
-{% elif scores %}
+{% endif %}
+
+{% if scores %}
 <div class="row mt-3">
   <div class="col-12">
     <div class="card">
@@ -95,6 +102,7 @@
             <tr>
               <th>Hole</th>
               <th>Player</th>
+              <th>Money</th>
             </tr>
           </thead>
           <tbody>
@@ -102,6 +110,7 @@
             <tr>
               <td>{{ skin.hole }}</td>
               <td>{{ skin.player }}</td>
+              <td>{{ skin.money }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -144,39 +153,4 @@
 </div>
 {% endif %}
 
-{% if all_holes %}
-<div class="row mt-3">
-  <div class="col-12">
-    <div class="card">
-      <div class="card-header">
-        All Holes
-      </div>
-      <div class="card-body">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Hole</th>
-              <th>Score</th>
-              <th>Par</th>
-              <th>HCP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for hole in all_holes %}
-            <tr>
-              <td>{{ hole.player_name }}</td>
-              <td>{{ hole.hole_name }}</td>
-              <td>{{ hole.hole_score }}</td>
-              <td>{{ hole.hole_par }}</td>
-              <td>{{ hole.hole_handicap }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
 {% endblock content %}

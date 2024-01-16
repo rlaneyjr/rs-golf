@@ -16,10 +16,6 @@ def get_skins(game):
     return game.score.get("skins", False)
 
 @register.simple_tag
-def get_all_holes(game):
-    return game.score.get("all_holes")
-
-@register.simple_tag
 def get_all_scores(game):
     return game.score.get("all_scores")
 

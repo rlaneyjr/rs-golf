@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from djmoney.models.fields import MoneyField
 from djmoney.models.validators import MaxMoneyValidator, MinMoneyValidator
-
 from dashboard import utils
 
 
@@ -193,13 +192,31 @@ class Game(models.Model):
             MaxMoneyValidator({"USD": 100}),
         ],
     )
+    skin_cost = MoneyField(
+        name="skin_cost",
+        verbose_name="Per-hole skin cost",
+        max_digits=2,
+        decimal_places=0,
+        default=1,
+        default_currency="USD",
+        validators=[
+            MinMoneyValidator({"USD": 1}),
+            MaxMoneyValidator({"USD": 10}),
+        ],
+    )
     score = models.JSONField(blank=True, null=True)
 
-    class Meta:
-        ordering = ["date_played", "status"]
-        verbose_name_plural = "games"
+    @property
+    def pot(self):
+        return self.buy_in * self.players.count()
 
-    def start(self, holes_to_play=None, game_type=None, buy_in=None):
+    def start(
+            self,
+            holes_to_play=None,
+            game_type=None,
+            buy_in=None,
+            skin_cost=None,
+        ):
         # if not any([game_type, self.game_type]):
         #     raise ValidationError("You must provide a game type")
         if holes_to_play != None:
@@ -208,6 +225,8 @@ class Game(models.Model):
             self.game_type = game_type
         if buy_in != None:
             self.buy_in = buy_in
+        if skin_cost != None:
+            self.skin_cost = skin_cost
         if not self.date_played:
             self.date_played = timezone.now()
         utils.create_teams_for_game(self)
@@ -222,11 +241,11 @@ class Game(models.Model):
             self.save()
 
     def __str__(self):
-        return f"{self.course.initials} - {self.date_played} - {self.status}"
+        return f"{self.course.initials} - {self.date_played.date()} - {self.status}"
 
-    @property
-    def pot(self):
-        return self.buy_in * self.players.count()
+    class Meta:
+        ordering = ["date_played", "status"]
+        verbose_name_plural = "games"
 
 
 class Player(models.Model):
@@ -287,7 +306,7 @@ class PlayerMembership(models.Model):
         blank=True,
         null=True
     )
-    skins = models.BooleanField(default=False)
+    skins = models.BooleanField(default=True)
 
     def __str__(self):
         string = f"{self.player}"

@@ -128,19 +128,19 @@ try:
 
         AWS_S3_REGION_NAME = env(
             "PROD_AWS_S3_REGION_NAME",
-            default="syd1",
+            default="us-east-1",
         )
         AWS_S3_ENDPOINT_URL = env(
             "PROD_AWS_S3_ENDPOINT_URL",
-            default=f"https://{AWS_S3_REGION_NAME}.digitaloceanspaces.com",
+            default=f"https://{AWS_S3_REGION_NAME}.netengone.com",
         )
         AWS_STORAGE_BUCKET_NAME = env(
             "PROD_AWS_STORAGE_BUCKET_NAME",
-            default="tb-s3",
+            default="rs-golf",
         )
         AWS_LOCATION = env(
             "PROD_AWS_LOCATION",
-            default=f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com",
+            default=f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.netengone.com",
         )
         # This isnt working when using an ENV VAR
         # AWS_S3_OBJECT_PARAMETERS = env(

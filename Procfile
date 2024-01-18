@@ -1,1 +1,1 @@
-web: gunicorn rs-golf.core.wsgi
+web: gunicorn core.wsgi

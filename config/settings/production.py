@@ -1,8 +1,11 @@
 """Django production settings for rs-golf project."""
 
-import environ
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+import dj_database_url
+import environ
+import secrets
+import os
 
 from .base import *  # noqa: F405 F401 F403
 
@@ -15,6 +18,24 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env/.production"))  # noqa: F405
 
 logger = logging.getLogger(__name__)
 
+# Before using your Heroku app in production, make sure to review Django's deployment checklist:
+# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+
+# The `DYNO` env var is set on Heroku CI, but it's not a real Heroku app, so we have to
+# also explicitly exclude CI:
+# https://devcenter.heroku.com/articles/heroku-ci#immutable-environment-variables
+IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
+
+# SECURITY WARNING: don't run with debug turned on in production!
+if not IS_HEROKU_APP:
+    DEBUG = True
+
+# On Heroku, it's safe to use a wildcard for `ALLOWED_HOSTS``, since the Heroku router performs
+# validation of the Host header in the incoming HTTP request. On other platforms you may need
+# to list the expected hostnames explicitly to prevent HTTP Host header attacks. See:
+# https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-ALLOWED_HOSTS
+if IS_HEROKU_APP:
+    PROD_ALLOWED_HOSTS = ["*"]
 
 ALLOWED_HOSTS = env.list(
     "PROD_ALLOWED_HOSTS",
@@ -44,12 +65,28 @@ DJANGO_SETTINGS_MODULE = env(
     default="config.settings.production",
 )
 
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    "default": env.db(
-        "PROD_DATABASE_URL",
-    ),
-}
+if IS_HEROKU_APP:
+    # In production on Heroku the database configuration is derived from the `DATABASE_URL`
+    # environment variable by the dj-database-url package. `DATABASE_URL` will be set
+    # automatically by Heroku when a database addon is attached to your Heroku app. See:
+    # https://devcenter.heroku.com/articles/provisioning-heroku-postgres
+    # https://github.com/jazzband/dj-database-url
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=True,
+        ),
+    }
+else:
+    DATABASES = {
+        "default": env.db(
+            "PROD_DATABASE_URL",
+        ),
+    }
 
 EMAIL_BACKEND = env(
     "PROD_EMAIL_BACKEND",
@@ -95,9 +132,18 @@ LOGGING["handlers"]["rotated_logs"]["level"] = DJANGO_LOGGING_LEVEL  # noqa: F40
 LOGGING["handlers"]["rotated_logs"]["filename"] = DJANGO_LOG_FILE  # noqa: F405
 
 
+# Django requires a unique secret key for each Django app, that is used by several of its
+# security features. To simplify initial setup (without hardcoding the secret in the source
+# code) we set this to a random value every time the app starts. However, this will mean many
+# Django features break whenever an app restarts (for example, sessions will be logged out).
+# In your production Heroku apps you should set the `DJANGO_SECRET_KEY` config var explicitly.
+# Make sure to use a long unique value, like you would for a password. See:
+# https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY
+# https://devcenter.heroku.com/articles/config-vars
+# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env(
     "PROD_DJANGO_SECRET_KEY",
-    default="!!!INSECURE_PRODUCTION_SECRET!!!",
+    default=secrets.token_urlsafe(nbytes=64),
 )
 
 
@@ -111,7 +157,7 @@ assert (  # nosec
 ), "Production can't be run in DEBUG mode for security reasons."
 
 # `USE_STATIC` options are `local` or `S3`
-USE_STATIC = env("PROD_USE_STATIC", default="S3")
+USE_STATIC = env("PROD_USE_STATIC", default="local")
 
 
 try:
@@ -175,14 +221,27 @@ try:
         # Set the url for the css file
         PROD_DJANGO_TEMPLATES_CSS = f"{STATIC_URL}css/styles.css"
 
-    elif USE_STATIC != "S3":
+    elif USE_STATIC == "local":
+        STORAGES = {
+            # Enable WhiteNoise's GZip and Brotli compression of static assets:
+            # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
+            "staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            },
+        }
+
+        # Don't store the original (un-hashed filename) version of static files, to reduce slug size:
+        # https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
+        WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+
+    else:
         raise ImproperlyConfigured(
-            "Production environment USE_STATIC must be S3, it is configured to %s."
+            "Production environment USE_STATIC must be set to something supported, it is configured to %s."
             % (USE_STATIC),
         )
 
 except ImproperlyConfigured:
     logger.critical(
-        "Production environment USE_STATIC must be S3, it is configured to %s."
+        "Production environment USE_STATIC must be set to something supported, it is configured to %s."
         % (USE_STATIC),
     )

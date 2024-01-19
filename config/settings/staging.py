@@ -3,6 +3,7 @@
 import environ
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+import dj_database_url
 
 from .base import *  # noqa: F405 F401 F403
 
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_HOSTS = env.list(
     "STAGING_ALLOWED_HOSTS",
-    default=[""],
+    default=["*"],
 )
 
 DEBUG = env("STAGING_DJANGO_DEBUG", default=False)

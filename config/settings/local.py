@@ -1,5 +1,6 @@
 """Django local settings for rs-golf project."""
 import logging
+import secrets
 
 # from django.core.exceptions import ImproperlyConfigured
 from pathlib import Path
@@ -140,7 +141,7 @@ MIDDLEWARE += [  # noqa: F405
 
 SECRET_KEY = env(
     "LOCAL_DJANGO_SECRET_KEY",
-    default="!!!INSECURE_LOCAL_SECRET!!!",
+    default=secrets.token_urlsafe(nbytes=64),
 )
 
 

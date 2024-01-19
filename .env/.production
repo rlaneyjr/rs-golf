@@ -17,7 +17,7 @@ PROD_DJANGO_TEMPLATES_CSS=''
 PROD_MEDIA_URL='media-'
 PROD_STATIC_URL='static/'
 # static options are local or S3
-PROD_USE_STATIC='S3'
+PROD_USE_STATIC='local'
 PROD_TAILWIND_CSS_DEV=False
 
 # Production Environment S3 access

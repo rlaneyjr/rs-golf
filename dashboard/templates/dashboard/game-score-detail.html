@@ -1,6 +1,5 @@
 {% extends "base-dashboard.html" %}
 {% load djmoney %}
-
 {% block page_name %}Game Score Detail{% endblock %}
 
 {% block button_bar %}
@@ -18,7 +17,9 @@
         <table class="table">
           <thead>
             <tr>
+              {% if game_data.status == "active" %}
               <th style="width: 5%;">&nbsp;</th>
+              {% endif %}
               <th>Player</th>
               <th>Team</th>
               <th>Hole #</th>
@@ -30,7 +31,9 @@
           <tbody class="align-middle">
             {% for score in all_scores %}
             <tr>
+              {% if game_data.status == "active" %}
               <td><a href="{% url 'dashboard:edit_hole_score' score.id %}" class="btn btn-primary btn-sm">Edit</a></td>
+              {% endif %}
               <td>{{score.player.player.name}}</td>
               <td>{{score.player.team.name}}</td>
               <td>{{score.hole.order}}</td>
@@ -45,6 +48,40 @@
     </div>
   </div>
 </div>
+
+{% if game_data.status == "completed" %}
+{% load custom_parser %}
+{% get_all_scores game_data as final_scores %}
+<div class="row mt-3">
+  <div class="col-12">
+    {% for hole in final_scores %}
+    <div class="card">
+      <div class="card-header">
+        {{ hole.name }} Par:{{ hole.par }} HCP:{{ hole.handicap }}
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for score in hole.scores %}
+            <tr>
+              <td>{{ score.player }}</td>
+              <td>{{ score.score }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 {% endblock content %}
 
 {% block page_styles %}{% endblock %}

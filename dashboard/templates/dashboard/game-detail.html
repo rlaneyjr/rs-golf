@@ -47,13 +47,16 @@
       </div>
       <div class="card-footer">
         {% if game_data.status == "setup" and current_player_count > 0 %}
-        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
+        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
         {% elif game_data.status == "active" %}
-        <button class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
+        <button class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
         {% elif game_data.status == "completed" %}
         <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Game Scores</a>
         {% endif %}
-        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-secondary btn-sm">Edit Game</a>
+        {% if game_data.status != "setup" %}
+        <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-secondary btn-sm">Score Details</a>
+        {% endif %}
+        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-warning btn-sm">Edit Game</a>
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
       </div>
     </div>
@@ -324,7 +327,6 @@
   const manageGameUrl = "{% url 'dashboard:ajax_manage_game' %}";
   const gameListUrl = "{% url 'dashboard:games' %}";
   const recordScoreUrl = "{% url 'dashboard:ajax_record_score_for_hole' %}";
-
   const csrfToken = "{{ csrf_token }}";
   let removePlayerId = null;
 

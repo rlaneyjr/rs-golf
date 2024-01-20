@@ -1,6 +1,6 @@
 {% extends "base-dashboard.html" %}
 
-{% block page_name %}Scores for {{ game_data.pot }} Game{% endblock %}
+{% block page_name %}Scores for Game {{ game_data.date_played }}{% endblock %}
 
 {% block button_bar %}
 <a href="{% url 'dashboard:game_detail' game_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Game Detail</a>

@@ -3,7 +3,6 @@
 {% get_team_scores game_data as team_scores %}
 {% get_scores game_data as scores %}
 {% get_skins game_data as skins %}
-{% get_all_scores game_data as all_scores %}
 {% get_hole_list game_data as hole_list %}
 {% block content %}
 {% if team_scores %}
@@ -120,37 +119,4 @@
   </div>
 </div>
 {% endif %}
-
-{% if all_scores %}
-<div class="row mt-3">
-  <div class="col-12">
-    {% for hole in all_scores %}
-    <div class="card">
-      <div class="card-header">
-        {{ hole.name }} Par:{{ hole.par }} HCP:{{ hole.handicap }}
-      </div>
-      <div class="card-body">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Player</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for score in hole.scores %}
-            <tr>
-              <td>{{ score.player }}</td>
-              <td>{{ score.score }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-{% endif %}
-
 {% endblock content %}

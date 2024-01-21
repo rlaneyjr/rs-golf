@@ -154,8 +154,21 @@ assert (  # nosec
 USE_STATIC = env("PROD_USE_STATIC", default="local")
 
 try:
+    if USE_STATIC == "local":
+        STORAGES = {
+            # Enable WhiteNoise's GZip and Brotli compression of static assets:
+            # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
+            "staticfiles": {
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            },
+        }
+
+        # Don't store the original (un-hashed filename) version of static files, to reduce slug size:
+        # https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
+        WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+
     # Digital Ocean S3 Storage Configuration
-    if USE_STATIC == "S3":
+    elif USE_STATIC == "S3":
         AWS_ACCESS_KEY_ID = env(
             "PROD_AWS_ACCESS_KEY_ID",
             default="PRODUCTION_AWS_KEY_NOT_SET",
@@ -213,19 +226,6 @@ try:
 
         # Set the url for the css file
         PROD_DJANGO_TEMPLATES_CSS = f"{STATIC_URL}css/styles.css"
-
-    elif USE_STATIC == "local":
-        STORAGES = {
-            # Enable WhiteNoise's GZip and Brotli compression of static assets:
-            # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
-            "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            },
-        }
-
-        # Don't store the original (un-hashed filename) version of static files, to reduce slug size:
-        # https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
-        WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 
     else:
         raise ImproperlyConfigured(

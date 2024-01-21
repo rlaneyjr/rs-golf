@@ -1,7 +1,7 @@
 # Staging Environment ENV Keys
 
 # Staging Environment Django
-STAGING_ALLOWED_HOSTS=''
+STAGING_ALLOWED_HOSTS='*'
 STAGING_DATABASE_URL=''
 STAGING_DB_API_KEY=''
 STAGING_DJANGO_DEBUG=False
@@ -17,7 +17,7 @@ STAGING_DJANGO_TEMPLATES_CSS=''
 STAGING_MEDIA_URL='media-st/'
 STAGING_STATIC_URL='static-st/'
 # static options are local or S3
-STAGING_USE_STATIC='S3'
+STAGING_USE_STATIC='local'
 STAGING_TAILWIND_CSS_DEV=False
 
 # Staging Environment S3 access

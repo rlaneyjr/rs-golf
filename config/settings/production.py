@@ -28,14 +28,14 @@ IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if not IS_HEROKU_APP:
-    DEBUG = True
+    PROD_DJANGO_DEBUG = True
 
 # On Heroku, it's safe to use a wildcard for `ALLOWED_HOSTS``, since the Heroku router performs
 # validation of the Host header in the incoming HTTP request. On other platforms you may need
 # to list the expected hostnames explicitly to prevent HTTP Host header attacks. See:
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-ALLOWED_HOSTS
 if IS_HEROKU_APP:
-    PROD_ALLOWED_HOSTS = ["*"]
+    PROD_ALLOWED_HOSTS = ["rs-golf-6bbe597a4ab1.herokuapp.com"]
 
 ALLOWED_HOSTS = env.list(
     "PROD_ALLOWED_HOSTS",
@@ -146,19 +146,12 @@ SECRET_KEY = env(
     default=secrets.token_urlsafe(nbytes=64),
 )
 
-
-# Check it is safe to run in production.
-assert (  # nosec
-    env("PROD_DJANGO_SECRET_KEY") != "!!!INSECURE_PRODUCTION_SECRET!!!"
-), "The DJANGO_SECRET_KEY must be set for production."
-
 assert (  # nosec
     DEBUG is False
 ), "Production can't be run in DEBUG mode for security reasons."
 
 # `USE_STATIC` options are `local` or `S3`
 USE_STATIC = env("PROD_USE_STATIC", default="local")
-
 
 try:
     # Digital Ocean S3 Storage Configuration

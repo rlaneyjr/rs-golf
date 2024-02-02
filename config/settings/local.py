@@ -57,8 +57,12 @@ DJANGO_TEMPLATES_CSS = env(
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",  # noqa: F405
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "rs_golf",
+        "USER": "django",
+        "PASSWORD": "LetMeDB4988L",
+        "HOST": "localhost",
+        "PORT": "5452",
     }
 }
 

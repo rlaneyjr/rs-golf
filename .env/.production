@@ -1,7 +1,7 @@
 # Production Environment ENV Keys
 
 # Production Environment Django
-PROD_ALLOWED_HOSTS=''
+PROD_ALLOWED_HOSTS=['rs-golf-4bfbaba3cb7e.herokuapp.com', '127.0.0.1']
 PROD_DATABASE_URL=''
 PROD_DB_API_KEY=''
 PROD_DJANGO_DEBUG=False
@@ -14,7 +14,7 @@ PROD_DJANGO_MANAGEPY_MIGRATE=on
 PROD_DJANGO_SECRET_KEY=PROD_SECRET_KEY
 PROD_DJANGO_SETTINGS_MODULE='config.settings.production'
 PROD_DJANGO_TEMPLATES_CSS=''
-PROD_MEDIA_URL='media-'
+PROD_MEDIA_URL='media/'
 PROD_STATIC_URL='static/'
 # static options are local or S3
 PROD_USE_STATIC='local'

@@ -62,7 +62,7 @@ DATABASES = {
         "USER": "django",
         "PASSWORD": "LetMeDB4988L",
         "HOST": "localhost",
-        "PORT": "5452",
+        "PORT": "5432",
     }
 }
 

@@ -115,6 +115,10 @@ class GolfCourse(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def par(self):
+        return utils.get_par_for_course(self)
+
 
 class Hole(models.Model):
     name = models.CharField(max_length=7, choices=HoleNameChoices.choices, default=HoleNameChoices.HOLE_1)
@@ -210,6 +214,10 @@ class Game(models.Model):
     def pot(self):
         return self.buy_in * self.players.count()
 
+    @property
+    def par(self):
+        return utils.get_par_for_game(self)
+
     def start(
             self,
             holes_to_play=None,
@@ -277,6 +285,10 @@ class Player(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    def update_hcp(self, new_hcp):
+        _hcp = sum([self.handicap, new_hcp])/len([self.handicap, new_hcp])
+        self.handicap = round(_hcp, 1)
+        self.save()
 
 class Team(models.Model):
     name = models.CharField(max_length=64)

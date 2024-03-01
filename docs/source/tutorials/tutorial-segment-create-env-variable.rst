@@ -19,7 +19,7 @@ Create a Django Secret key.
 
     python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 
-You will see an output similat to this.
+You will see an output similar to this.
 
 .. code-block::
 

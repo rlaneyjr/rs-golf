@@ -83,13 +83,23 @@ def game_has_teams(game):
     return False
 
 
+def get_par_for_course(course):
+    holes = models.Hole.objects.filter(course=course).order_by("order")
+    return sum([h.par for h in holes])
+
+
 def get_holes_for_game(game):
-    holes = models.Hole.objects.filter(course=game.course).order_by("order")
+    hole_list = models.Hole.objects.filter(course=game.course).order_by("order")
     if game.which_holes == "front":
         holes = hole_list.filter(order__gte=1, order__lt=10)
     elif game.which_holes == "back":
         holes = hole_list.filter(order__gte=10)
     return holes
+
+
+def get_par_for_game(game):
+    holes = get_holes_for_game(game)
+    return sum([h.par for h in holes])
 
 
 def delete_teams_for_game(game):
@@ -460,6 +470,12 @@ def score_hole_data(hole_data, game_pot):
     return scores
 
 
+def update_player_hcp_for_game(game, hole_data):
+    for player in game.players.all():
+        game_hcp = hole_data[player.id]["total_score"] - hole_data[player.id]["par"]
+        player.update_hcp(game_hcp)
+
+
 def score_game(game):
     hole_list = get_hole_list_for_game(game)
     hole_data = get_hole_data_for_game(game)
@@ -476,4 +492,5 @@ def score_game(game):
     else:
         scores = score_hole_data(hole_data, game.pot)
         game_score.update({"scores": scores})
+    update_player_hcp_for_game(game, hole_data)
     return game_score

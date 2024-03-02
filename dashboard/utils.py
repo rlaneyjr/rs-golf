@@ -89,11 +89,11 @@ def get_par_for_course(course):
 
 
 def get_holes_for_game(game):
-    hole_list = models.Hole.objects.filter(course=game.course).order_by("order")
+    holes = models.Hole.objects.filter(course=game.course).order_by("order")
     if game.which_holes == "front":
-        holes = hole_list.filter(order__gte=1, order__lt=10)
+        holes = holes.filter(order__gte=1, order__lt=10)
     elif game.which_holes == "back":
-        holes = hole_list.filter(order__gte=10)
+        holes = holes.filter(order__gte=10)
     return holes
 
 
@@ -289,33 +289,45 @@ def get_hole_list_for_game(game):
 
 
 def get_hole_data_for_game(game):
-    hole_data = {}
+    hole_data = []
     # Always keep track of each players score
     for player in game.players.all():
-        hole_data[player.id] = {
+        player_data = {
             "user_account": player.user_account,
+            "player_id": player.id,
             "player_name": player.name,
+            "skins": None,
+            "team_id": None,
+            "team_name": None,
             "hcp": str(player.handicap),
             "hole_list": [],
-            "total_score": 0,
+            "player_score": 0,
             "par": 0,
+            "winner": False,
+            "money": 0,
         }
         player_mem = models.PlayerMembership.objects.filter(
             game=game, player=player
         ).first()
+        player_data["skins"] = player_mem.skins
+        if player_mem.team != None:
+            player_data["team_id"] = player_mem.team.id
+            player_data["team_name"] = player_mem.team.name
         hole_score_list = models.HoleScore.objects.filter(player=player_mem)
-        for hole_item in hole_score_list:
-            hole_data[player.id]["hole_list"].append(
+        for hole_score in hole_score_list:
+            player_data["hole_list"].append(
                 {
-                    "hole_order": hole_item.hole.order,
-                    "hole_name": hole_item.hole.name,
-                    "hole_score": hole_item.score,
-                    "hole_par": hole_item.hole.par,
-                    "hole_handicap": str(hole_item.hole.handicap),
+                    "hole_score_id": hole_score.id,
+                    "hole_order": hole_score.hole.order,
+                    "hole_name": hole_score.hole.name,
+                    "hole_score": hole_score.score,
+                    "hole_par": hole_score.hole.par,
+                    "hole_handicap": str(hole_score.hole.handicap),
                 }
             )
-            hole_data[player.id]["total_score"] += hole_item.score
-            hole_data[player.id]["par"] += hole_item.hole.par
+            player_data["player_score"] += hole_score.score
+            player_data["par"] += hole_score.hole.par
+        hole_data.append(player_data)
     return hole_data
 
 
@@ -351,9 +363,9 @@ def get_all_scores_for_game(game):
 
 def all_holes_from_hole_data(hole_data):
     all_holes = []
-    for _, d in hole_data.items():
-        for h in d["hole_list"]:
-            h.update({"player_name": d["player_name"]})
+    for p in hole_data:
+        for h in p["hole_list"]:
+            h.update({"player_name": p["player_name"]})
             all_holes.append(h)
     return all_holes
 
@@ -453,26 +465,23 @@ def get_skins_all_scores(all_scores, skin_cost):
 
 
 def score_hole_data(hole_data, game_pot):
-    scores = []
-    for _, player_data in hole_data.items():
-        scores.append(player_data)
-    # scores.sort(key=lambda s: s["total_score"])
-    low_score = min([h["total_score"] for h in scores])
-    low_filter = filter(lambda h: h["total_score"] == low_score, scores)
+    low_score = min([h["player_score"] for h in hole_data])
+    low_filter = filter(lambda h: h["player_score"] == low_score, hole_data)
     low_scores = list(low_filter)
     winnings = game_pot/len(low_scores)
     for ls in low_scores:
-        si = scores.index(ls)
-        score = scores.pop(si)
+        si = hole_data.index(ls)
+        score = hole_data.pop(si)
         score.update({"winner": True})
         score.update({"money": winnings.amount.to_eng_string()})
-        scores.insert(si, score)
-    return scores
+        hole_data.insert(si, score)
+    return hole_data
 
 
-def update_player_hcp_for_game(game, hole_data):
-    for player in game.players.all():
-        game_hcp = hole_data[player.id]["total_score"] - hole_data[player.id]["par"]
+def update_player_hcp_hole_data(hole_data):
+    for pd in hole_data:
+        game_hcp = pd["player_score"] - pd["par"]
+        player = models.Player.objects.filter(pk=pd["player_id"]).first()
         player.update_hcp(game_hcp)
 
 
@@ -492,5 +501,5 @@ def score_game(game):
     else:
         scores = score_hole_data(hole_data, game.pot)
         game_score.update({"scores": scores})
-    update_player_hcp_for_game(game, hole_data)
+    update_player_hcp_hole_data(hole_data)
     return game_score

@@ -26,20 +26,16 @@ def ajax_record_score_for_hole(request):
 )
 def ajax_manage_players_for_game(request):
     data = json.loads(request.body)
-    if not all([data["playerId"], data["game"], data["action"]]):
+    if not all([data["playerId"], data["game"], data["action"], data["skins"]]):
         return HttpResponseBadRequest("Missing Data")
     game_data = models.Game.objects.filter(pk=data["game"]).first()
     player_data = models.Player.objects.filter(pk=data["playerId"]).first()
     if not all([game_data, player_data]):
         return HttpResponseBadRequest("Unable to find either game or player")
-
     if data["action"] == "add-player":
-        player_mem = models.PlayerMembership.objects.filter(game=game_data, player=player_data).first()
-        player_mem.skins = data["skins"]
+        player_mem = models.PlayerMembership.objects.create(game=game_data, player=player_data)
+        player_mem.skins = data.get("skins", False)
         player_mem.save()
-        if player_data in game_data.players.all():
-            return HttpResponseBadRequest("Player already part of game")
-        game_data.players.add(player_data)
     elif data["action"] == "remove-player":
         game_data.players.remove(player_data)
     return JsonResponse({"status": "success"})
@@ -55,12 +51,7 @@ def ajax_manage_game(request):
     game_data = models.Game.objects.filter(pk=game_id).first()
     if game_data is None:
         return HttpResponseBadRequest("Cannot find game with that id")
-    if data["action"] == "delete-game":
-        utils.delete_teams_for_game(game_data)
-        game_data.delete()
-        messages.add_message(request, messages.INFO, "Game Deleted.")
-        return JsonResponse({"status": "success"})
-    elif data["action"] == "start-game":
+    if data["action"] == "start-game":
         holes_to_play = data.get("holes_to_play", None)
         game_type = data.get("game_type", None)
         buy_in = data.get("buy_in", None)
@@ -72,6 +63,15 @@ def ajax_manage_game(request):
             skin_cost=skin_cost,
         )
         messages.add_message(request, messages.INFO, "Game Started.")
+        return JsonResponse({"status": "success"})
+    elif data["action"] == "reset-game":
+        game_data.reset()
+        messages.add_message(request, messages.INFO, "Game Reset.")
+        return JsonResponse({"status": "success"})
+    elif data["action"] == "delete-game":
+        utils.delete_teams_for_game(game_data)
+        game_data.delete()
+        messages.add_message(request, messages.INFO, "Game Deleted.")
         return JsonResponse({"status": "success"})
     return HttpResponseBadRequest("Unknown Action")
 

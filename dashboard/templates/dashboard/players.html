@@ -12,6 +12,7 @@
                 <thead>
                     <th style="width: 5%;">&nbsp;</th>
                     <th>Name</th>
+                    <th>HCP</th>
                     <th>User Account</th>
                     <th>Added By</th>
                 </thead>
@@ -20,6 +21,7 @@
                     <tr>
                         <td><a href="{% url 'dashboard:player_detail' player.id %}" class="btn btn-primary btn-sm">View</a></td>
                         <td>{{player.name}}</td>
+                        <td>{{player.handicap}}</td>
                         {% if player.user_account %}
                             <td>{{player.user_account.email}}</td>
                         {% else %}

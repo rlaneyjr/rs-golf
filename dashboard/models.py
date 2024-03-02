@@ -248,6 +248,12 @@ class Game(models.Model):
             self.status = GameStatusChoices.COMPLETED
             self.save()
 
+    def reset(self):
+        self.players.set(clear=True)
+        self.score = None
+        self.status = GameStatusChoices.SETUP
+        self.save()
+
     def __str__(self):
         return f"{self.course.initials} - {self.date_played.date()} - {self.status}"
 
@@ -290,6 +296,7 @@ class Player(models.Model):
         self.handicap = round(_hcp, 1)
         self.save()
 
+
 class Team(models.Model):
     name = models.CharField(max_length=64)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
@@ -318,7 +325,7 @@ class PlayerMembership(models.Model):
         blank=True,
         null=True
     )
-    skins = models.BooleanField(default=True)
+    skins = models.BooleanField(default=False)
 
     def __str__(self):
         string = f"{self.player}"

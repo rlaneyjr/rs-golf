@@ -1,3 +1,0 @@
-# CHANGELOG
-
-<!--next-version-placeholder-->

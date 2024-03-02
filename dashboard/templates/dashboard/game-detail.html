@@ -49,14 +49,15 @@
         {% if game_data.status == "setup" and current_player_count > 0 %}
         <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
         {% elif game_data.status == "active" %}
-        <button class="btn btn-success btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
+        <button class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
         {% elif game_data.status == "completed" %}
         <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Game Scores</a>
         {% endif %}
         {% if game_data.status != "setup" %}
         <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-secondary btn-sm">Score Details</a>
         {% endif %}
-        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-warning btn-sm">Edit Game</a>
+        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-info btn-sm">Edit Game</a>
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
       </div>
     </div>
@@ -159,18 +160,18 @@
             </tr>
           </thead>
           <tbody>
-            {% for player_id, hole_obj in hole_data.items %}
-            <tr class="player-row" data-row-player-id="{{ player_id }}">
-              <td>{{ hole_obj.player_name }}</td>
-              <td>{{ hole_obj.hcp }}</td>
-              {% for hole_item in hole_obj.hole_list %}
-                {% if hole_obj.user_account == request.user or user_is_admin %}
+            {% for obj in hole_data %}
+            <tr class="player-row">
+              <td>{{ obj.player_name }}</td>
+              <td>{{ obj.hcp }}</td>
+              {% for hole_item in obj.hole_list %}
+                {% if obj.user_account == request.user or user_is_admin %}
                 <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{ hole_item.hole_score_id }}" value="{{ hole_item.hole_score }}" /></td>
                 {% else %}
                 <td>{{ hole_item.hole_score }}</td>
                 {% endif %}
               {% endfor %}
-              <td>{{ hole_obj.total_score }}/{{ hole_obj.par }}</td>
+              <td>{{ obj.player_score }}/{{ obj.par }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -204,8 +205,8 @@
         <div>
           <label class="form-label">Skins:</label>
           <select id="player-skins" class="form-select">
-            <option value="True">True</option>
             <option value="False">False</option>
+            <option value="True">True</option>
           </select>
         </div>
       </div>
@@ -230,6 +231,24 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="confirm-remove-player-button">Yes, Remove</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="reset-game-modal" tabindex="-1" aria-labelledby="reset-game-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reset-game-modal-label">Delete Game?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to reset this game?  This cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" id="reset-game-button">Reset</button>
       </div>
     </div>
   </div>
@@ -336,14 +355,12 @@
     if (playerId == "none") {
       return;
     }
-
     const data = {
       playerId: playerId,
       skins: playerSkins,
       game: gameId,
       action: "add-player"
     }
-
     try {
       const response = await fetch(managePlayerUrl, {
         method: "POST",
@@ -379,7 +396,6 @@
     if (removePlayerId === null) {
       return;
     }
-
     const data = {
       action: "remove-player",
       playerId: removePlayerId,
@@ -407,6 +423,32 @@
     }
   });
 
+  document.getElementById("reset-game-button").addEventListener("click", async (event) => {
+    const data = {
+      game_id: gameId,
+      action: "reset-game"
+    }
+    try {
+      const response = await fetch(manageGameUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error("Error sending request");
+        return;
+      }
+      const jsonData = await response.json();
+      if (jsonData.status === "success") {
+        return window.location.reload(true);
+      }
+    } catch(e) {
+      console.log("Error: ", e.message)
+    }
+  });
 
   document.getElementById("delete-game-button").addEventListener("click", async (event) => {
     const data = {
@@ -427,7 +469,6 @@
         return;
       }
       const jsonData = await response.json();
-
       if (jsonData.status === "success") {
         return window.location.replace(gameListUrl);
       }
@@ -435,7 +476,6 @@
       console.log("Error: ", e.message)
     }
   });
-
 
   document.getElementById("start-game-button").addEventListener("click", async (event) => {
     const holesToPlay = document.getElementById("add-holes-to-play-select").value;
@@ -450,7 +490,6 @@
       buy_in: buyIn,
       skin_cost: skinCost
     };
-
     const response = await fetch(manageGameUrl, {
       method: "POST",
       headers: {
@@ -459,7 +498,6 @@
       },
       body: JSON.stringify(data)
     });
-
     if (!response.ok) {
       console.log("Error");
       return;
@@ -467,14 +505,14 @@
     window.location.reload(true);
   });
 
-
   document.querySelectorAll(".hole-input").forEach((el) => {
     el.addEventListener("blur", async (event) => {
+      const holeScoreId = event.target.dataset.holeScoreId;
+      const holeScore = event.target.value;
       const data = {
-        hole_score_id: event.target.dataset.holeScoreId,
-        hole_score: event.target.value
+        hole_score_id: holeScoreId,
+        hole_score: holeScore
       }
-
       try {
         const response = await fetch(recordScoreUrl, {
           method: "POST",
@@ -484,19 +522,17 @@
           },
           body: JSON.stringify(data)
         });
-
         if (!response.ok) {
           throw new Error("Error sending request");
           return;
         }
         const jsonData = await response.json();
         if (jsonData.status === "success") {
-          console.log("Worked")
+          console.log("Score updated: ", hole_score_id, hole_score)
         }
       } catch(e) {
         console.log("Error: ", e.message)
       }
-
     });
   });
 </script>

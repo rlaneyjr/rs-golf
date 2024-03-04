@@ -56,9 +56,11 @@
         {% if game_data.status != "setup" %}
         <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-secondary btn-sm">Score Details</a>
         {% endif %}
+        {% if user_is_admin %}
         <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-info btn-sm">Edit Game</a>
         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -294,10 +296,12 @@
           <label class="form-label">Select game type:</label>
           <select id="add-game-type-select" class="form-select">
             <option value="best-ball">Best Ball</option>
+            <option value="points">Points</option>
             <option value="stroke">Stroke</option>
             <option value="skins">Skins</option>
-            <option value="stroke-skins">Stroke w/Skins</option>
             <option value="best-ball-skins">Best Ball w/Skins</option>
+            <option value="points-skins">Points w/Skins</option>
+            <option value="stroke-skins">Stroke w/Skins</option>
           </select>
         </div>
         <div>
@@ -307,6 +311,13 @@
         <div>
           <label class="form-label">Per-Hole Skin Cost Amount:</label>
           <input id="game-skin-cost" type="number" placeholder="Dollars Per-Hole" step="1" min="1" max="100" />
+        </div>
+        <div>
+          <label class="form-label">Use Teams?</label>
+          <select id="use-teams-select" class="form-select">
+            <option value="False">No</option>
+            <option value="True">Yes</option>
+          </select>
         </div>
         <p>Are you sure you want to start the game?
       </div>
@@ -482,13 +493,15 @@
     const gameType = document.getElementById("add-game-type-select").value;
     const buyIn = document.getElementById("game-buy-in").value;
     const skinCost = document.getElementById("game-skin-cost").value;
+    const useTeams = document.getElementById("use-teams-select").value;
     const data = {
       game_id: gameId,
       action: "start-game",
       holes_to_play: holesToPlay,
       game_type: gameType,
       buy_in: buyIn,
-      skin_cost: skinCost
+      skin_cost: skinCost,
+      use_teams: useTeams
     };
     const response = await fetch(manageGameUrl, {
       method: "POST",

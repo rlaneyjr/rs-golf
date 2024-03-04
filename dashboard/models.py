@@ -14,10 +14,12 @@ User = get_user_model()
 
 class GameTypeChoices(models.TextChoices):
     BEST_BALL = "best-ball", _("Best Ball")
+    POINTS = "points", _("Points")
     STROKE = "stroke", _("Stroke")
     SKINS = "skins", _("Skins")
-    STROKE_SKINS = "stroke-skins", _("Stroke w/Skins")
     BEST_BALL_SKINS = "best-ball-skins", _("Best Ball w/Skins")
+    POINTS_SKINS = "points-skins", _("Points w/Skins")
+    STROKE_SKINS = "stroke-skins", _("Stroke w/Skins")
 
 
 class HolesToPlayChoices(models.IntegerChoices):
@@ -209,6 +211,7 @@ class Game(models.Model):
         ],
     )
     score = models.JSONField(blank=True, null=True)
+    use_teams = models.BooleanField(default=False)
 
     @property
     def pot(self):
@@ -224,6 +227,7 @@ class Game(models.Model):
             game_type=None,
             buy_in=None,
             skin_cost=None,
+            use_teams=None,
         ):
         # if not any([game_type, self.game_type]):
         #     raise ValidationError("You must provide a game type")
@@ -235,10 +239,13 @@ class Game(models.Model):
             self.buy_in = buy_in
         if skin_cost != None:
             self.skin_cost = skin_cost
+        if use_teams != None:
+            self.use_teams = use_teams
         if not self.date_played:
             self.date_played = timezone.now()
-        utils.create_teams_for_game(self)
         utils.create_hole_scores_for_game(self)
+        if self.use_teams:
+            utils.create_teams_for_game(self)
         self.status = GameStatusChoices.ACTIVE
         self.save()
 
@@ -291,9 +298,9 @@ class Player(models.Model):
     def __str__(self):
         return f"{self.name}"
 
-    def update_hcp(self, new_hcp):
-        _hcp = sum([self.handicap, new_hcp])/len([self.handicap, new_hcp])
-        self.handicap = round(_hcp, 1)
+    def update_hcp(self, game_hcp):
+        new_hcp = sum([self.handicap, game_hcp])/len([self.handicap, game_hcp])
+        self.handicap = round(new_hcp, 1)
         self.save()
 
 

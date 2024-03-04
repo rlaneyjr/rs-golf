@@ -379,6 +379,16 @@ def filter_skins_from_all_scores(all_scores):
     return skin_holes
 
 
+def filter_skins_from_hole_data(hole_data):
+    skin_holes = []
+    for player in hole_data:
+        if player["skins"]:
+            for hole in player["hole_list"]:
+                hole.update({"player_name": player["player_name"]})
+                skin_holes.append(hole)
+    return skin_holes
+
+
 def get_skins_all_scores(all_scores, skin_cost):
     skins = []
     carry_money = None
@@ -495,9 +505,9 @@ def score_game(game):
         "hole_list": hole_list,
         "skins": skins,
     }
-    if game_has_teams(game):
-        scores = score_teams(game)
-        game_score.update({"team_scores": scores})
+    if game.use_teams:
+        team_scores = score_teams(game)
+        game_score.update({"team_scores": team_scores})
     else:
         scores = score_hole_data(hole_data, game.pot)
         game_score.update({"scores": scores})

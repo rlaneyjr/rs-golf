@@ -50,17 +50,14 @@ def ajax_manage_game(request):
     game_id = data["game_id"]
     game_data = models.Game.objects.filter(pk=game_id).first()
     if game_data is None:
-        return HttpResponseBadRequest("Cannot find game with that id")
+        return HttpResponseBadRequest(f"Cannot find game with id: {game_id}")
     if data["action"] == "start-game":
-        holes_to_play = data.get("holes_to_play", None)
-        game_type = data.get("game_type", None)
-        buy_in = data.get("buy_in", None)
-        skin_cost = data.get("skin_cost", None)
         game_data.start(
-            holes_to_play=holes_to_play,
-            game_type=game_type,
-            buy_in=buy_in,
-            skin_cost=skin_cost,
+            holes_to_play=data.get("holes_to_play"),
+            game_type=data.get("game_type"),
+            buy_in=data.get("buy_in"),
+            skin_cost=data.get("skin_cost"),
+            use_teams=data.get("use_teams"),
         )
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({"status": "success"})
@@ -105,30 +102,25 @@ def ajax_edit_hole(request):
     hole_order = data["hole_order"]
     hole_handicap = data["hole_handicap"]
     hole_data = models.Hole.objects.filter(pk=hole_id).first()
-
     # be sure we have a hole to deal with
     if hole_data is None:
         return JsonResponse(
             {"status": "failed", "message": f"Unable to find hole with ID: {hole_id}"}
         )
-
     # be sure all is a number
     try:
         hole_par = int(hole_par)
         hole_order = int(hole_order)
         hole_handicap = int(hole_handicap)
-    except ValueError:
+    except ValueError as e:
         return JsonResponse(
-            {"status": "failed", "message": "Some value does not appear to be a number"}
+            {"status": "failed", "message": f"{e} does not appear to be a number"}
         )
-
     hole_data.par = hole_par
     hole_data.order = hole_order
     hole_data.handicap = hole_handicap
     hole_data.save()
-
     messages.add_message(request, messages.INFO, "Hole updated.")
-
     return JsonResponse({"status": "success"})
 
 
@@ -155,34 +147,28 @@ def ajax_manage_tee_time(request):
         tee_time.players.add(player_data)
         return JsonResponse({"status": "success"})
     elif action == "start-game":
-        tee_time_id = data.get("tee_time_id", None)
-        if tee_time_id is None:
+        tee_time_id = data.get("tee_time_id")
+        if not tee_time_id:
             return JsonResponse({"status": "failed"})
         tee_time = models.TeeTime.objects.filter(pk=tee_time_id).first()
-        if tee_time is None:
+        if not tee_time:
             return JsonResponse({"status": "failed"})
-
-        game_type = data.get("game_type", None)
-        buy_in = data.get("buy_in", None)
-        skin_cost = data.get("skin_cost", None)
-
         new_game = models.Game.objects.create(
-            game_type=game_type,
+            game_type=data.get("game_type"),
             date_played=tee_time.tee_time,
             course=tee_time.course,
             holes_played=tee_time.holes_to_play,
             which_holes=tee_time.which_holes,
-            buy_in=buy_in,
-            skin_cost=skin_cost,
+            buy_in=data.get("buy_in"),
+            skin_cost=data.get("skin_cost"),
+            use_teams=data.get("use_teams"),
         )
-
         # add players from tee time to game
         for player in tee_time.players.all():
             new_game.players.add(player)
-
+        new_game.save()
         tee_time.is_active = False
         tee_time.save()
-
         new_game.start()
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({

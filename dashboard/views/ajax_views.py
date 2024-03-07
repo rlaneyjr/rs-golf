@@ -54,10 +54,11 @@ def ajax_manage_game(request):
     if data["action"] == "start-game":
         game_data.start(
             holes_to_play=data.get("holes_to_play"),
-            game_type=data.get("game_type"),
-            buy_in=data.get("buy_in"),
-            skin_cost=data.get("skin_cost"),
-            use_teams=data.get("use_teams"),
+            # game_type=data.get("game_type"),
+            # buy_in=data.get("buy_in"),
+            # skin_cost=data.get("skin_cost"),
+            # use_teams=data.get("use_teams"),
+            # payout_positions=data.get("payout_positions"),
         )
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({"status": "success"})
@@ -162,6 +163,7 @@ def ajax_manage_tee_time(request):
             buy_in=data.get("buy_in"),
             skin_cost=data.get("skin_cost"),
             use_teams=data.get("use_teams"),
+            payout_positions=data.get("payout_positions"),
         )
         # add players from tee time to game
         for player in tee_time.players.all():

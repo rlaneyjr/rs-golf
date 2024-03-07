@@ -66,6 +66,7 @@
               {% endfor %}
               <th>Score</th>
               <th>Winner</th>
+              <th>Money</th>
             </tr>
           </thead>
           <tbody>
@@ -73,11 +74,12 @@
             <tr>
               <td>{{ score.player_name }}</td>
               <td>{{ score.hcp }}</td>
-              {% for hole_item in hole_obj.hole_list %}
-              <td>{{ score.hole_score }}</td>
+              {% for hole in score.hole_list %}
+              <td>{{ hole.hole_score }}</td>
               {% endfor %}
-              <td>{{ score.total_score }}/{{ score.par }}</td>
+              <td>{{ score.player_score }}/{{ score.par }}</td>
               <td>{{ score.winner }}</td>
+              <td>{{ score.money }}</td>
             </tr>
             {% endfor %}
           </tbody>

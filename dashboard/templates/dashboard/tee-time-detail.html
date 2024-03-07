@@ -60,6 +60,13 @@
           {% endfor %}
         </select>
       </div>
+      <div>
+        <label class="form-label">Skins:</label>
+        <select id="player-skins" class="form-select">
+          <option value="False">False</option>
+          <option value="True">True</option>
+        </select>
+      </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="add-player-button">Add</button>
@@ -80,17 +87,40 @@
           <label class="form-label">Select game type:</label>
           <select id="add-game-type-select" class="form-select">
             <option value="best-ball">Best Ball</option>
+            <option value="stableford">Stableford</option>
             <option value="stroke">Stroke</option>
-            <option value="skins">Skins</option>
-            <option value="stroke-skins">Stroke w/Skins</option>
-            <option value="best-ball-skins">Best Ball w/Skins</option>
           </select>
         </div>
         <div>
-          <label class="form-label">Game Buy-in amount:</label>
-          <input id="game-buy-in" type="number" placeholder="Dollars x5" step="5" min="0" max="100" />
+          <label class="form-label">Game Buy-in Amount:</label>
+          <input id="game-buy-in" type="number" placeholder="Dollars x5" step="5" min="5" max="100" />
         </div>
-        <p>Are you sure you want to start the game?
+        <div>
+          <label class="form-label">Per-Hole Skin Cost Amount:</label>
+          <input id="game-skin-cost" type="number" placeholder="Dollars Per-Hole" step="1" min="1" max="100" />
+        </div>
+        <div>
+          <label class="form-label">Use Teams?</label>
+          <select id="use-teams-select" class="form-select">
+            <option value="False">No</option>
+            <option value="True">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Use Skins?</label>
+          <select id="use-skins-select" class="form-select">
+            <option value="True">Yes</option>
+            <option value="False">No</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Payout Positions:</label>
+          <select id="payout-positions-select" class="form-select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -138,11 +168,17 @@
   document.getElementById("start-game-confirm-button").addEventListener("click", async () => {
     const gameType = document.getElementById("add-game-type-select").value;
     const buyIn = document.getElementById("game-buy-in").value;
+    const skinCost = document.getElementById("game-skin-cost").value;
+    const useTeams = document.getElementById("use-teams-select").value;
+    const payoutPos = document.getElementById("payout-positions-select").value;
     const data = {
       tee_time_id: teeTimeId,
       action: "start-game",
       game_type: gameType,
-      buy_in: buyIn
+      buy_in: buyIn,
+      skin_cost: skinCost,
+      use_teams: useTeams,
+      payout_positions: payoutPos
     };
 
     const response = await fetch(teeTimeManageUrl, {

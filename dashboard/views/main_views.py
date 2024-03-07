@@ -126,7 +126,7 @@ def game_detail(request, pk):
     team_list = False
     game_data = get_object_or_404(models.Game, pk=pk)
     current_player_count = game_data.players.count()
-    if utils.game_has_teams(game_data):
+    if game_data.use_teams:
         team_list = utils.get_team_list_for_game(game_data)
     player_list = utils.get_players_not_in_game(game_data)
     hole_list = utils.get_hole_list_for_game(game_data)

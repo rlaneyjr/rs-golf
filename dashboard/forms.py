@@ -167,13 +167,22 @@ class GameForm(forms.ModelForm):
                 "buy_in",
                 "skin_cost",
                 "use_teams",
+                "use_skins",
+                "payout_positions",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
 
     class Meta:
         model = Game
-        fields = ["course", "buy_in", "skin_cost", "use_teams"]
+        fields = [
+            "course",
+            "buy_in",
+            "skin_cost",
+            "use_teams",
+            "use_skins",
+            "payout_positions",
+        ]
 
 
 class EditGameForm(forms.ModelForm):
@@ -191,7 +200,9 @@ class EditGameForm(forms.ModelForm):
                 "buy_in",
                 "skin_cost",
                 "use_teams",
+                "use_skins",
                 "score",
+                "payout_positions",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
@@ -207,7 +218,9 @@ class EditGameForm(forms.ModelForm):
             "buy_in",
             "skin_cost",
             "use_teams",
+            "use_skins",
             "score",
+            "payout_positions",
         ]
         widgets = {"score": JSONEditorWidget}
 

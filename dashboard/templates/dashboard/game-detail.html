@@ -28,21 +28,36 @@
           <label class="fw-bold d-block">Holes:</label>
           <span class="ps-2">{{ game_data.holes_played }}</span>
         </div>
-        <div class="mb-3">
-          <label class="fw-bold d-block">Current Status:</label>
-          <span class="ps-2">{{ game_data.get_status_display }}</span>
-        </div>
-        <div class="mb-3">
-          <label class="fw-bold d-block">Buy-in:</label>
-          <span class="ps-2">{{ game_data.buy_in }}</span>
-        </div>
+        {% if game_data.status != "setup" %}
         <div class="mb-3">
           <label class="fw-bold d-block">Pot:</label>
           <span class="ps-2">{{ game_data.pot }}</span>
         </div>
         <div class="mb-3">
+          <label class="fw-bold d-block">Skin Pot:</label>
+          <span class="ps-2">{{ game_data.skin_pot }}</span>
+        </div>
+        {% elif game_data.status == "setup" %}
+        <div class="mb-3">
+          <label class="fw-bold d-block">Buy-in:</label>
+          <span class="ps-2">{{ game_data.buy_in }}</span>
+        </div>
+        <div class="mb-3">
           <label class="fw-bold d-block">Skin Cost:</label>
           <span class="ps-2">{{ game_data.skin_cost }}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Teams:</label>
+          <span class="ps-2">{{ game_data.use_teams }}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Skins:</label>
+          <span class="ps-2">{{ game_data.use_skins }}</span>
+        </div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="fw-bold d-block">Current Status:</label>
+          <span class="ps-2">{{ game_data.get_status_display }}</span>
         </div>
       </div>
       <div class="card-footer">
@@ -53,18 +68,17 @@
         {% elif game_data.status == "completed" %}
         <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Game Scores</a>
         {% endif %}
-        {% if game_data.status != "setup" %}
-        <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-secondary btn-sm">Score Details</a>
-        {% endif %}
         {% if user_is_admin %}
-        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-info btn-sm">Edit Game</a>
-        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
+        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-secondary btn-sm">Edit Game</a>
+          {% if game_data.status == "setup" and current_player_count > 0 %}
+          <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
+          {% endif %}
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
         {% endif %}
       </div>
     </div>
   </div>
-  {% if team_list %}
+  {% if team_list and game_data.use_teams %}
   <div class="col-6">
     <div class="card">
       <div class="card-header">
@@ -109,7 +123,9 @@
               {% endif %}
               <th>Name</th>
               <th>Handicap</th>
+              {% if game_data.use_skins %}
               <th>Skins</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody class="align-middle">
@@ -120,8 +136,10 @@
               {% endif %}
               <td>{{ player.name }}</td>
               <td>{{ player.handicap }}</td>
+              {% if game_data.use_skins %}
               {% player_in_skins player game_data as skin_player %}
               <td>{{ skin_player }}</td>
+              {% endif %}
             </tr>
             {% endfor %}
           </tbody>
@@ -154,18 +172,17 @@
           <thead>
             <tr>
               <th>Player</th>
-              <th>HCP</th>
               {% for hole_num in hole_list %}
               <th>{{ hole_num }}</th>
               {% endfor %}
               <th>Score</th>
+              <th>Par</th>
             </tr>
           </thead>
           <tbody>
             {% for obj in hole_data %}
             <tr class="player-row">
               <td>{{ obj.player_name }}</td>
-              <td>{{ obj.hcp }}</td>
               {% for hole_item in obj.hole_list %}
                 {% if obj.user_account == request.user or user_is_admin %}
                 <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{ hole_item.hole_score_id }}" value="{{ hole_item.hole_score }}" /></td>
@@ -173,7 +190,8 @@
                 <td>{{ hole_item.hole_score }}</td>
                 {% endif %}
               {% endfor %}
-              <td>{{ obj.player_score }}/{{ obj.par }}</td>
+              <td>{{ obj.player_score }}</td>
+              <td>{{ obj.par }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -204,6 +222,7 @@
             {% endfor %}
           </select>
         </div>
+        {% if game_data.use_skins %}
         <div>
           <label class="form-label">Skins:</label>
           <select id="player-skins" class="form-select">
@@ -211,6 +230,7 @@
             <option value="True">True</option>
           </select>
         </div>
+        {% endif %}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -292,34 +312,6 @@
           </select>
         </div>
         {% endif %}
-        <div>
-          <label class="form-label">Select game type:</label>
-          <select id="add-game-type-select" class="form-select">
-            <option value="best-ball">Best Ball</option>
-            <option value="points">Points</option>
-            <option value="stroke">Stroke</option>
-            <option value="skins">Skins</option>
-            <option value="best-ball-skins">Best Ball w/Skins</option>
-            <option value="points-skins">Points w/Skins</option>
-            <option value="stroke-skins">Stroke w/Skins</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Game Buy-in Amount:</label>
-          <input id="game-buy-in" type="number" placeholder="Dollars x5" step="5" min="5" max="100" />
-        </div>
-        <div>
-          <label class="form-label">Per-Hole Skin Cost Amount:</label>
-          <input id="game-skin-cost" type="number" placeholder="Dollars Per-Hole" step="1" min="1" max="100" />
-        </div>
-        <div>
-          <label class="form-label">Use Teams?</label>
-          <select id="use-teams-select" class="form-select">
-            <option value="False">No</option>
-            <option value="True">Yes</option>
-          </select>
-        </div>
-        <p>Are you sure you want to start the game?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -490,18 +482,10 @@
 
   document.getElementById("start-game-button").addEventListener("click", async (event) => {
     const holesToPlay = document.getElementById("add-holes-to-play-select").value;
-    const gameType = document.getElementById("add-game-type-select").value;
-    const buyIn = document.getElementById("game-buy-in").value;
-    const skinCost = document.getElementById("game-skin-cost").value;
-    const useTeams = document.getElementById("use-teams-select").value;
     const data = {
       game_id: gameId,
       action: "start-game",
-      holes_to_play: holesToPlay,
-      game_type: gameType,
-      buy_in: buyIn,
-      skin_cost: skinCost,
-      use_teams: useTeams
+      holes_to_play: holesToPlay
     };
     const response = await fetch(manageGameUrl, {
       method: "POST",

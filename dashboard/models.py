@@ -6,20 +6,16 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from djmoney.models.fields import MoneyField
 from djmoney.models.validators import MaxMoneyValidator, MinMoneyValidator
+from djmoney.money import Money
 from dashboard import utils
-
 
 User = get_user_model()
 
 
 class GameTypeChoices(models.TextChoices):
     BEST_BALL = "best-ball", _("Best Ball")
-    POINTS = "points", _("Points")
+    STABLEFORD = "stableford", _("Stableford")
     STROKE = "stroke", _("Stroke")
-    SKINS = "skins", _("Skins")
-    BEST_BALL_SKINS = "best-ball-skins", _("Best Ball w/Skins")
-    POINTS_SKINS = "points-skins", _("Points w/Skins")
-    STROKE_SKINS = "stroke-skins", _("Stroke w/Skins")
 
 
 class HolesToPlayChoices(models.IntegerChoices):
@@ -37,6 +33,12 @@ class ParChoices(models.IntegerChoices):
     PAR_3 = 3, _("Par 3")
     PAR_4 = 4, _("Par 4")
     PAR_5 = 5, _("Par 5")
+
+
+class PayoutChoices(models.IntegerChoices):
+    _1 = 1
+    _2 = 2
+    _3 = 3
 
 
 class OrderChoices(models.IntegerChoices):
@@ -163,13 +165,17 @@ class Tee(models.Model):
 
 
 class Game(models.Model):
+    course = models.ForeignKey(
+        GolfCourse,
+        on_delete=models.PROTECT,
+        default=utils.get_first_course_id(),
+    )
     game_type = models.CharField(
         max_length=32,
         choices=GameTypeChoices.choices,
-        default=GameTypeChoices.BEST_BALL,
+        default=GameTypeChoices.STABLEFORD,
     )
     date_played = models.DateTimeField(blank=True, null=True)
-    course = models.ForeignKey(GolfCourse, on_delete=models.PROTECT)
     holes_played = models.PositiveSmallIntegerField(
         choices=HolesToPlayChoices.choices, default=HolesToPlayChoices.HOLES_18
     )
@@ -206,16 +212,25 @@ class Game(models.Model):
         default=1,
         default_currency="USD",
         validators=[
-            MinMoneyValidator({"USD": 1}),
+            MinMoneyValidator({"USD": 0}),
             MaxMoneyValidator({"USD": 10}),
         ],
     )
     score = models.JSONField(blank=True, null=True)
     use_teams = models.BooleanField(default=False)
+    use_skins = models.BooleanField(default=True)
+    payout_positions = models.PositiveSmallIntegerField(
+        choices=PayoutChoices.choices,
+        default=PayoutChoices._1,
+    )
 
     @property
     def pot(self):
         return self.buy_in * self.players.count()
+
+    @property
+    def skin_pot(self):
+        return self.skin_cost * utils.num_players_in_skins(self) * self.holes_played
 
     @property
     def par(self):
@@ -228,6 +243,7 @@ class Game(models.Model):
             buy_in=None,
             skin_cost=None,
             use_teams=None,
+            payout_positions=None,
         ):
         # if not any([game_type, self.game_type]):
         #     raise ValidationError("You must provide a game type")
@@ -243,6 +259,8 @@ class Game(models.Model):
             self.use_teams = use_teams
         if not self.date_played:
             self.date_played = timezone.now()
+        if payout_positions != None:
+            self.payout_positions = payout_positions
         utils.create_hole_scores_for_game(self)
         if self.use_teams:
             utils.create_teams_for_game(self)
@@ -256,7 +274,7 @@ class Game(models.Model):
             self.save()
 
     def reset(self):
-        self.players.set(clear=True)
+        utils.clean_game(self)
         self.score = None
         self.status = GameStatusChoices.SETUP
         self.save()

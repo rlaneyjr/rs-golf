@@ -126,11 +126,12 @@ def game_detail(request, pk):
     team_list = False
     game_data = get_object_or_404(models.Game, pk=pk)
     current_player_count = game_data.players.count()
-    if game_data.use_teams:
-        team_list = utils.get_team_list_for_game(game_data)
+    current_players = utils.get_current_players_for_game(game_data)
     player_list = utils.get_players_not_in_game(game_data)
     hole_list = utils.get_hole_list_for_game(game_data)
     hole_data = utils.get_hole_data_for_game(game_data)
+    if game_data.use_teams:
+        team_list = utils.get_team_list_for_game(game_data)
     return render(
         request,
         "dashboard/game-detail.html",
@@ -140,6 +141,7 @@ def game_detail(request, pk):
             "team_list": team_list,
             "player_list": player_list,
             "current_player_count": current_player_count,
+            "current_players": current_players,
             "hole_data": hole_data,
             "hole_list": hole_list,
         },

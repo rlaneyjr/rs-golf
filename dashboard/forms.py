@@ -123,7 +123,10 @@ class PlayerForm(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 "Create a new Player",
-                "name",
+                "first_name",
+                "last_name",
+                "phone",
+                "email",
                 "handicap",
                 "photo",
                 "user_account",
@@ -143,7 +146,10 @@ class EditPlayerForm(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 "Edit Player",
-                "name",
+                "first_name",
+                "last_name",
+                "phone",
+                "email",
                 "handicap",
                 "photo",
                 "user_account",

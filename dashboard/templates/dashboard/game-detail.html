@@ -10,7 +10,7 @@
 
 {% block content %}
 <div class="row">
-  <div class="col-6">
+  <div class="col-4">
     <div class="card">
       <div class="card-header fw-bold">
         Game Detail
@@ -69,17 +69,65 @@
         <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Game Scores</a>
         {% endif %}
         {% if user_is_admin %}
-        <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-secondary btn-sm">Edit Game</a>
-          {% if game_data.status == "setup" and current_player_count > 0 %}
-          <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
+          {% if game_data.status == "setup" %}
+          <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-secondary btn-sm">Edit Game</a>
+            {% if current_player_count > 0 %}
+            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
+            {% endif %}
           {% endif %}
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
         {% endif %}
       </div>
     </div>
   </div>
-  {% if team_list and game_data.use_teams %}
-  <div class="col-6">
+  <div class="col-4">
+    <div class="card">
+      <div class="card-header">
+        Players
+      </div>
+      <div class="card-body">
+        {% if game_data.players.all %}
+        <table class="table">
+          <thead>
+            <tr>
+              {% if game_data.status == "setup" %}
+              <th style="width: 5%;">&nbsp;</th>
+              {% endif %}
+              <th>Name</th>
+              <th>Current HCP</th>
+              {% if game_data.use_skins %}
+              <th>Skins</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for player in current_players %}
+            <tr>
+              {% if game_data.status == "setup" %}
+              <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-player-modal" data-player-id="{{ player.id }}">Remove</button></td>
+              {% endif %}
+              <td>{{ player.name }}</td>
+              <td>{{ player.hcp }}</td>
+              {% if game_data.use_skins %}
+              <td>{{ player.skins }}</td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="card-text">No Players Found</p>
+        {% endif %}
+      </div>
+      {% if game_data.status == "setup" %}
+      <div class="card-footer">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">Add Player</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% if team_list %}
+  <div class="col-4">
     <div class="card">
       <div class="card-header">
         Teams
@@ -105,54 +153,6 @@
           </tbody>
         </table>
       </div>
-    </div>
-  </div>
-  {% else %}
-  <div class="col-6">
-    <div class="card">
-      <div class="card-header">
-        Players
-      </div>
-      <div class="card-body">
-        {% if game_data.players.all %}
-        <table class="table">
-          <thead>
-            <tr>
-              {% if game_data.status == "setup" %}
-              <th style="width: 5%;">&nbsp;</th>
-              {% endif %}
-              <th>Name</th>
-              <th>Handicap</th>
-              {% if game_data.use_skins %}
-              <th>Skins</th>
-              {% endif %}
-            </tr>
-          </thead>
-          <tbody class="align-middle">
-            {% for player in game_data.players.all %}
-            <tr>
-              {% if game_data.status == "setup" %}
-              <td><button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-player-modal" data-player-id="{{ player.id }}">Remove</button></td>
-              {% endif %}
-              <td>{{ player.name }}</td>
-              <td>{{ player.handicap }}</td>
-              {% if game_data.use_skins %}
-              {% player_in_skins player game_data as skin_player %}
-              <td>{{ skin_player }}</td>
-              {% endif %}
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        {% else %}
-        <p class="card-text">No Players Found</p>
-        {% endif %}
-      </div>
-      {% if game_data.status == "setup" %}
-      <div class="card-footer">
-        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">Add Player</button>
-      </div>
-      {% endif %}
     </div>
   </div>
   {% endif %}

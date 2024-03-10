@@ -136,7 +136,7 @@ class Hole(models.Model):
         unique_together = ["name", "course", "order", "handicap"]
 
     def __str__(self):
-        return f"{self.course.initials} {self.name}"
+        return f"{self.course.initials} - {self.name}"
 
 
 class Tee(models.Model):
@@ -279,6 +279,11 @@ class Game(models.Model):
         self.status = GameStatusChoices.SETUP
         self.save()
 
+    def clean(self):
+        if self.course.hole_count - self.holes_played == 9:
+            if self.which_holes == 'all':
+                raise ValidationError("Please choose front or back")
+
     def __str__(self):
         return f"{self.course.initials} - {self.date_played.date()} - {self.status}"
 
@@ -288,7 +293,10 @@ class Game(models.Model):
 
 
 class Player(models.Model):
-    name = models.CharField(max_length=64)
+    first_name = models.CharField(max_length=32, default=None, blank=True, null=True)
+    last_name = models.CharField(max_length=32, default=None, blank=True, null=True)
+    email = models.EmailField(max_length=254, default=None, blank=True, null=True)
+    phone = models.CharField(max_length=12, default=None, blank=True, null=True)
     handicap = models.DecimalField(
         max_digits=3, decimal_places=1, default=20.0
     )
@@ -302,28 +310,25 @@ class Player(models.Model):
         User, on_delete=models.PROTECT, related_name="added_by"
     )
 
-    class Meta:
-        unique_together = ["name", "handicap", "user_account"]
-
     @property
-    def first_name(self):
-        return self.name.split()[0]
-
-    @property
-    def last_name(self):
-        return self.name.split()[1]
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
     def update_hcp(self, game_hcp):
         new_hcp = sum([self.handicap, game_hcp])/len([self.handicap, game_hcp])
         self.handicap = round(new_hcp, 1)
         self.save()
 
+    class Meta:
+        ordering = ["first_name", "last_name"]
+        unique_together = ["first_name", "last_name"]
+
 
 class Team(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=32)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     players = models.ManyToManyField(
         "Player", through="PlayerMembership", through_fields=("team", "player")
@@ -351,13 +356,14 @@ class PlayerMembership(models.Model):
         null=True
     )
     skins = models.BooleanField(default=False)
+    game_handicap = models.DecimalField(
+        max_digits=3, decimal_places=1, default=None, blank=True, null=True
+    )
 
     def __str__(self):
-        string = f"{self.player}"
+        string = f"{self.player.name} - {self.game}"
         if self.team:
-            string = f"{string} - {self.team}"
-        if self.skins:
-            string = f"{string} - Skins"
+            string = f"{string} - {self.team.name}"
         return string
 
 
@@ -367,7 +373,7 @@ class HoleScore(models.Model):
     score = models.PositiveSmallIntegerField(choices=ScoreChoices.choices, default=ScoreChoices._0)
 
     def __str__(self):
-        return f"{self.player} - {self.hole} - {self.score}"
+        return f"{self.player.name} - {self.hole} - {self.score}"
 
 
 class TeeTime(models.Model):
@@ -390,7 +396,7 @@ class TeeTime(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.course.initials} - {self.holes_to_play} - {self.tee_time}"
+        return f"{self.course.initials} - {self.tee_time.date()}"
 
     def clean(self):
         if self.course.hole_count - self.holes_to_play == 9:

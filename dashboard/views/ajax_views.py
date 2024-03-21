@@ -26,7 +26,7 @@ def ajax_record_score_for_hole(request):
 )
 def ajax_manage_players_for_game(request):
     data = json.loads(request.body)
-    if not all([data["playerId"], data["game"], data["action"], data["skins"]]):
+    if not all([data["playerId"], data["game"], data["action"]]):
         return HttpResponseBadRequest("Missing Data")
     game_data = models.Game.objects.filter(pk=data["game"]).first()
     player_data = models.Player.objects.filter(pk=data["playerId"]).first()
@@ -67,7 +67,7 @@ def ajax_manage_game(request):
         messages.add_message(request, messages.INFO, "Game Reset.")
         return JsonResponse({"status": "success"})
     elif data["action"] == "delete-game":
-        utils.delete_teams_for_game(game_data)
+        utils.clean_game(game_data)
         game_data.delete()
         messages.add_message(request, messages.INFO, "Game Deleted.")
         return JsonResponse({"status": "success"})

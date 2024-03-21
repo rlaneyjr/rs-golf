@@ -2,7 +2,7 @@
 {% load djmoney %}
 {% load custom_parser %}
 
-{% block page_name %}Game Detail{% endblock %}
+{% block page_name %}Game {{ game_data.get_status_display }}{% endblock %}
 
 {% block button_bar %}
 <a href="{% url 'dashboard:games' %}" class="btn btn-sm btn-outline-secondary">Back to Game List</a>
@@ -10,7 +10,11 @@
 
 {% block content %}
 <div class="row">
+  {% if team_list %}
   <div class="col-4">
+  {% else %}
+  <div class="col-6">
+  {% endif %}
     <div class="card">
       <div class="card-header fw-bold">
         Game Detail
@@ -25,9 +29,15 @@
           <span class="ps-2">{{ game_data.date_played }}</span>
         </div>
         <div class="mb-3">
-          <label class="fw-bold d-block">Holes:</label>
-          <span class="ps-2">{{ game_data.holes_played }}</span>
+          <label class="fw-bold d-block">Game Type:</label>
+          <span class="ps-2">{{ game_data.get_game_type_display }}</span>
         </div>
+        {% if game_data.which_holes != "all" %}
+        <div class="mb-3">
+          <label class="fw-bold d-block">Holes Played:</label>
+          <span class="ps-2">{{ game_data.which_holes }}</span>
+        </div>
+        {% endif %}
         {% if game_data.status != "setup" %}
         <div class="mb-3">
           <label class="fw-bold d-block">Pot:</label>
@@ -59,28 +69,37 @@
           <label class="fw-bold d-block">Current Status:</label>
           <span class="ps-2">{{ game_data.get_status_display }}</span>
         </div>
+        <div>
+          <label class="fw-bold d-block">League Game:</label>
+          <span class="ps-2">{{game_data.league_game}}</span>
+        </div>
       </div>
       <div class="card-footer">
-        {% if game_data.status == "setup" and current_player_count > 0 %}
-        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
+        {% if game_data.status == "setup" %}
+          {% if current_player_count > 0 %}
+          <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#start-game-modal">Start Game</button>
+          {% endif %}
+          {% if user_is_admin %}
+          <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-primary btn-sm">Edit Game</a>
+          {% endif %}
         {% elif game_data.status == "active" %}
         <button class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
         {% elif game_data.status == "completed" %}
-        <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Game Scores</a>
+        <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Scores</a>
+        <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-secondary btn-sm">Score Details</a>
         {% endif %}
-        {% if user_is_admin %}
-          {% if game_data.status == "setup" %}
-          <a href="{% url 'dashboard:edit_game' game_data.id %}" class="btn btn-secondary btn-sm">Edit Game</a>
-            {% if current_player_count > 0 %}
-            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
-            {% endif %}
-          {% endif %}
+        {% if user_is_admin and game_data.status != "completed" %}
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
         {% endif %}
       </div>
     </div>
   </div>
+  {% if team_list %}
   <div class="col-4">
+  {% else %}
+  <div class="col-6">
+  {% endif %}
     <div class="card">
       <div class="card-header">
         Players
@@ -94,7 +113,10 @@
               <th style="width: 5%;">&nbsp;</th>
               {% endif %}
               <th>Name</th>
-              <th>Current HCP</th>
+              <th>HCP</th>
+              {% if game_data.game_type == "stableford" %}
+              <th>Points Needed</th>
+              {% endif %}
               {% if game_data.use_skins %}
               <th>Skins</th>
               {% endif %}
@@ -108,6 +130,9 @@
               {% endif %}
               <td>{{ player.name }}</td>
               <td>{{ player.hcp }}</td>
+              {% if game_data.game_type == "stableford" %}
+              <td>{{ player.points_needed }}</td>
+              {% endif %}
               {% if game_data.use_skins %}
               <td>{{ player.skins }}</td>
               {% endif %}
@@ -262,7 +287,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="reset-game-modal-label">Delete Game?</h5>
+        <h5 class="modal-title" id="reset-game-modal-label">Reset Game?</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -532,5 +557,6 @@
       }
     });
   });
+
 </script>
 {% endblock page_scripts %}

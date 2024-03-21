@@ -12,10 +12,21 @@ from dashboard import utils
 User = get_user_model()
 
 
+stableford_map = {
+    -4: 6,
+    -3: 5,
+    -2: 4,
+    -1: 3,
+    0: 2,
+    1: 1,
+    2: 0,
+}
+
+
 class GameTypeChoices(models.TextChoices):
     BEST_BALL = "best-ball", _("Best Ball")
-    STABLEFORD = "stableford", _("Stableford")
     STROKE = "stroke", _("Stroke")
+    STABLEFORD = "stableford", _("Stableford")
 
 
 class HolesToPlayChoices(models.IntegerChoices):
@@ -219,22 +230,27 @@ class Game(models.Model):
     score = models.JSONField(blank=True, null=True)
     use_teams = models.BooleanField(default=False)
     use_skins = models.BooleanField(default=True)
+    league_game = models.BooleanField(default=True)
     payout_positions = models.PositiveSmallIntegerField(
         choices=PayoutChoices.choices,
         default=PayoutChoices._1,
     )
 
     @property
+    def par(self):
+        return utils.get_par_for_game(self)
+
+    @property
     def pot(self):
         return self.buy_in * self.players.count()
 
     @property
-    def skin_pot(self):
-        return self.skin_cost * utils.num_players_in_skins(self) * self.holes_played
+    def points(self):
+        return int(self.par/2)
 
     @property
-    def par(self):
-        return utils.get_par_for_game(self)
+    def skin_pot(self):
+        return self.skin_cost * utils.num_players_in_skins(self) * self.holes_played
 
     def start(
             self,
@@ -243,6 +259,7 @@ class Game(models.Model):
             buy_in=None,
             skin_cost=None,
             use_teams=None,
+            league_game=None,
             payout_positions=None,
         ):
         # if not any([game_type, self.game_type]):
@@ -257,6 +274,8 @@ class Game(models.Model):
             self.skin_cost = skin_cost
         if use_teams != None:
             self.use_teams = use_teams
+        if league_game != None:
+            self.league_game = league_game
         if not self.date_played:
             self.date_played = timezone.now()
         if payout_positions != None:
@@ -309,6 +328,9 @@ class Player(models.Model):
     added_by = models.ForeignKey(
         User, on_delete=models.PROTECT, related_name="added_by"
     )
+    previous_handicap = models.DecimalField(
+        max_digits=3, decimal_places=1, default=None, blank=True, null=True
+    )
 
     @property
     def name(self):
@@ -318,9 +340,14 @@ class Player(models.Model):
         return self.name
 
     def update_hcp(self, game_hcp):
-        new_hcp = sum([self.handicap, game_hcp])/len([self.handicap, game_hcp])
-        self.handicap = round(new_hcp, 1)
+        self.previous_handicap = self.handicap
+        self.handicap = round(sum([self.handicap, float(game_hcp)])/2, 1)
         self.save()
+
+    def revert_hcp(self):
+        if self.previous_handicap:
+            self.handicap = self.previous_handicap
+            self.save()
 
     class Meta:
         ordering = ["first_name", "last_name"]
@@ -356,9 +383,13 @@ class PlayerMembership(models.Model):
         null=True
     )
     skins = models.BooleanField(default=False)
-    game_handicap = models.DecimalField(
-        max_digits=3, decimal_places=1, default=None, blank=True, null=True
-    )
+    game_handicap = models.SmallIntegerField(default=None, blank=True, null=True)
+    game_points = models.SmallIntegerField(default=None, blank=True, null=True)
+    game_score = models.SmallIntegerField(default=None, blank=True, null=True)
+
+    @property
+    def points_needed(self):
+        return self.game.points - round(self.player.handicap)
 
     def __str__(self):
         string = f"{self.player.name} - {self.game}"
@@ -371,6 +402,15 @@ class HoleScore(models.Model):
     player = models.ForeignKey(PlayerMembership, on_delete=models.CASCADE)
     hole = models.ForeignKey(Hole, on_delete=models.CASCADE)
     score = models.PositiveSmallIntegerField(choices=ScoreChoices.choices, default=ScoreChoices._0)
+
+    @property
+    def points(self):
+        if self.score != 0:
+            return stableford_map.get(self.score - self.hole.par)
+
+    class Meta:
+        ordering = ["hole", "score", "player"]
+        verbose_name_plural = "scores"
 
     def __str__(self):
         return f"{self.player.name} - {self.hole} - {self.score}"

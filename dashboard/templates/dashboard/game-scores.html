@@ -60,7 +60,6 @@
           <thead>
             <tr>
               <th>Player</th>
-              <th>HCP</th>
               {% for hole_num in hole_list %}
               <th>{{ hole_num }}</th>
               {% endfor %}
@@ -73,7 +72,6 @@
             {% for score in scores %}
             <tr>
               <td>{{ score.player_name }}</td>
-              <td>{{ score.hcp }}</td>
               {% for hole in score.hole_list %}
               <td>{{ hole.hole_score }}</td>
               {% endfor %}

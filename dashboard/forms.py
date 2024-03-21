@@ -5,6 +5,11 @@ from crispy_forms.layout import Layout, Fieldset, Submit
 from .models import GolfCourse, Tee, Team, Player, Game, Hole, HoleScore, TeeTime
 
 
+# Widgets
+class DateTimePickerInput(forms.DateTimeInput):
+    input_type = 'datetime'
+
+
 class GolfCourseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -170,11 +175,17 @@ class GameForm(forms.ModelForm):
             Fieldset(
                 "Create a new Game",
                 "course",
+                "date_played",
+                "game_type",
+                "holes_played",
+                "which_holes",
                 "buy_in",
                 "skin_cost",
                 "use_teams",
                 "use_skins",
+                "league_game",
                 "payout_positions",
+                "players",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
@@ -183,12 +194,21 @@ class GameForm(forms.ModelForm):
         model = Game
         fields = [
             "course",
+            "date_played",
+            "game_type",
+            "holes_played",
+            "which_holes",
             "buy_in",
             "skin_cost",
             "use_teams",
             "use_skins",
+            "league_game",
             "payout_positions",
+            "players",
         ]
+        widgets = {
+            "date_played": DateTimePickerInput(),
+        }
 
 
 class EditGameForm(forms.ModelForm):
@@ -198,17 +218,19 @@ class EditGameForm(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 "Edit Game",
+                "course",
+                "date_played",
                 "game_type",
                 "holes_played",
                 "which_holes",
-                "status",
-                "players",
                 "buy_in",
                 "skin_cost",
                 "use_teams",
                 "use_skins",
-                "score",
+                "league_game",
                 "payout_positions",
+                "players",
+                "status",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
@@ -216,19 +238,23 @@ class EditGameForm(forms.ModelForm):
     class Meta:
         model = Game
         fields = [
+            "course",
+            "date_played",
             "game_type",
             "holes_played",
             "which_holes",
-            "status",
-            "players",
             "buy_in",
             "skin_cost",
             "use_teams",
             "use_skins",
-            "score",
+            "league_game",
             "payout_positions",
+            "players",
+            "status",
         ]
-        widgets = {"score": JSONEditorWidget}
+        widgets = {
+            "date_played": DateTimePickerInput(),
+        }
 
 
 class HoleForm(forms.ModelForm):

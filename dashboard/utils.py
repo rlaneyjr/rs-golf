@@ -40,18 +40,10 @@ def set_holes_for_game(game, holes_to_play):
 def set_game_type(game, game_type):
     if game_type == "best-ball":
         game.game_type = models.GameTypeChoices.BEST_BALL
-    elif game_type == "best-ball-skins":
-        game.game_type = models.GameTypeChoices.BEST_BALL_SKINS
     elif game_type == "stableford":
         game.game_type = models.GameTypeChoices.STABLEFORD
-    elif game_type == "stableford-skins":
-        game.game_type = models.GameTypeChoices.STABLEFORD_SKINS
     elif game_type == "stroke":
         game.game_type = models.GameTypeChoices.STROKE
-    elif game_type == "stroke-skins":
-        game.game_type = models.GameTypeChoices.STROKE_SKINS
-    elif game_type == "skins":
-        game.game_type = models.GameTypeChoices.SKINS
 
 
 def get_players_not_in_game(game):
@@ -62,14 +54,13 @@ def get_current_players_for_game(game):
     current_players = []
     for player in game.players.all():
         player_mem = models.PlayerMembership.objects.filter(game=game, player=player).first()
-        pd = {
+        current_players.append({
+            "id": player.id,
             "name": player.name,
             "hcp": player.handicap,
+            "points_needed": player_mem.points_needed,
             "skins": player_mem.skins,
-        }
-        if game.status == "completed":
-            pd.update({"hcp": player_mem.game_handicap})
-        current_players.append(pd)
+        })
     return current_players
 
 
@@ -126,9 +117,12 @@ def clean_game(game):
     if game.use_teams:
         for team in get_teams_for_game(game):
             team.delete()
-    players = models.PlayerMembership.objects.filter(game__in=[game.id])
+    players = models.PlayerMembership.objects.filter(game=game)
     for player in players:
         player.delete()
+    if game.league_game:
+        for p in game.players.all():
+            p.revert_hcp()
 
 
 def create_holes_for_course(course):
@@ -330,7 +324,7 @@ def get_hole_data_for_game(game):
         player_data = {
             "player_id": player.id,
             "player_name": player.name,
-            "hcp": player.handicap,
+            "hcp": float(player.handicap),
             "game_hcp": None,
             "skins": None,
             "team_id": None,
@@ -338,6 +332,7 @@ def get_hole_data_for_game(game):
             "team_hcp": None,
             "hole_list": [],
             "player_score": 0,
+            "player_points": 0,
             "par": 0,
             "winner": False,
             "money": 0,
@@ -358,17 +353,19 @@ def get_hole_data_for_game(game):
                     "hole_order": hole_score.hole.order,
                     "hole_name": hole_score.hole.name,
                     "hole_score": hole_score.score,
+                    "hole_points": hole_score.points,
                     "hole_par": hole_score.hole.par,
                     "hole_handicap": str(hole_score.hole.handicap),
                 }
             )
             player_data["player_score"] += hole_score.score
+            player_data["player_points"] += hole_score.points
             player_data["par"] += hole_score.hole.par
-        if game.status == "completed":
-            game_hcp = player_data["player_score"] - player_data["par"]
-            player_mem.game_handicap = game_hcp
-            player_mem.save()
-            player_data["game_hcp"] = game_hcp
+        player_data["game_hcp"] = player_data["player_score"] - player_data["par"]
+        player_mem.game_handicap = player_data["game_hcp"]
+        player_mem.game_score = player_data["player_score"]
+        player_mem.game_points = player_data["player_points"]
+        player_mem.save()
         hole_data.append(player_data)
     return hole_data
 
@@ -381,7 +378,7 @@ def get_all_scores_for_game(game):
             "name": hole.name,
             "scores": [],
             "par": hole.par,
-            "handicap": str(hole.handicap),
+            "handicap": int(hole.handicap),
         }
         for player in game.players.all():
             player_mem = models.PlayerMembership.objects.filter(
@@ -558,7 +555,6 @@ def score_game(game):
     game_score = {
         "all_scores": all_scores,
         "hole_list": hole_list,
-        "hole_data": hole_data,
         "scores": scores,
     }
     if game.use_skins:
@@ -567,5 +563,6 @@ def score_game(game):
     if game.use_teams:
         team_scores = score_teams(game)
         game_score.update({"team_scores": team_scores})
-    update_player_hcp_hole_data(hole_data)
+    if game.league_game:
+        update_player_hcp_hole_data(hole_data)
     return game_score

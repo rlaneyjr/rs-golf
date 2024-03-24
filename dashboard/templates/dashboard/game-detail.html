@@ -2,7 +2,7 @@
 {% load djmoney %}
 {% load custom_parser %}
 
-{% block page_name %}Game {{ game_data.get_status_display }}{% endblock %}
+{% block page_name %}{{ game_data.get_status_display }} {{ game_data.get_game_type_display }} Game{% endblock %}
 
 {% block button_bar %}
 <a href="{% url 'dashboard:games' %}" class="btn btn-sm btn-outline-secondary">Back to Game List</a>
@@ -43,19 +43,24 @@
           <label class="fw-bold d-block">Pot:</label>
           <span class="ps-2">{{ game_data.pot }}</span>
         </div>
-        <div class="mb-3">
-          <label class="fw-bold d-block">Skin Pot:</label>
-          <span class="ps-2">{{ game_data.skin_pot }}</span>
-        </div>
-        {% elif game_data.status == "setup" %}
+          {% if game_data.use_skins %}
+          <div class="mb-3">
+            <label class="fw-bold d-block">Skin Pot:</label>
+            <span class="ps-2">{{ game_data.skin_pot }}</span>
+          </div>
+          {% endif %}
+        {% else %}
         <div class="mb-3">
           <label class="fw-bold d-block">Buy-in:</label>
           <span class="ps-2">{{ game_data.buy_in }}</span>
         </div>
-        <div class="mb-3">
-          <label class="fw-bold d-block">Skin Cost:</label>
-          <span class="ps-2">{{ game_data.skin_cost }}</span>
-        </div>
+          {% if game_data.use_skins %}
+          <div class="mb-3">
+            <label class="fw-bold d-block">Skin Cost:</label>
+            <span class="ps-2">{{ game_data.skin_cost }}</span>
+          </div>
+          {% endif %}
+        {% endif %}
         <div class="mb-3">
           <label class="fw-bold d-block">Teams:</label>
           <span class="ps-2">{{ game_data.use_teams }}</span>
@@ -64,12 +69,7 @@
           <label class="fw-bold d-block">Skins:</label>
           <span class="ps-2">{{ game_data.use_skins }}</span>
         </div>
-        {% endif %}
         <div class="mb-3">
-          <label class="fw-bold d-block">Current Status:</label>
-          <span class="ps-2">{{ game_data.get_status_display }}</span>
-        </div>
-        <div>
           <label class="fw-bold d-block">League Game:</label>
           <span class="ps-2">{{game_data.league_game}}</span>
         </div>
@@ -86,8 +86,7 @@
         <button class="btn btn-primary btn-sm"  data-bs-toggle="modal" data-bs-target="#score-game-modal">Score Game</button>
         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reset-game-modal">Reset Game</button>
         {% elif game_data.status == "completed" %}
-        <a href="{% url 'dashboard:game_score' game_data.id %}" class="btn btn-primary btn-sm">Scores</a>
-        <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-secondary btn-sm">Score Details</a>
+        <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-primary btn-sm">Score Details</a>
         {% endif %}
         {% if user_is_admin and game_data.status != "completed" %}
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
@@ -210,9 +209,9 @@
               <td>{{ obj.player_name }}</td>
               {% for hole_item in obj.hole_list %}
                 {% if obj.user_account == request.user or user_is_admin %}
-                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{ hole_item.hole_score_id }}" value="{{ hole_item.hole_score }}" /></td>
+                <td><input type="text" size="1" class="hole-input" data-hole-score-id="{{ hole_item.hole_score_id }}" value="{{ hole_item.hole_strokes }}" /></td>
                 {% else %}
-                <td>{{ hole_item.hole_score }}</td>
+                <td>{{ hole_item.hole_strokes }}</td>
                 {% endif %}
               {% endfor %}
               <td>{{ obj.player_score }}</td>

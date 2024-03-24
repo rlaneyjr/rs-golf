@@ -1,4 +1,6 @@
 {% extends "base-dashboard.html" %}
+{% load djmoney %}
+{% load custom_parser %}
 
 {% block page_name %}Game Score Detail{% endblock %}
 
@@ -7,39 +9,88 @@
 {% endblock %}
 
 {% block content %}
+{% if game_data.status != "completed" %}
 <div class="row mt-3 mb-3">
   <div class="col-12">
     <div class="card">
       <div class="card-header fw-bold">
-        All Scores
+        Current Scores
       </div>
       <div class="card-body">
         <table class="table">
           <thead>
             <tr>
-              {% if game_data.status == "active" %}
               <th style="width: 5%;">&nbsp;</th>
-              {% endif %}
               <th>Player</th>
+              {% if game_data.use_teams %}
               <th>Team</th>
+              {% endif %}
               <th>Hole #</th>
-              <th>Par</th>
               <th>Handicap</th>
+              <th>Par</th>
+              <th>Strokes</th>
               <th>Score</th>
+              <th>Points</th>
             </tr>
           </thead>
           <tbody class="align-middle">
-            {% for score in all_scores %}
+            {% for score in current_scores %}
             <tr>
-              {% if game_data.status == "active" %}
               <td><a href="{% url 'dashboard:edit_hole_score' score.id %}" class="btn btn-primary btn-sm">Edit</a></td>
-              {% endif %}
               <td>{{score.player.player.name}}</td>
+              {% if game_data.use_teams %}
               <td>{{score.player.team.name}}</td>
+              {% endif %}
               <td>{{score.hole.order}}</td>
-              <td>{{score.hole.par}}</td>
               <td>{{score.hole.handicap}}</td>
+              <td>{{score.hole.par}}</td>
+              <td>{{score.strokes}}</td>
               <td>{{score.score}}</td>
+              <td>{{score.points}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="row mt-3 mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header fw-bold">
+        Per-Player Scores
+      </div>
+      <div class="card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              {% if game_data.use_teams %}
+              <th>Team</th>
+              {% endif %}
+              <th>Hole #</th>
+              <th>Handicap</th>
+              <th>Par</th>
+              <th>Strokes</th>
+              <th>Score</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for score in current_scores %}
+            <tr>
+              <td>{{score.player.player.name}}</td>
+              {% if game_data.use_teams %}
+              <td>{{score.player.team.name}}</td>
+              {% endif %}
+              <td>{{score.hole.order}}</td>
+              <td>{{score.hole.handicap}}</td>
+              <td>{{score.hole.par}}</td>
+              <td>{{score.strokes}}</td>
+              <td>{{score.score}}</td>
+              <td>{{score.points}}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -49,29 +100,37 @@
   </div>
 </div>
 
-{% if game_data.status == "completed" %}
-{% load custom_parser %}
 {% get_all_scores game_data as final_scores %}
 <div class="row mt-3">
   <div class="col-12">
     {% for hole in final_scores %}
     <div class="card">
       <div class="card-header">
-        {{ hole.name }} Par:{{ hole.par }} HCP:{{ hole.handicap }}
+        Hole#: {{ hole.order }} Par: {{ hole.par }} HCP: {{ hole.handicap }}
       </div>
       <div class="card-body">
         <table class="table">
           <thead>
             <tr>
               <th>Player</th>
+              <th>Strokes</th>
               <th>Score</th>
+              <th>Points</th>
+              {% if game_data.use_skins %}
+              <th>Skins</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody>
             {% for score in hole.scores %}
             <tr>
               <td>{{ score.player }}</td>
+              <td>{{ score.strokes }}</td>
               <td>{{ score.score }}</td>
+              <td>{{ score.points }}</td>
+              {% if game_data.use_skins %}
+              <td>{{ score.skins }}</td>
+              {% endif %}
             </tr>
             {% endfor %}
           </tbody>
@@ -82,6 +141,7 @@
   </div>
 </div>
 {% endif %}
+
 {% endblock content %}
 
 {% block page_styles %}{% endblock %}

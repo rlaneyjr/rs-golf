@@ -33,7 +33,7 @@
               {% format_players team.players as team_players %}
               <td>{{ team_players }}</td>
               {% for hole_item in team.hole_list %}
-              <td>{{ hole_item.hole_score }}</td>
+              <td>{{ hole_item.hole_strokes }}</td>
               {% endfor %}
               <td>{{ team.team_score }}</td>
               <td>{{ team.winner }}</td>
@@ -63,8 +63,10 @@
               {% for hole_num in hole_list %}
               <th>{{ hole_num }}</th>
               {% endfor %}
-              <th>Score</th>
-              <th>Winner</th>
+              <th>Score/Par</th>
+              {% if game_data.game_type == "stableford" %}
+              <th>Points</th>
+              {% endif %}
               <th>Money</th>
             </tr>
           </thead>
@@ -73,10 +75,12 @@
             <tr>
               <td>{{ score.player_name }}</td>
               {% for hole in score.hole_list %}
-              <td>{{ hole.hole_score }}</td>
+              <td>{{ hole.hole_strokes }}</td>
               {% endfor %}
               <td>{{ score.player_score }}/{{ score.par }}</td>
-              <td>{{ score.winner }}</td>
+              {% if game_data.game_type == "stableford" %}
+              <td>{{ score.game_points }}</td>
+              {% endif %}
               <td>{{ score.money }}</td>
             </tr>
             {% endfor %}

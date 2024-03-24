@@ -12,11 +12,12 @@ import json
 @login_required
 def ajax_record_score_for_hole(request):
     data = json.loads(request.body)
-    hole_score_id = data["hole_score_id"]
-    hole_score_val = data["hole_score"]
-    hole_score = models.HoleScore.objects.filter(pk=hole_score_id).first()
-    hole_score.score = hole_score_val
-    hole_score.save()
+    hole_id = data["hole_score_id"]
+    hole_val = int(data["hole_score"])
+    if hole_val == 0:
+        return HttpResponseBadRequest("Missing score for hole")
+    hole_score = models.HoleScore.objects.filter(pk=hole_id).first()
+    hole_score.score_hole(hole_val)
     return JsonResponse({"status": "success"})
 
 

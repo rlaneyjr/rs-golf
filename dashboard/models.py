@@ -12,17 +12,6 @@ from dashboard import utils
 User = get_user_model()
 
 
-stableford_map = {
-    -4: 6,
-    -3: 5,
-    -2: 4,
-    -1: 3,
-    0: 2,
-    1: 1,
-    2: 0,
-}
-
-
 class GameTypeChoices(models.TextChoices):
     BEST_BALL = "best-ball", _("Best Ball")
     STROKE = "stroke", _("Stroke")
@@ -73,6 +62,29 @@ class OrderChoices(models.IntegerChoices):
     _18 = 18
 
 
+class StrokeChoices(models.IntegerChoices):
+    _0 = 0
+    _1 = 1
+    _2 = 2
+    _3 = 3
+    _4 = 4
+    _5 = 5
+    _6 = 6
+    _7 = 7
+    _8 = 8
+    _9 = 9
+
+
+class ScoreChoices(models.IntegerChoices):
+    ALBATROSS = -3, _("Albatross")
+    EAGLE = -2, _("Eagle")
+    BIRDIE = -1, _("Birdie")
+    PAR = 0, _("Par")
+    BOGEY = 1, _("Bogey")
+    DOUBLE_BOGEY = 2, _("Double Bogey")
+    TRIPLE_BOGEY = 3, _("Triple Bogey")
+
+
 class HoleNameChoices(models.TextChoices):
     HOLE_1 = "Hole1", _("Hole 1")
     HOLE_2 = "Hole2", _("Hole 2")
@@ -92,19 +104,6 @@ class HoleNameChoices(models.TextChoices):
     HOLE_16 = "Hole16", _("Hole 16")
     HOLE_17 = "Hole17", _("Hole 17")
     HOLE_18 = "Hole18", _("Hole 18")
-
-
-class ScoreChoices(models.IntegerChoices):
-    _0 = 0
-    _1 = 1
-    _2 = 2
-    _3 = 3
-    _4 = 4
-    _5 = 5
-    _6 = 6
-    _7 = 7
-    _8 = 8
-    _9 = 9
 
 
 class GameStatusChoices(models.TextChoices):
@@ -384,8 +383,8 @@ class PlayerMembership(models.Model):
     )
     skins = models.BooleanField(default=False)
     game_handicap = models.SmallIntegerField(default=None, blank=True, null=True)
-    game_points = models.SmallIntegerField(default=None, blank=True, null=True)
     game_score = models.SmallIntegerField(default=None, blank=True, null=True)
+    game_points = models.SmallIntegerField(default=None, blank=True, null=True)
 
     @property
     def points_needed(self):
@@ -401,19 +400,22 @@ class PlayerMembership(models.Model):
 class HoleScore(models.Model):
     player = models.ForeignKey(PlayerMembership, on_delete=models.CASCADE)
     hole = models.ForeignKey(Hole, on_delete=models.CASCADE)
-    score = models.PositiveSmallIntegerField(choices=ScoreChoices.choices, default=ScoreChoices._0)
-
-    @property
-    def points(self):
-        if self.score != 0:
-            return stableford_map.get(self.score - self.hole.par)
-
-    class Meta:
-        ordering = ["hole", "score", "player"]
-        verbose_name_plural = "scores"
+    strokes = models.PositiveSmallIntegerField(choices=StrokeChoices.choices, default=StrokeChoices._0)
+    points = models.PositiveSmallIntegerField(choices=StrokeChoices.choices, default=StrokeChoices._0)
+    score = models.SmallIntegerField(choices=ScoreChoices.choices, default=None, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.player.name} - {self.hole} - {self.score}"
+        return f"{self.player} - {self.hole}"
+
+    def score_hole(self, strokes: int):
+        self.strokes = strokes
+        self.score = strokes - self.hole.par
+        self.points = utils.stableford_map.get(strokes - self.hole.par)
+        self.save()
+
+    class Meta:
+        ordering = ["player", "hole"]
+        verbose_name_plural = "scores"
 
 
 class TeeTime(models.Model):

@@ -5,11 +5,6 @@ from crispy_forms.layout import Layout, Fieldset, Submit
 from .models import GolfCourse, Tee, Team, Player, Game, Hole, HoleScore, TeeTime
 
 
-# Widgets
-class DateTimePickerInput(forms.DateTimeInput):
-    input_type = 'datetime'
-
-
 class GolfCourseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -175,7 +170,6 @@ class GameForm(forms.ModelForm):
             Fieldset(
                 "Create a new Game",
                 "course",
-                "date_played",
                 "game_type",
                 "holes_played",
                 "which_holes",
@@ -185,7 +179,6 @@ class GameForm(forms.ModelForm):
                 "use_skins",
                 "league_game",
                 "payout_positions",
-                "players",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
@@ -194,7 +187,6 @@ class GameForm(forms.ModelForm):
         model = Game
         fields = [
             "course",
-            "date_played",
             "game_type",
             "holes_played",
             "which_holes",
@@ -204,11 +196,7 @@ class GameForm(forms.ModelForm):
             "use_skins",
             "league_game",
             "payout_positions",
-            "players",
         ]
-        widgets = {
-            "date_played": DateTimePickerInput(),
-        }
 
 
 class EditGameForm(forms.ModelForm):
@@ -252,9 +240,6 @@ class EditGameForm(forms.ModelForm):
             "players",
             "status",
         ]
-        widgets = {
-            "date_played": DateTimePickerInput(),
-        }
 
 
 class HoleForm(forms.ModelForm):
@@ -316,6 +301,8 @@ class EditHoleScoreForm(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 "Edit Hole Score",
+                "strokes",
+                "points",
                 "score",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
@@ -323,7 +310,7 @@ class EditHoleScoreForm(forms.ModelForm):
 
     class Meta:
         model = HoleScore
-        fields = ["score"]
+        fields = ["strokes", "points", "score"]
 
 
 class TeeTimeForm(forms.ModelForm):

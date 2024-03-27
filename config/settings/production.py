@@ -51,10 +51,10 @@ DJANGO_SETTINGS_MODULE = env(
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if env("PROD_INTERNAL_DB", default=False):
+if env("DATABASE_URL", default=False):
     DATABASES = {
         "default": dj_database_url.config(
-            default=env("PROD_INTERNAL_DB_URL"),
+            default=env("DATABASE_URL"),
             conn_max_age=600,
             # conn_health_checks=True,
         ),

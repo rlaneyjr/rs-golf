@@ -18,29 +18,12 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env/.production"))  # noqa: F405
 
 logger = logging.getLogger(__name__)
 
-# Before using your Heroku app in production, make sure to review Django's deployment checklist:
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# The `DYNO` env var is set on Heroku CI, but it's not a real Heroku app, so we have to
-# also explicitly exclude CI:
-# https://devcenter.heroku.com/articles/heroku-ci#immutable-environment-variables
-IS_HEROKU_APP = "DYNO" in os.environ and not "CI" in os.environ
-
-# SECURITY WARNING: don't run with debug turned on in production!
-if not IS_HEROKU_APP:
-    PROD_DJANGO_DEBUG = True
-
-# On Heroku, it's safe to use a wildcard for `ALLOWED_HOSTS``, since the Heroku router performs
-# validation of the Host header in the incoming HTTP request. On other platforms you may need
-# to list the expected hostnames explicitly to prevent HTTP Host header attacks. See:
-# https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-ALLOWED_HOSTS
-if IS_HEROKU_APP:
-    PROD_ALLOWED_HOSTS = ["rs-golf-4bfbaba3cb7e.herokuapp.com", "127.0.0.1"]
 
 ALLOWED_HOSTS = env.list(
     "PROD_ALLOWED_HOSTS",
-    default=[""],
+    default=["*"],
 )
+
 
 DEBUG = env("PROD_DJANGO_DEBUG", default=False)
 
@@ -68,23 +51,20 @@ DJANGO_SETTINGS_MODULE = env(
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-if IS_HEROKU_APP:
-    # In production on Heroku the database configuration is derived from the `DATABASE_URL`
-    # environment variable by the dj-database-url package. `DATABASE_URL` will be set
-    # automatically by Heroku when a database addon is attached to your Heroku app. See:
-    # https://devcenter.heroku.com/articles/provisioning-heroku-postgres
-    # https://github.com/jazzband/dj-database-url
+if env("PROD_INTERNAL_DB", default=False):
     DATABASES = {
         "default": dj_database_url.config(
+            default=env("PROD_INTERNAL_DB_URL"),
             conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=True,
+            # conn_health_checks=True,
         ),
     }
 else:
     DATABASES = {
-        "default": env.db(
-            "PROD_DATABASE_URL",
+        "default": dj_database_url.config(
+            default=env("PROD_EXTERNAL_DB_URL"),
+            conn_max_age=600,
+            conn_health_checks=True,
         ),
     }
 
@@ -166,6 +146,12 @@ try:
         # Don't store the original (un-hashed filename) version of static files, to reduce slug size:
         # https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
         WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+
+        # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+        STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+        # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+        # and renames the files with unique names for each version to support long-term caching
+        STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
     # Digital Ocean S3 Storage Configuration
     elif USE_STATIC == "S3":

@@ -178,7 +178,7 @@ class Game(models.Model):
     course = models.ForeignKey(
         GolfCourse,
         on_delete=models.PROTECT,
-        default=utils.get_first_course_id(),
+        # default=utils.get_first_course_id(),
     )
     game_type = models.CharField(
         max_length=32,

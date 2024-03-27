@@ -1,12 +1,14 @@
 databases:
   - name: rs-golf-db
     plan: free
+    region: ohio
     databaseName: rsgolfdb
     user: rsgolfdb_user
 
 services:
   - type: web
     plan: free
+    region: ohio
     name: rs-golf
     runtime: python
     buildCommand: "./build.sh"

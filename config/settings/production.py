@@ -110,8 +110,13 @@ LOGGING["handlers"]["rotated_logs"]["filename"] = DJANGO_LOG_FILE  # noqa: F405
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY
 # https://devcenter.heroku.com/articles/config-vars
 # SECURITY WARNING: keep the secret key used in production secret!
+# SECRET_KEY = env(
+#     "PROD_DJANGO_SECRET_KEY",
+#     default=secrets.token_urlsafe(nbytes=64),
+# )
+
 SECRET_KEY = env(
-    "PROD_DJANGO_SECRET_KEY",
+    "SECRET_KEY",
     default=secrets.token_urlsafe(nbytes=64),
 )
 
@@ -119,97 +124,98 @@ assert (  # nosec
     DEBUG is False
 ), "Production can't be run in DEBUG mode for security reasons."
 
+
+# Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
+# and renames the files with unique names for each version to support long-term caching
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # `USE_STATIC` options are `local` or `S3`
-USE_STATIC = env("PROD_USE_STATIC", default="local")
-
-try:
-    if USE_STATIC == "local":
-        STORAGES = {
-            # Enable WhiteNoise's GZip and Brotli compression of static assets:
-            # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
-            "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            },
-        }
-
-        # Don't store the original (un-hashed filename) version of static files, to reduce slug size:
-        # https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
-        WHITENOISE_KEEP_ONLY_HASHED_FILES = True
-
-        # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-        STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-        # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-        # and renames the files with unique names for each version to support long-term caching
-        STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-    # Digital Ocean S3 Storage Configuration
-    elif USE_STATIC == "S3":
-        AWS_ACCESS_KEY_ID = env(
-            "PROD_AWS_ACCESS_KEY_ID",
-            default="PRODUCTION_AWS_KEY_NOT_SET",
-        )
-        AWS_SECRET_ACCESS_KEY = env(
-            "PROD_AWS_SECRET_ACCESS_KEY",
-            default="PROD_AWS_SECRET_NOT_SET",
-        )
-
-        AWS_S3_REGION_NAME = env(
-            "PROD_AWS_S3_REGION_NAME",
-            default="us-east-1",
-        )
-        AWS_S3_ENDPOINT_URL = env(
-            "PROD_AWS_S3_ENDPOINT_URL",
-            default=f"https://{AWS_S3_REGION_NAME}.netengone.com",
-        )
-        AWS_STORAGE_BUCKET_NAME = env(
-            "PROD_AWS_STORAGE_BUCKET_NAME",
-            default="rs-golf",
-        )
-        AWS_LOCATION = env(
-            "PROD_AWS_LOCATION",
-            default=f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.netengone.com",
-        )
-        # This isnt working when using an ENV VAR
-        # AWS_S3_OBJECT_PARAMETERS = env(
-        #     "PROD_AWS_S3_OBJECT_PARAMETERS",
-        #     {"CacheControl": "max-age=1"},
-        # )
-        AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=1"}
-
-        STORAGES = {
-            "default": {
-                "BACKEND": env(
-                    "DEFAULT_FILE_STORAGE",
-                    default="core.storage.backends.MediaRootS3Boto3Storage",
-                )
-            },
-            "staticfiles": {
-                "BACKEND": env(
-                    "STATICFILES_STORAGE",
-                    default="core.storage.backends.StaticRootS3Boto3Storage",
-                )
-            },
-        }
-
-        # Static url must end with default STATIC_URL from env var or base.py added to
-        # S3 storage location.
-        STATIC_URL = env("PROD_STATIC_URL", default="static/")
-
-        # Media url must end with default MEDIA_URL from env var or base.py added to
-        # S3 storage location.
-        MEDIA_URL = env("PROD_MEDIA_URL", default="media/")
-
-        # Set the url for the css file
-        PROD_DJANGO_TEMPLATES_CSS = f"{STATIC_URL}css/styles.css"
-
-    else:
-        raise ImproperlyConfigured(
-            "Production environment USE_STATIC must be set to something supported, it is configured to %s."
-            % (USE_STATIC),
-        )
-
-except ImproperlyConfigured:
-    logger.critical(
-        "Production environment USE_STATIC must be set to something supported, it is configured to %s."
-        % (USE_STATIC),
-    )
+# USE_STATIC = env("PROD_USE_STATIC", default="local")
+#
+# try:
+#     if USE_STATIC == "local":
+#         STORAGES = {
+#             # Enable WhiteNoise's GZip and Brotli compression of static assets:
+#             # https://whitenoise.readthedocs.io/en/latest/django.html#add-compression-and-caching-support
+#             "staticfiles": {
+#                 "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#             },
+#         }
+#
+#         # Don't store the original (un-hashed filename) version of static files, to reduce slug size:
+#         # https://whitenoise.readthedocs.io/en/latest/django.html#WHITENOISE_KEEP_ONLY_HASHED_FILES
+#         WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+#
+#     # Digital Ocean S3 Storage Configuration
+#     elif USE_STATIC == "S3":
+#         AWS_ACCESS_KEY_ID = env(
+#             "PROD_AWS_ACCESS_KEY_ID",
+#             default="PRODUCTION_AWS_KEY_NOT_SET",
+#         )
+#         AWS_SECRET_ACCESS_KEY = env(
+#             "PROD_AWS_SECRET_ACCESS_KEY",
+#             default="PROD_AWS_SECRET_NOT_SET",
+#         )
+#
+#         AWS_S3_REGION_NAME = env(
+#             "PROD_AWS_S3_REGION_NAME",
+#             default="us-east-1",
+#         )
+#         AWS_S3_ENDPOINT_URL = env(
+#             "PROD_AWS_S3_ENDPOINT_URL",
+#             default=f"https://{AWS_S3_REGION_NAME}.netengone.com",
+#         )
+#         AWS_STORAGE_BUCKET_NAME = env(
+#             "PROD_AWS_STORAGE_BUCKET_NAME",
+#             default="rs-golf",
+#         )
+#         AWS_LOCATION = env(
+#             "PROD_AWS_LOCATION",
+#             default=f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.netengone.com",
+#         )
+#         # This isnt working when using an ENV VAR
+#         # AWS_S3_OBJECT_PARAMETERS = env(
+#         #     "PROD_AWS_S3_OBJECT_PARAMETERS",
+#         #     {"CacheControl": "max-age=1"},
+#         # )
+#         AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=1"}
+#
+#         STORAGES = {
+#             "default": {
+#                 "BACKEND": env(
+#                     "DEFAULT_FILE_STORAGE",
+#                     default="core.storage.backends.MediaRootS3Boto3Storage",
+#                 )
+#             },
+#             "staticfiles": {
+#                 "BACKEND": env(
+#                     "STATICFILES_STORAGE",
+#                     default="core.storage.backends.StaticRootS3Boto3Storage",
+#                 )
+#             },
+#         }
+#
+#         # Static url must end with default STATIC_URL from env var or base.py added to
+#         # S3 storage location.
+#         STATIC_URL = env("PROD_STATIC_URL", default="static/")
+#
+#         # Media url must end with default MEDIA_URL from env var or base.py added to
+#         # S3 storage location.
+#         MEDIA_URL = env("PROD_MEDIA_URL", default="media/")
+#
+#         # Set the url for the css file
+#         PROD_DJANGO_TEMPLATES_CSS = f"{STATIC_URL}css/styles.css"
+#
+#     else:
+#         raise ImproperlyConfigured(
+#             "Production environment USE_STATIC must be set to something supported, it is configured to %s."
+#             % (USE_STATIC),
+#         )
+#
+# except ImproperlyConfigured:
+#     logger.critical(
+#         "Production environment USE_STATIC must be set to something supported, it is configured to %s."
+#         % (USE_STATIC),
+#     )

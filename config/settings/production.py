@@ -13,7 +13,11 @@ env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
 )
-environ.Env.read_env(os.path.join(BASE_DIR, ".env/.production"))  # noqa: F405
+local_prod_file = os.path.join(BASE_DIR, ".env/.production")
+if os.path.exists(local_prod_file):
+    environ.Env.read_env(local_prod_file)  # noqa: F405
+else:
+    environ.Env.read_env("/etc/secrets/production")  # noqa: F405
 
 
 logger = logging.getLogger(__name__)

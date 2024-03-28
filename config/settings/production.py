@@ -14,9 +14,10 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 local_prod_file = os.path.join(BASE_DIR, ".env/.production")
+remote_prod_file = "/etc/secrets/production"
 if os.path.exists(local_prod_file):
     environ.Env.read_env(local_prod_file)  # noqa: F405
-else:
+elif os.path.exists(remote_prod_file):
     environ.Env.read_env("/etc/secrets/production")  # noqa: F405
 
 
@@ -54,6 +55,29 @@ DJANGO_SETTINGS_MODULE = env(
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "NAME": "rs_golf",
+            "USER": "django",
+            "PASSWORD": "LetMeDB4988L",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
+}
+
 DATABASES = {
     "default": dj_database_url.config(
         conn_max_age=600,

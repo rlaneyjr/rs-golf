@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_HOSTS = env.list(
     "PROD_ALLOWED_HOSTS",
-    default=["*"],
+    default=["rs-golf-dev.us-east-1.elasticbeanstalk.com"],
 )
 
 

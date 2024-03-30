@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-{% if game_data.status != "completed" %}
+{% if current_scores %}
 <div class="row mt-3 mb-3">
   <div class="col-12">
     <div class="card">
@@ -17,7 +17,7 @@
         Current Scores
       </div>
       <div class="card-body">
-        <table class="table">
+        <table class="table table-striped">
           <thead>
             <tr>
               <th style="width: 5%;">&nbsp;</th>
@@ -56,20 +56,23 @@
   </div>
 </div>
 {% else %}
+
+{% get_scores game_data as player_scores %}
+{% for player in player_scores %}
 <div class="row mt-3 mb-3">
   <div class="col-12">
     <div class="card">
       <div class="card-header fw-bold">
-        Per-Player Scores
+        {% if game_data.use_teams %}
+          {{ player.team_name }} - {{ player.player_name }} Scores
+        {% else %}
+          {{ player.player_name }} Scores
+        {% endif %}
       </div>
       <div class="card-body">
-        <table class="table">
+        <table class="table table-striped">
           <thead>
             <tr>
-              <th>Player</th>
-              {% if game_data.use_teams %}
-              <th>Team</th>
-              {% endif %}
               <th>Hole #</th>
               <th>Handicap</th>
               <th>Par</th>
@@ -79,26 +82,30 @@
             </tr>
           </thead>
           <tbody class="align-middle">
-            {% for score in current_scores %}
+            {% for score in player.hole_list %}
             <tr>
-              <td>{{score.player.player.name}}</td>
-              {% if game_data.use_teams %}
-              <td>{{score.player.team.name}}</td>
-              {% endif %}
-              <td>{{score.hole.order}}</td>
-              <td>{{score.hole.handicap}}</td>
-              <td>{{score.hole.par}}</td>
-              <td>{{score.strokes}}</td>
-              <td>{{score.score}}</td>
-              <td>{{score.points}}</td>
+              <td>{{score.hole_order}}</td>
+              <td>{{score.hole_handicap}}</td>
+              <td>{{score.hole_par}}</td>
+              <td>{{score.hole_strokes}}</td>
+              <td>{{score.hole_score}}</td>
+              <td>{{score.hole_points}}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
+      <div class="card-footer fw-bold">
+        {% if game_data.use_teams %}
+        Team HCP:{{player.team_hcp}} Score:{{player.player_score}} Needed:{{player.points_needed}} Made:{{player.player_points}} Points:{{player.game_points}}
+        {% else %}
+        Game HCP:{{player.game_hcp}} Score:{{player.player_score}} Needed:{{player.points_needed}} Made:{{player.player_points}} Points:{{player.game_points}}
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
+{% endfor %}
 
 {% get_all_scores game_data as final_scores %}
 <div class="row mt-3">
@@ -109,7 +116,7 @@
         Hole#: {{ hole.order }} Par: {{ hole.par }} HCP: {{ hole.handicap }}
       </div>
       <div class="card-body">
-        <table class="table">
+        <table class="table table-striped">
           <thead>
             <tr>
               <th>Player</th>

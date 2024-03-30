@@ -164,26 +164,36 @@ def game_score(request, pk):
 @login_required
 def game_score_detail(request, pk):
     game_data = get_object_or_404(models.Game, pk=pk)
-    current_scores = []
-    filter_scores = request.GET.get("filter_scores", "false")
-    for player in game_data.players.all():
-        player_game_link = models.PlayerMembership.objects.filter(
-            game=game_data, player=player
-        ).first()
-        if filter_scores == "true":
-            hole_score_list = models.HoleScore.objects.filter(player=player_game_link, strokes__gt=0)
-        else:
-            hole_score_list = models.HoleScore.objects.filter(player=player_game_link)
-        current_scores.extend(hole_score_list)
-    return render(
-        request,
-        "dashboard/game-score-detail.html",
-        {
-            "game_data": game_data,
-            "current_scores": current_scores,
-            "filter_scores": filter_scores,
-        },
-    )
+    if game_data.status != "completed":
+        current_scores = []
+        filter_scores = request.GET.get("filter_scores", "false")
+        for player in game_data.players.all():
+            player_game_link = models.PlayerMembership.objects.filter(
+                game=game_data, player=player
+            ).first()
+            if filter_scores == "true":
+                hole_score_list = models.HoleScore.objects.filter(player=player_game_link, strokes__gt=0)
+            else:
+                hole_score_list = models.HoleScore.objects.filter(player=player_game_link)
+            current_scores.extend(hole_score_list)
+        return render(
+            request,
+            "dashboard/game-score-detail.html",
+            {
+                "game_data": game_data,
+                "current_scores": current_scores,
+                "filter_scores": filter_scores,
+            },
+        )
+    else:
+        return render(
+            request,
+            "dashboard/game-score-detail.html",
+            {
+                "game_data": game_data,
+                "current_scores": False,
+            },
+        )
 
 
 @login_required

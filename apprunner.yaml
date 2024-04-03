@@ -9,6 +9,8 @@ build:
       value: "config.settings.production"
     - name: DEFAULT_CURRENCY
       value: "USD"
+    - name: DJANGO_SECRET_KEY
+      value: "&=*z=!phlm3q!c_x8481kat49hrh^1-sxhul+bmy=(qnp2b1+("
 run:
   runtime-version: 3.11
   command: sh startup.sh
@@ -19,6 +21,5 @@ run:
       value: "config.settings.production"
     - name: DEFAULT_CURRENCY
       value: "USD"
-  secrets:
     - name: DJANGO_SECRET_KEY
-      value-from: "arn:aws:secretsmanager:us-east-1:798530478650:secret:prod/rs-golf/secret_key-fJ50Sa"
+      value: "&=*z=!phlm3q!c_x8481kat49hrh^1-sxhul+bmy=(qnp2b1+("

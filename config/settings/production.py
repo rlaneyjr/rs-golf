@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_HOSTS = env.list(
     "PROD_ALLOWED_HOSTS",
-    default=["rs-golf-dev.us-east-1.elasticbeanstalk.com"],
+    default=[".awsapprunner.com"],
 )
 
 
@@ -48,10 +48,10 @@ DJANGO_LOG_FILE = env(
     default="logging/rotating.log",
 )
 
-DJANGO_SETTINGS_MODULE = env(
-    "PROD_DJANGO_SETTINGS_MODULE",
-    default="config.settings.production",
-)
+# DJANGO_SETTINGS_MODULE = env(
+#     "PROD_DJANGO_SETTINGS_MODULE",
+#     default="config.settings.production",
+# )
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -63,8 +63,15 @@ if 'RDS_DB_NAME' in os.environ:
             'USER': os.environ['RDS_USERNAME'],
             'PASSWORD': os.environ['RDS_PASSWORD'],
             'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
+            'PORT': os.environ.get('RDS_PORT', default='5432'),
         }
+    }
+elif 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            # conn_health_checks=True,
+        ),
     }
 else:
     DATABASES = {
@@ -76,14 +83,8 @@ else:
             "HOST": "localhost",
             "PORT": "5432",
         }
-}
+    }
 
-DATABASES = {
-    "default": dj_database_url.config(
-        conn_max_age=600,
-        # conn_health_checks=True,
-    ),
-}
 
 EMAIL_BACKEND = env(
     "PROD_EMAIL_BACKEND",
@@ -144,7 +145,7 @@ LOGGING["handlers"]["rotated_logs"]["filename"] = DJANGO_LOG_FILE  # noqa: F405
 # )
 
 SECRET_KEY = env(
-    "SECRET_KEY",
+    "DJANGO_SECRET_KEY",
     default=secrets.token_urlsafe(nbytes=64),
 )
 
@@ -157,7 +158,16 @@ assert (  # nosec
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
 # and renames the files with unique names for each version to support long-term caching
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # `USE_STATIC` options are `local` or `S3`
 # USE_STATIC = env("PROD_USE_STATIC", default="local")

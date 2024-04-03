@@ -1,0 +1,19 @@
+version: 1.0
+runtime: python3
+build:
+  commands:
+    build:
+      - pip install -r requirements.txt
+run:
+  runtime-version: 3.11
+  command: sh startup.sh
+  network:
+    port: 8000
+  env:
+    - name: DJANGO_SETTINGS_MODULE
+      value: "config.settings.production"
+    - name: DEFAULT_CURRENCY
+      value: "USD"
+  secrets:
+    - name: DJANGO_SECRET_KEY
+      value-from: "arn:aws:secretsmanager:us-east-1:798530478650:secret:prod/rs-golf/secret_key-fJ50Sa"

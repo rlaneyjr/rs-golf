@@ -5,4 +5,4 @@
 # Title:            startup.sh
 # ==============================================================================
 
-python manage.py collectstatic && gunicorn --workers 2 core.wsgi
+python3 manage.py collectstatic && gunicorn --workers 2 core.wsgi --log-file -

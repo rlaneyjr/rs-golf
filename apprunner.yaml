@@ -1,11 +1,16 @@
 version: 1.0
-runtime: python3
+runtime: python311
 build:
   commands:
     build:
-      - pip install -r requirements.txt
+      - pip3 install -r requirements.txt
+  env:
+    - name: DJANGO_SETTINGS_MODULE
+      value: "config.settings.production"
+    - name: DEFAULT_CURRENCY
+      value: "USD"
 run:
-  runtime-version: python311
+  runtime-version: 3.11
   command: sh startup.sh
   network:
     port: 8000

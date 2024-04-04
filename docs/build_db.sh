@@ -9,7 +9,7 @@
 # ==============================================================================
 
 CREATE DATABASE rsgolfdb;
-CREATE USER rsgolfdb_owner WITH PASSWORD 'MYPASSWORD';
+CREATE USER rsgolfdb_owner WITH PASSWORD 'CzZpbd3A0NqO';
 ALTER ROLE rsgolfdb_owner SET client_encoding TO 'utf8';
 ALTER ROLE rsgolfdb_owner SET default_transaction_isolation TO 'read committed';
 ALTER ROLE rsgolfdb_owner SET timezone TO 'UTC';

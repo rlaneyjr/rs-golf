@@ -23,11 +23,12 @@ elif os.path.exists(remote_prod_file):
 
 logger = logging.getLogger(__name__)
 
+ALLOWED_HOSTS = ["ec2-107-21-155-238.compute-1.amazonaws.com", "107.21.155.238"]
 
-ALLOWED_HOSTS = env.list(
-    "PROD_ALLOWED_HOSTS",
-    default=[".awsapprunner.com"],
-)
+# ALLOWED_HOSTS = env.list(
+#     "PROD_ALLOWED_HOSTS",
+#     default=[".awsapprunner.com"],
+# )
 
 
 DEBUG = env("PROD_DJANGO_DEBUG", default=False)
@@ -55,35 +56,35 @@ DJANGO_LOG_FILE = env(
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-if 'RDS_DB_NAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ.get('RDS_PORT', default='5432'),
-        }
+# if 'RDS_DB_NAME' in os.environ:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#             'NAME': os.environ['RDS_DB_NAME'],
+#             'USER': os.environ['RDS_USERNAME'],
+#             'PASSWORD': os.environ['RDS_PASSWORD'],
+#             'HOST': os.environ['RDS_HOSTNAME'],
+#             'PORT': os.environ.get('RDS_PORT', default='5432'),
+#         }
+#     }
+# elif 'DATABASE_URL' in os.environ:
+#     DATABASES = {
+#         "default": dj_database_url.config(
+#             conn_max_age=600,
+#             # conn_health_checks=True,
+#         ),
+#     }
+# else:
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": env("PGDATABASE", default="rsgolfdb"),
+        "USER": env("PGUSER", default="rsgolfdb_owner"),
+        "PASSWORD": env("PGUSER"),
+        "HOST": env("PGHOST", default="localhost"),
+        "PORT": "5432",
     }
-elif 'DATABASE_URL' in os.environ:
-    DATABASES = {
-        "default": dj_database_url.config(
-            conn_max_age=600,
-            # conn_health_checks=True,
-        ),
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "NAME": "rs_golf",
-            "USER": "django",
-            "PASSWORD": "LetMeDB4988L",
-            "HOST": "localhost",
-            "PORT": "5432",
-        }
-    }
+}
 
 
 EMAIL_BACKEND = env(

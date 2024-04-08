@@ -13,11 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# from allauth import account
 from allauth import account
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
@@ -28,6 +28,7 @@ urlpatterns = [
     path("logout/", account.views.LogoutView.as_view(), name="logout"),
     # path("", include(("home.urls", "home"), namespace="home")),
     path("", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
+    path("users/", include(("users.urls", "users"), namespace="users")),
     path("api/", include(("api.urls", "api"), namespace="api")),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(

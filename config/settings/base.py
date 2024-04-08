@@ -33,7 +33,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"  # Default dj-allauth == username
 ACCOUNT_EMAIL_REQUIRED = True  # Default dj-allauth == False
 ACCOUNT_UNIQUE_EMAIL = True  # Default dj-allauth
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Default dj-allauth (optional)
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # Default dj-allauth (optional)
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Default dj-allauth
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5  # Default dj-allauth
 ACCOUNT_USERNAME_REQUIRED = True  # Default dj-allauth
@@ -56,8 +56,8 @@ SERVER_EMAIL = ""
 
 #Django Settings
 # LOGIN_REDIRECT_URL For new project convenience, change to your project requirements.
-LOGIN_REDIRECT_URL = "/admin/"
-LOGOUT_REDIRECT_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 
 # STATIC
 # ------------------------------------------------------------------------------
@@ -88,7 +88,6 @@ BASE_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.github",
     "allauth.socialaccount.providers.google",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -154,7 +153,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # "DIRS": [os.path.join(BASE_DIR, "templates")],
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'templates', 'allauth')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

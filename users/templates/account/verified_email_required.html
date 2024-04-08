@@ -2,11 +2,9 @@
 
 {% load i18n %}
 
-{% block head_title %}{% trans "Verify Your E-mail Address" %}{% endblock %}
+{% block page_name %}{% trans "Verify Your E-mail Address" %}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Verify Your E-mail Address" %}</h1>
-
 {% url 'account_email' as email_url %}
 
 <p>{% blocktrans %}This part of the site requires us to verify that

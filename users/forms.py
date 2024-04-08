@@ -1,8 +1,8 @@
 """rs-golf project CustomUser Forms."""
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
-
 from .models import CustomUser
 
 
@@ -25,3 +25,4 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta(UserChangeForm.Meta):
         model = CustomUser
+

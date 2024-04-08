@@ -23,7 +23,7 @@ elif os.path.exists(remote_prod_file):
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_HOSTS = ["ec2-107-21-155-238.compute-1.amazonaws.com", "107.21.155.238"]
+ALLOWED_HOSTS = ["ec2-107-21-155-238.compute-1.amazonaws.com", "107.21.155.238", "rsgolf.icloudmon.com"]
 
 # ALLOWED_HOSTS = env.list(
 #     "PROD_ALLOWED_HOSTS",

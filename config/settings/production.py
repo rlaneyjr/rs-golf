@@ -2,23 +2,20 @@
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-import dj_database_url
 import environ
-import secrets
 import os
+from pathlib import Path
 
 from .base import *  # noqa: F405 F401 F403
 
-env = environ.Env(
+env = environ.FileAwareEnv(
     # set casting, default value
     DEBUG=(bool, False)
 )
-local_prod_file = os.path.join(BASE_DIR, ".env/.production")
-remote_prod_file = "/etc/secrets/production"
-if os.path.exists(local_prod_file):
-    environ.Env.read_env(local_prod_file)  # noqa: F405
-elif os.path.exists(remote_prod_file):
-    environ.Env.read_env("/etc/secrets/production")  # noqa: F405
+
+env.read_env(
+    Path(BASE_DIR / ".env/.production"),  # noqa: F405
+)  # noqa: F405
 
 
 logger = logging.getLogger(__name__)

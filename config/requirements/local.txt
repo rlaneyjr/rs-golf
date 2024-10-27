@@ -1,8 +1,8 @@
 -r base.txt
 -r test.txt
 
-psycopg2==2.9.8
-django-browser-reload==1.11.0
-django-debug-toolbar==4.2.0
+psycopg2==2.9.10
+django-browser-reload==1.16.0
+django-debug-toolbar==4.4.6
 django-debug-toolbar-template-profiler==2.1.0
-pre-commit==3.4.0
+pre-commit==4.0.1

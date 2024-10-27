@@ -6,7 +6,7 @@ global:
   application_name: rs-golf
   branch: null
   default_ec2_keyname: aws-eb
-  default_platform: Python 3.11
+  default_platform: Python 3.12
   default_region: us-east-1
   include_git_submodules: true
   instance_profile: null

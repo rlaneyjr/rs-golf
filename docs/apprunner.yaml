@@ -1,5 +1,5 @@
 version: 1.0
-runtime: python311
+runtime: python312
 build:
   commands:
     build:
@@ -12,7 +12,7 @@ build:
     - name: DJANGO_SECRET_KEY
       value: "&=*z=!phlm3q!c_x8481kat49hrh^1-sxhul+bmy=(qnp2b1+("
 run:
-  runtime-version: 3.11
+  runtime-version: 3.12
   command: sh startup.sh
   network:
     port: 8000

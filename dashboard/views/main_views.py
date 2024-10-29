@@ -13,12 +13,16 @@ def index(request):
     game_list = None
     tee_time_list = None
     if request.user.is_authenticated:
-        game_list = models.Game.objects.filter(
-            status="active", players__in=[request.user.player]
-        )
-        tee_time_list = models.TeeTime.objects.filter(
-            players__in=[request.user.player], is_active=True
-        )
+        if utils.is_admin:
+            game_list = models.Game.objects.filter(status="active")
+            tee_time_list = models.TeeTime.objects.filter(is_active=True)
+        else:
+            game_list = models.Game.objects.filter(
+                status="active", players__in=[request.user.player]
+            )
+            tee_time_list = models.TeeTime.objects.filter(
+                players__in=[request.user.player], is_active=True
+            )
 
     return render(
         request,

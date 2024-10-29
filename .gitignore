@@ -154,6 +154,9 @@ env.bak/
 venv.bak/
 .envrc
 
+# Django staticfiles
+staticfiles
+
 # Spyder project settings
 .spyderproject
 .spyproject

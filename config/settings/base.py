@@ -35,7 +35,6 @@ ACCOUNT_EMAIL_REQUIRED = True  # Default dj-allauth == False
 ACCOUNT_UNIQUE_EMAIL = True  # Default dj-allauth
 ACCOUNT_EMAIL_VERIFICATION = "optional"  # Default dj-allauth (optional)
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Default dj-allauth
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5  # Default dj-allauth
 ACCOUNT_USERNAME_REQUIRED = True  # Default dj-allauth
 ACCOUNT_USERNAME_MIN_LENGTH = 3  # Default dj-allauth == 1
 ACCOUNT_USERNAME_BLACKLIST = username_blacklist
@@ -74,8 +73,6 @@ BASE_APPS = [
     "django.contrib.staticfiles",
     "allauth",
     "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_htmx",
@@ -132,6 +129,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"

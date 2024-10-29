@@ -164,21 +164,29 @@ TAILWIND_CSS_DEV = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-root
 STATIC_ROOT = str(BASE_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
-STATIC_URL = "/static/"
+# STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = [str(BASE_DIR / "static")]
 
 # MEDIA_URL is added to relevant STATIC_URL env setting in config/settings/*
 # If a MEDIA_URL env var is set that will be what is used.
-MEDIA_URL = "/media/"
+# MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 # `USE_STATIC` options are `Local` or `S3`
 USE_STATIC = env("LOCAL_USE_STATIC", default="Local")
 
+if USE_STATIC == "Local":
+    STATIC_URL = env("LOCAL_STATIC_URL", default="static/")
+
+    MEDIA_URL = env("LOCAL_MEDIA_URL", default="media/")
+
+    DJANGO_TEMPLATES_CSS = env("LOCAL_DJANGO_TEMPLATES_CSS",
+        default=f"{STATIC_URL}css/styles.css")
+
 # Digital Ocean S3 Storage Configuration
-if USE_STATIC == "S3":
+elif USE_STATIC == "S3":
     AWS_ACCESS_KEY_ID = env(
         "LOCAL_AWS_ACCESS_KEY_ID",
         default="LOCAL_AWS_KEY_NOT_SET",
@@ -235,7 +243,7 @@ if USE_STATIC == "S3":
     MEDIA_URL = env("LOCAL_MEDIA_URL", default="media-lo/")
 
     # Set the url for the css file
-    LOCAL_DJANGO_TEMPLATES_CSS = f"{STATIC_URL}css/styles.css"
+    DJANGO_TEMPLATES_CSS = f"{STATIC_URL}css/styles.css"
 
 #     elif USE_STATIC != "S3":
 #         raise ImproperlyConfigured(

@@ -9,9 +9,10 @@
     <meta name="author" content="Ricky Laney">
     <title>Rise and Shine Golf</title>
     <!-- Your stuff: Third-party CSS libraries go here -->
-    <!-- This file stores project-specific CSS -->
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/favicon.ico' %}" />
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
     <link href="{% static 'css/jquery.datetimepicker.min.css' %}" rel="stylesheet" />
+    <!-- This file stores project-specific CSS -->
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
 
     <script src="{% static 'js/bootstrap.bundle.min.js' %}" defer></script>
@@ -27,7 +28,7 @@
     <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <input class="form-control form-control-dark w-60 rounded-0 border-0" type="text" placeholder="Search" aria-label="Search">
+    <!-- <input class="form-control form-control-dark w-60 rounded-0 border-0" type="text" placeholder="Search" aria-label="Search"> -->
     <div class="navbar-nav">
       {% if user.is_authenticated %}
       <div class="nav-item text-nowrap">

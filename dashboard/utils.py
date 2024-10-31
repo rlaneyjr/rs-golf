@@ -28,8 +28,7 @@ def num_players_in_skins(game):
 
 
 def get_first_course_id():
-    gc = models.GolfCourse.objects.first()
-    return gc.id
+    return models.GolfCourse.objects.first().id
 
 
 def set_holes_for_game(game, holes_to_play):

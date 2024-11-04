@@ -4,7 +4,7 @@ from . import views
 app_name = "dashboard"
 
 urlpatterns =  [
-    path("", views.index, name="index"),
+    path("", views.dashboard, name="dashboard"),
     path("profile/", views.my_profile, name="profile"),
     path(
         "download-scorecard/<int:game_pk>/",

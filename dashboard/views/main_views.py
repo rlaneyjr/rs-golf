@@ -9,7 +9,13 @@ from dashboard import pdf_utils
 from dashboard import utils
 
 
-def index(request):
+def no_permission(request):
+    return render(request, "dashboard/no-permission.html", {})
+
+
+@login_required
+def dashboard(request):
+    current_standings = utils.get_current_standings()
     game_list = None
     tee_time_list = None
     is_admin = False
@@ -27,17 +33,14 @@ def index(request):
 
     return render(
         request,
-        "dashboard/index.html",
+        "dashboard/dashboard.html",
         {
+            "current_standings": current_standings,
             "is_admin": is_admin,
             "game_list": game_list,
             "tee_time_list": tee_time_list
         },
     )
-
-
-def no_permission(request):
-    return render(request, "dashboard/no-permission.html", {})
 
 
 @login_required

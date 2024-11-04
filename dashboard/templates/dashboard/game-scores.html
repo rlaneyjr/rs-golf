@@ -30,7 +30,7 @@
             {% for team in team_scores %}
             <tr>
               <td>{{ team.team_name }}</td>
-              {% format_players team.players as team_players %}
+              {% format_list team.players as team_players %}
               <td>{{ team_players }}</td>
               {% for hole_item in team.hole_list %}
               <td>{{ hole_item.hole_strokes }}</td>

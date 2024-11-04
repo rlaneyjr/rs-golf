@@ -1,3 +1,4 @@
+import json
 import random
 from dashboard import models
 from djmoney.money import Money
@@ -132,7 +133,7 @@ def clean_game(game):
         player_mem.delete()
     if game.league_game:
         for p in game.players.all():
-            p.revert_hcp()
+            p.revert_hcp_score(course_name=game.course.name)
 
 
 def create_holes_for_course(course):
@@ -332,6 +333,7 @@ def get_hole_data_for_game(game, final_scores=False):
     # Always keep track of each players score
     for player in game.players.all():
         player_data = {
+            "course_name": game.course.name,
             "player_id": player.id,
             "player_name": player.name,
             "hcp": float(player.handicap),
@@ -589,10 +591,10 @@ def score_hole_data_points(hole_data, pot, payout_positions):
     return hole_data
 
 
-def update_player_hcp_hole_data(hole_data):
+def update_player_data(hole_data):
     for pd in hole_data:
         player = models.Player.objects.filter(pk=pd["player_id"]).first()
-        player.update_hcp(pd["game_hcp"])
+        player.update_hcp_score(pd["game_hcp"], pd["course_name"], pd["game_score"])
 
 
 def score_game(game):
@@ -615,5 +617,21 @@ def score_game(game):
         team_scores = score_teams(game)
         game_score.update({"team_scores": team_scores})
     if game.league_game:
-        update_player_hcp_hole_data(hole_data)
+        update_player_data(hole_data)
     return game_score
+
+def get_current_standings():
+    current_standings = []
+    for course in models.GolfCourse.objects.all():
+        course_standings = {"course": course.name, "players": []}
+        for player in models.Player.objects.all():
+            player_scores = player.scores.get(course.name, "None")
+            player_average = player.course_average(course.name)
+            player_standing = {
+                "name": player.name,
+                "scores": player_scores,
+                "average": player_average
+            }
+            course_standings["players"].append(player_standing)
+        current_standings.append(course_standings)
+    return current_standings

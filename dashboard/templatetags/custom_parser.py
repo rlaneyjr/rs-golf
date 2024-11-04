@@ -28,8 +28,8 @@ def get_scores(game):
     return game.score.get("scores")
 
 @register.simple_tag
-def format_players(players):
-    return str(players).lstrip('[').rstrip(']').replace("'", "")
+def format_list(the_list):
+    return str(the_list).lstrip('[').rstrip(']').replace("'", "")
 
 @register.simple_tag
 def player_in_skins(player, game):

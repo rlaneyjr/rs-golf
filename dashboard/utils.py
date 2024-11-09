@@ -619,32 +619,33 @@ def score_game(game):
     return game_score
 
 def get_player_league_scores(player, course):
-    player_scores = []
-    player_avg = "Use GHIN"
+    scores = []
     for game in models.Game.objects.filter(course=course, league_game=True):
         if player in game.players.all():
             player_mem = models.PlayerMembership.objects.filter(
                 game=game, player=player
             ).first()
-            player_scores.append(player_mem.game_score)
-    if not len(player_scores):
-        player_scores = "No Scores"
-    elif len(player_scores) > 1:
-        average_score = sum(player_scores) / len(player_scores)
-        player_avg = round(average_score)
-        # player_points = course.points - (player_avg - course.par)
-    return player_scores, player_avg
+            scores.append(player_mem.game_score)
+    if not len(scores):
+        scores = "No Scores"
+        avg = "Use GHIN"
+        points = course.points - round(player.handicap)
+    elif len(scores) > 1:
+        avg = round(sum(scores)/len(player_scores))
+        points = course.points - (player_avg - course.par)
+    return scores, avg, points
 
 def get_league_standings():
     league_standings = []
     for course in models.GolfCourse.objects.all():
         course_standings = {"course": course, "players": []}
         for player in models.Player.objects.all():
-            player_scores, player_avg = get_player_league_scores(player, course)
+            scores, avg, points = get_player_league_scores(player, course)
             player_standing = {
                 "name": player.name,
-                "scores": player_scores,
-                "average": player_avg
+                "scores": scores,
+                "average": avg,
+                "points": points
             }
             course_standings["players"].append(player_standing)
         league_standings.append(course_standings)

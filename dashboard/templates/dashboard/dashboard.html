@@ -10,7 +10,7 @@
     {% for standing in league_standings %}
     <div class="card">
       <div class="card-header">
-        League Standings for {{standing.course.initials}}
+        League Standings for {{standing.course.name}}
       </div>
       <div class="card-body">
         <table class="table">
@@ -19,6 +19,7 @@
               <th>Player</th>
               <th>Scores</th>
               <th>Average</th>
+              <th>Points</th>
             </tr>
           </thead>
           <tbody class="align-middle">
@@ -28,6 +29,7 @@
               <td>{{player.name}}</td>
               <td>{{player_scores}}</td>
               <td>{{player.average}}</td>
+              <td>{{player.points}}</td>
             </tr>
             {% endfor %}
           </tbody>

@@ -4,13 +4,13 @@
 {% block page_name %}Dashboard{% endblock %}
 
 {% block content %}
-{% if current_standings %}
+{% if league_standings %}
 <div class="row">
   <div class="col-12">
-    {% for standing in current_standings %}
+    {% for standing in league_standings %}
     <div class="card">
       <div class="card-header">
-        Current Standings {{standing.course}}
+        League Standings for {{standing.course.initials}}
       </div>
       <div class="card-body">
         <table class="table">
@@ -18,14 +18,15 @@
             <tr>
               <th>Player</th>
               <th>Scores</th>
-              <th>Average Score</th>
+              <th>Average</th>
             </tr>
           </thead>
           <tbody class="align-middle">
             {% for player in standing.players %}
+            {% format_list player.scores as player_scores %}
             <tr>
               <td>{{player.name}}</td>
-              <td>{{player.scores}}</td>
+              <td>{{player_scores}}</td>
               <td>{{player.average}}</td>
             </tr>
             {% endfor %}

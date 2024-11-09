@@ -15,7 +15,7 @@ def no_permission(request):
 
 @login_required
 def dashboard(request):
-    current_standings = utils.get_current_standings()
+    league_standings = utils.get_league_standings()
     game_list = None
     tee_time_list = None
     is_admin = False
@@ -35,7 +35,7 @@ def dashboard(request):
         request,
         "dashboard/dashboard.html",
         {
-            "current_standings": current_standings,
+            "league_standings": league_standings,
             "is_admin": is_admin,
             "game_list": game_list,
             "tee_time_list": tee_time_list

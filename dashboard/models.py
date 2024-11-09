@@ -137,6 +137,10 @@ class GolfCourse(models.Model):
     def par(self):
         return utils.get_par_for_course(self)
 
+    @property
+    def points(self):
+        return round(self.par/2)
+
 
 class Hole(models.Model):
     name = models.CharField(max_length=7, choices=HoleNameChoices.choices, default=HoleNameChoices.HOLE_1)
@@ -249,7 +253,7 @@ class Game(models.Model):
 
     @property
     def points(self):
-        return int(self.par/2)
+        return round(self.par/2)
 
     @property
     def skin_pot(self):
@@ -334,44 +338,23 @@ class Player(models.Model):
     previous_handicap = models.DecimalField(
         max_digits=3, decimal_places=1, default=None, blank=True, null=True
     )
-    scores = models.JSONField(blank=True, null=True)
 
     @property
     def name(self):
         return f"{self.first_name} {self.last_name}"
 
-    def course_average(self, course_name):
-        if self.scores:
-            course_scores = self.scores.get(course_name)
-            if course_scores and len(course_scores) > 1:
-                average_score = sum(course_scores) / len(course_scores)
-                return round(average_score)
-            else:
-                return "Use GHIN"
-
     def __str__(self):
         return self.name
 
-    def update_hcp_score(self, game_hcp, course_name, game_score):
+    def update_hcp(self, game_hcp):
         self.previous_handicap = self.handicap
         self.handicap = round(sum([self.handicap, float(game_hcp)])/2, 1)
-        course_scores = self.scores.get(course_name)
-        if course_scores:
-            course_scores.append(game_score)
-            self.scores.update({course_name: course_scores})
-        else:
-            self.scores.update({course_name: [game_score]})
         self.save()
 
-    def revert_hcp_score(self, course_name):
+    def revert_hcp(self):
         if self.previous_handicap:
             self.handicap = self.previous_handicap
-        if self.scores:
-            course_scores = self.scores.get(course_name)
-            if course_scores:
-                course_scores.remove(course_scores[-1])
-                self.scores.update({course_name: course_scores})
-        self.save()
+            self.save()
 
     class Meta:
         ordering = ["first_name", "last_name"]

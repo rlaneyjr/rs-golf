@@ -145,10 +145,10 @@ class GolfCourse(models.Model):
 class Hole(models.Model):
     name = models.CharField(max_length=7, choices=HoleNameChoices.choices, default=HoleNameChoices.HOLE_1)
     nickname = models.CharField(max_length=64, blank=True)
-    par = models.PositiveSmallIntegerField(choices=ParChoices.choices, default=ParChoices.PAR_4, blank=True)
+    par = models.PositiveSmallIntegerField(choices=ParChoices.choices, default=ParChoices.PAR_4)
     course = models.ForeignKey(GolfCourse, on_delete=models.CASCADE)
-    order = models.PositiveSmallIntegerField(choices=OrderChoices.choices, default=OrderChoices._1, blank=True)
-    handicap = models.PositiveSmallIntegerField(choices=OrderChoices.choices, default=OrderChoices._1, blank=True)
+    order = models.PositiveSmallIntegerField(choices=OrderChoices.choices, default=OrderChoices._1)
+    handicap = models.PositiveSmallIntegerField(choices=OrderChoices.choices, default=OrderChoices._1)
 
     class Meta:
         unique_together = ["name", "course", "order", "handicap"]
@@ -253,7 +253,7 @@ class Game(models.Model):
 
     @property
     def points(self):
-        return round(self.par/2)
+        return self.course.points
 
     @property
     def skin_pot(self):
@@ -271,21 +271,21 @@ class Game(models.Model):
         ):
         # if not any([game_type, self.game_type]):
         #     raise ValidationError("You must provide a game type")
-        if holes_to_play != None:
+        if holes_to_play is not None:
             self.holes_to_play = holes_to_play
-        if game_type != None:
+        if game_type is not None:
             self.game_type = game_type
-        if buy_in != None:
+        if buy_in is not None:
             self.buy_in = buy_in
-        if skin_cost != None:
+        if skin_cost is not None:
             self.skin_cost = skin_cost
-        if use_teams != None:
+        if use_teams is not None:
             self.use_teams = use_teams
-        if league_game != None:
+        if league_game is not None:
             self.league_game = league_game
         if not self.date_played:
             self.date_played = timezone.now()
-        if payout_positions != None:
+        if payout_positions is not None:
             self.payout_positions = payout_positions
         utils.create_hole_scores_for_game(self)
         if self.use_teams:
@@ -396,7 +396,7 @@ class PlayerMembership(models.Model):
 
     @property
     def points_needed(self):
-        return self.game.points - round(self.player.handicap)
+        return self.game.points - utils.round_up(self.player.handicap)
 
     def __str__(self):
         string = f"{self.player.name} - {self.game}"

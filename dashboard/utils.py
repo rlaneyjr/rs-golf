@@ -1,5 +1,4 @@
-import json
-import random
+import json, math, random
 from dashboard import models
 from djmoney.money import Money
 
@@ -13,6 +12,13 @@ stableford_map = {
     1: 1,
     2: 0,
 }
+
+
+def round_up(x):
+  frac = x - math.floor(x)
+  if frac < 0.5:
+    return math.floor(x)
+  return math.ceil(x)
 
 
 def is_admin(user):
@@ -618,7 +624,8 @@ def score_game(game):
         update_player_hcp(hole_data)
     return game_score
 
-def get_player_league_scores(player, course):
+
+def get_player_scores_for_course(player, course):
     scores = []
     for game in models.Game.objects.filter(course=course, league_game=True):
         if player in game.players.all():
@@ -626,27 +633,33 @@ def get_player_league_scores(player, course):
                 game=game, player=player
             ).first()
             scores.append(player_mem.game_score)
+    return scores
+
+
+def get_player_league_standings(player, course):
+    scores = get_player_scores_for_course(player, course)
     if not len(scores):
-        scores = "No Scores"
-        avg = "Use GHIN"
-        points = course.points - round(player.handicap)
+        avg = f"HCP:{player.handicap}"
+        points = course.points - round_up(player.handicap)
     elif len(scores) > 1:
-        avg = round(sum(scores)/len(player_scores))
-        points = course.points - (player_avg - course.par)
-    return scores, avg, points
+        avg = round_up(sum(scores)/len(scores))
+        points = course.points - (avg - course.par)
+    return avg, points
+
 
 def get_league_standings():
     league_standings = []
     for course in models.GolfCourse.objects.all():
         course_standings = {"course": course, "players": []}
         for player in models.Player.objects.all():
-            scores, avg, points = get_player_league_scores(player, course)
+            points = course.points - round_up(player.handicap)
             player_standing = {
+                "id": player.id,
                 "name": player.name,
-                "scores": scores,
-                "average": avg,
+                "hcp": player.handicap,
                 "points": points
             }
             course_standings["players"].append(player_standing)
+        course_standings["players"].sort(key=lambda p: p["points"], reverse=True)
         league_standings.append(course_standings)
     return league_standings

@@ -10,30 +10,32 @@
     {% for standing in league_standings %}
     <div class="card">
       <div class="card-header">
-        League Standings for {{standing.course.name}}
+        {{standing.course.name}} League Standings
       </div>
       <div class="card-body">
         <table class="table">
           <thead>
             <tr>
+              <th style="width: 5%;">&nbsp;</th>
               <th>Player</th>
-              <th>Scores</th>
-              <th>Average</th>
-              <th>Points</th>
+              <th>HCP</th>
+              <th>Points Needed</th>
             </tr>
           </thead>
           <tbody class="align-middle">
             {% for player in standing.players %}
-            {% format_list player.scores as player_scores %}
             <tr>
+              <td><a href="{% url 'dashboard:player_detail' player.id %}" class="btn btn-primary btn-sm">View</a></td>
               <td>{{player.name}}</td>
-              <td>{{player_scores}}</td>
-              <td>{{player.average}}</td>
+              <td>{{player.hcp}}</td>
               <td>{{player.points}}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'dashboard:create_player' %}" class="btn btn-primary btn-sm">Add Player</a>
       </div>
     </div>
     {% endfor %}

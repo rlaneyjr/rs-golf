@@ -7,28 +7,37 @@
       </div>
       <div class="card">
         <div class="card-header">
-          Player Profile
+          {{player_data.name}} Profile
         </div>
         <div class="card-body">
+          {% if player_data.photo %}
           <div class="mb-3">
-            <div class="fw-bold">Name:</div>
-            <div class="ps-3">{{player_data.name}}</div>
+            <img src="{{player_data.photo.url}}" class="img-fluid" alt="{{player_data.name}} Photo">
+          </div>
+          {% endif %}
+          <div class="mb-3">
+            <label class="fw-bold d-block">First Name:</label>
+            <span class="ps-2">{{player_data.first_name}}</span>
           </div>
           <div class="mb-3">
-            <div class="fw-bold">Handicap:</div>
-            <div class="ps-3">{{player_data.handicap}}</div>
+            <label class="fw-bold d-block">Last Name:</label>
+            <span class="ps-2">{{player_data.last_name}}</span>
           </div>
           <div class="mb-3">
-            <div class="fw-bold">Photo:</div>
-            <div class="ps-3"><img src="{{player_data.photo.url}}" class="img-fluid" alt="{{player_data.name}} Photo"></div>
+            <label class="fw-bold d-block">Handicap:</label>
+            <span class="ps-2">{{player_data.handicap}}</span>
           </div>
           <div class="mb-3">
-            <div class="fw-bold">Games:</div>
-            <div class="ps-3">{{game_count}}</div>
+            <label class="fw-bold d-block">Phone:</label>
+            <span class="ps-2">{{player_data.phone}}</span>
+          </div>
+          <div class="mb-3">
+            <label class="fw-bold d-block">Email:</label>
+            <span class="ps-2">{{player_data.email}}</span>
           </div>
         </div>
         <div class="card-footer">
-
+          <a href="{% url 'dashboard:edit_player' player_data.id %}" class="btn btn-danger btn-sm">Edit</a>
         </div>
       </div>
     </div>

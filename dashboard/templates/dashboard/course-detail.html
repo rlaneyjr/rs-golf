@@ -21,48 +21,34 @@
           <span class="ps-2">{{course_data.get_hole_count_display}}</span>
         </div>
         <div class="mb-3">
-          <label class="fw-bold d-block">Tee Time Link:</label>
-          {% if course_data.tee_time_link %}
-          <span class="ps-2"><a href="{{course_data.tee_time_link}}" class="btn btn-primary" target="new_page">Book Tee Time</a></span>
-          {% else %}
-          <p class="ps-2">Not Found</p>
-          {% endif %}
+          <label class="fw-bold d-block">Par:</label>
+          <span class="ps-2">{{course_data.par}}</span>
         </div>
-        <div class="mb-3">
-          <label class="fw-bold d-block">Website:</label>
-          {% if course_data.website_link %}
-          <span class="ps-2"><a href="{{course_data.website_link}}" class="btn btn-success" target="new_page">Website</a></span>
-          {% else %}
-          <p class="ps-2">Not Found</p>
-          {% endif %}
-        </div>
+        {% if course_location %}
         <div class="mb-3">
           <label class="fw-bold d-block">Location:</label>
-          {% if course_location %}
           <span class="ps-2">{{course_location}}</span>
-          {% else %}
-          <p class="ps-2 card-text">Not Found</p>
-          {% endif %}
         </div>
+        {% endif %}
+        {% if course_data.card %}
         <div class="mb-3">
-          <label class="fw-bold d-block">Card:</label>
-          {% if course_data.card %}
-          <span class="ps-2"><img src="{{course_data.card.url}}" class="img-fluid" alt="{{course_data.name}} Card"></span>
-          {% else %}
-          <p class="ps-2">Not Found</p>
-          {% endif %}
+          <img src="{{course_data.card.url}}" class="img-fluid" alt="{{course_data.name}} Card">
         </div>
+        {% endif %}
+        {% if course_data.overview %}
         <div class="mb-3">
-          <label class="fw-bold d-block">Overview:</label>
-          {% if course_data.overview %}
-          <span class="ps-2"><img src="{{course_data.overview.url}}" class="img-fluid" alt="{{course_data.name}} Overview"></span>
-          {% else %}
-          <p class="ps-2">Not Found</p>
-          {% endif %}
+          <img src="{{course_data.overview.url}}" class="img-fluid" alt="{{course_data.name}} Overview">
         </div>
+        {% endif %}
       </div>
       <div class="card-footer">
-        <a href="{% url 'dashboard:edit_course' course_data.id %}" class="btn btn-primary btn-sm">Edit</a>
+        {% if course_data.website_link %}
+        <a href="{{course_data.website_link}}" class="btn btn-primary btn-sm" target="new_page">Website</a>
+        {% endif %}
+        {% if course_data.tee_time_link %}
+        <a href="{{course_data.tee_time_link}}" class="btn btn-success btn-sm" target="new_page">Book Tee Time</a>
+        {% endif %}
+        <a href="{% url 'dashboard:edit_course' course_data.id %}" class="btn btn-danger btn-sm">Edit</a>
       </div>
     </div>
   </div>
@@ -96,7 +82,7 @@
         </table>
       </div>
       <div class="card-footer">
-        <a href="{% url 'dashboard:create_hole' course_data.id %}" class="btn btn-primary btn-sm">Create Hole</a>
+        <a href="{% url 'dashboard:create_hole' course_data.id %}" class="btn btn-danger btn-sm">Add Hole</a>
       </div>
     </div>
   </div>

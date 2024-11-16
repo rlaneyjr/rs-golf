@@ -10,7 +10,7 @@ from dashboard import utils
 
 
 def no_permission(request):
-    return render(request, "dashboard/no-permission.html", {})
+    return render(request, "no-permission.html", {})
 
 
 @login_required
@@ -52,14 +52,10 @@ def view_my_games(request):
 @login_required
 def my_profile(request):
     player_data = models.Player.objects.filter(user_account=request.user).first()
-    game_count = models.Game.objects.filter(players__in=[request.user.player]).count()
     return render(
         request,
         "dashboard/profile.html",
-        {
-            "player_data": player_data,
-            "game_count": game_count,
-        },
+        {"player_data": player_data},
     )
 
 
@@ -259,7 +255,7 @@ def hole_score_detail(request, pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def create_course(request):
@@ -277,7 +273,7 @@ def create_course(request):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def edit_course(request, pk):
@@ -296,7 +292,7 @@ def edit_course(request, pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def edit_hole(request, pk):
@@ -315,7 +311,7 @@ def edit_hole(request, pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def create_tee(request, hole_pk):
@@ -339,7 +335,7 @@ def create_tee(request, hole_pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def create_game(request):
@@ -357,7 +353,7 @@ def create_game(request):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def edit_game(request, pk):
@@ -376,7 +372,7 @@ def edit_game(request, pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def create_player(request):
@@ -396,7 +392,7 @@ def create_player(request):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def edit_player(request, pk):
@@ -415,7 +411,7 @@ def edit_player(request, pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def create_hole(request, pk):
@@ -440,7 +436,7 @@ def create_hole(request, pk):
 @login_required
 @user_passes_test(
     utils.is_admin,
-    login_url="/dashboard/no-permission/",
+    login_url="/no-permission/",
     redirect_field_name=None
 )
 def edit_hole_score(request, pk):

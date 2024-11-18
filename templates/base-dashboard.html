@@ -84,6 +84,14 @@
                 My Profile
               </a>
             </li>
+            {% if user.is_active and user.is_staff %}
+            <li class="nav-item">
+              <a class="nav-link {% if 'admin' in request.path %}active{% endif %}" href="{% url 'admin:index' %}">
+                <span data-feather="shopping-cart" class="align-text-bottom"></span>
+                Admin
+              </a>
+            </li>
+            {% endif %}
             {% else %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'account_login' %}">

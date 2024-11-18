@@ -23,7 +23,9 @@ def ajax_record_score_for_hole(request):
 
 @login_required
 @user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
 )
 def ajax_manage_players_for_game(request):
     data = json.loads(request.body)
@@ -44,7 +46,9 @@ def ajax_manage_players_for_game(request):
 
 @login_required
 @user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
 )
 def ajax_manage_game(request):
     data = json.loads(request.body)
@@ -77,7 +81,9 @@ def ajax_manage_game(request):
 
 @login_required
 @user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
 )
 def ajax_edit_hole_score(request):
     data = json.loads(request.body)
@@ -95,7 +101,9 @@ def ajax_edit_hole_score(request):
 
 @login_required
 @user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
 )
 def ajax_edit_hole(request):
     data = json.loads(request.body)
@@ -128,12 +136,13 @@ def ajax_edit_hole(request):
 
 @login_required
 @user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
 )
 def ajax_manage_tee_time(request):
     data = json.loads(request.body)
     action = data["action"]
-
     if action == "add-player":
         tee_time_id = data["tee_time_id"]
         player_id = data["player_id"]
@@ -183,7 +192,9 @@ def ajax_manage_tee_time(request):
 
 @login_required
 @user_passes_test(
-    utils.is_admin, login_url="/dashboard/no-permission/", redirect_field_name=None
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
 )
 def ajax_delete_hole_score(request):
     data = json.loads(request.body)

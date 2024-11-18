@@ -649,17 +649,14 @@ def get_player_league_standings(player, course):
 
 def get_league_standings():
     league_standings = []
-    for course in models.GolfCourse.objects.all():
-        course_standings = {"course": course, "players": []}
-        for player in models.Player.objects.all():
-            points = course.points - round_up(player.handicap)
-            player_standing = {
-                "id": player.id,
-                "name": player.name,
-                "hcp": player.handicap,
-                "points": points
-            }
-            course_standings["players"].append(player_standing)
-        course_standings["players"].sort(key=lambda p: p["points"], reverse=True)
-        league_standings.append(course_standings)
+    for player in models.Player.objects.all():
+        points = 36 - round_up(player.handicap)
+        player_standing = {
+            "id": player.id,
+            "name": player.name,
+            "hcp": player.handicap,
+            "points": points
+        }
+        league_standings.append(player_standing)
+    league_standings.sort(key=lambda p: p["points"], reverse=True)
     return league_standings

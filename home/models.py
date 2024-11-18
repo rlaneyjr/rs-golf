@@ -79,6 +79,7 @@ class Tee(models.Model):
         ("blue", _("Blue")),
         ("gold", _("Gold")),
         ("white", _("White")),
+        ("green", _("Green")),
         ("red", _("Red")),
     )
 

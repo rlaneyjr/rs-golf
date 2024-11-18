@@ -19,7 +19,7 @@ def dashboard(request):
     game_list = None
     tee_time_list = None
     is_admin = False
-    if utils.is_admin:
+    if utils.is_admin(request.user):
         is_admin = True
         game_list = models.Game.objects.filter(status="active")
         tee_time_list = models.TeeTime.objects.filter(is_active=True)

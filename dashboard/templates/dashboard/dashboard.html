@@ -7,10 +7,9 @@
 {% if league_standings %}
 <div class="row">
   <div class="col-12">
-    {% for standing in league_standings %}
     <div class="card">
       <div class="card-header">
-        {{standing.course.name}} League Standings
+        Current League Standings
       </div>
       <div class="card-body">
         <table class="table">
@@ -19,11 +18,11 @@
               <th style="width: 5%;">&nbsp;</th>
               <th>Player</th>
               <th>HCP</th>
-              <th>Points Needed</th>
+              <th>Points Needed (par 72)</th>
             </tr>
           </thead>
           <tbody class="align-middle">
-            {% for player in standing.players %}
+            {% for player in league_standings %}
             <tr>
               <td><a href="{% url 'dashboard:player_detail' player.id %}" class="btn btn-primary btn-sm">View</a></td>
               <td>{{player.name}}</td>
@@ -35,19 +34,23 @@
         </table>
       </div>
       <div class="card-footer">
+        {% if is_admin %}
         <a href="{% url 'dashboard:create_player' %}" class="btn btn-primary btn-sm">Add Player</a>
+        {% endif %}
       </div>
     </div>
-    {% endfor %}
   </div>
 </div>
 {% endif %}
 <div class="row mt-3">
   <div class="col-12">
     <div class="card">
-      {% if is_admin %}
       <div class="card-header">
-        Active Games
+        {% if is_admin %}
+        All Active Games
+        {% else %}
+        My Active Games
+        {% endif %}
       </div>
       <div class="card-body">
         {% if game_list %}
@@ -65,27 +68,6 @@
       <div class="card-footer">
         <a href="{% url 'dashboard:create_game' %}" class="btn btn-primary btn-sm">Add Game</a>
       </div>
-      {% else %}
-      <div class="card-header">
-        My Active Games
-      </div>
-      <div class="card-body">
-        {% if game_list %}
-        <ul class="list-group">
-          {% for game in game_list %}
-          <li class="list-group-item">
-            <a class="text-decoration-none text-black" href="{% url 'dashboard:game_detail' game.id %}">{{game.course}}: {{game.date_played}}</a>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p class="card-text">You do not have any active games</p>
-        {% endif %}
-      </div>
-      <div class="card-footer">
-        <a href="{% url 'dashboard:my-game-list' %}" class="btn btn-primary btn-sm">My Games</a>
-      </div>
-      {% endif %}
     </div>
   </div>
 </div>
@@ -93,30 +75,23 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header">
-        Tee Times
+        {% if is_admin %}
+        All Tee Times
+        {% else %}
+        My Tee Times
+        {% endif %}
       </div>
       <div class="card-body">
         {% if tee_time_list %}
-        <table class="table">
-          <thead>
-            <tr>
-              <th>&nbsp;</th>
-              <th>Course</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody class="align-middle">
-            {% for tee_time in tee_time_list %}
-            <tr>
-              <td><a href="{% url 'dashboard:tee_time_detail' tee_time.id %}" class="btn btn-primary btn-sm">View</a></td>
-              <td>{{tee_time.course.name}}</td>
-              <td>{{tee_time.tee_time}}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <ul class="list-group">
+          {% for tee_time in tee_time_list %}
+          <li class="list-group-item">
+            <a class="text-decoration-none text-black" href="{% url 'dashboard:tee_time_detail' tee_time.id %}">{{tee_time.course.name}}: {{tee_time.tee_time}}</a>
+          </li>
+          {% endfor %}
+        </ul>
         {% else %}
-        <p class="card-text">No tee times found</p>
+        <p class="card-text">No active tee times</p>
         {% endif %}
       </div>
       <div class="card-footer">

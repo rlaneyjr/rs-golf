@@ -1,5 +1,10 @@
 # NOTES
 
-Add switch for teams.
-Add multi-payouts.
-Add switch for league.
+## Todo
+Fix delete button for hole tee.
+
+
+## Done
+Added switch for teams.
+Added multi-payouts.
+Added switch for league.

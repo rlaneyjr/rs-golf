@@ -155,6 +155,10 @@ class GolfCourse(models.Model):
         null=True
     )
 
+    class Meta:
+        unique_together = ["name", "city", "state"]
+        ordering = ["state", "city"]
+
     def __str__(self):
         return self.name
 
@@ -188,11 +192,12 @@ class Hole(models.Model):
         default=OrderChoices._1
     )
 
-    class Meta:
-        unique_together = ["name", "course", "order", "handicap"]
-
     def __str__(self):
         return f"{self.course.initials} - {self.name}"
+
+    class Meta:
+        unique_together = ["name", "course", "order", "handicap"]
+        ordering = ["course", "order"]
 
 
 class Tee(models.Model):
@@ -208,11 +213,12 @@ class Tee(models.Model):
         max_length=3
     )
 
-    class Meta:
-        unique_together = ["color", "hole"]
-
     def __str__(self):
         return f"{self.hole} - {self.color}"
+
+    class Meta:
+        unique_together = ["color", "hole"]
+        ordering = ["hole", "-distance"]
 
 
 class Game(models.Model):
@@ -356,6 +362,7 @@ class Game(models.Model):
     class Meta:
         ordering = ["date_played", "status"]
         verbose_name_plural = "games"
+        get_latest_by = "date_played"
 
 
 class Player(models.Model):
@@ -432,8 +439,8 @@ class Player(models.Model):
             self.save()
 
     class Meta:
-        ordering = ["first_name", "last_name"]
         unique_together = ["first_name", "last_name"]
+        ordering = ["last_name", "first_name"]
         verbose_name_plural = "players"
 
 
@@ -449,12 +456,12 @@ class Team(models.Model):
         max_digits=3, decimal_places=1, default=20.0
     )
 
-    class Meta:
-        ordering = ["game", "name", "handicap"]
-        verbose_name_plural = "teams"
-
     def __str__(self):
         return f"{self.game} - {self.name}"
+
+    class Meta:
+        ordering = ["game", "name"]
+        verbose_name_plural = "teams"
 
 
 class PlayerMembership(models.Model):
@@ -493,6 +500,10 @@ class PlayerMembership(models.Model):
             return f"{self.player} - {self.team}"
         else:
             return f"{self.player} - {self.game}"
+
+    class Meta:
+        unique_together = ["game", "player"]
+        order_with_respect_to = "game"
 
 
 class HoleScore(models.Model):
@@ -549,3 +560,7 @@ class TeeTime(models.Model):
         num_holes = self.course.hole_count - self.holes_to_play
         if num_holes == 9 and self.which_holes == WhichHolesChoices.ALL:
             raise ValidationError("Please choose front or back")
+
+    class Meta:
+        ordering = ["tee_time"]
+        verbose_name_plural = "tee_times"

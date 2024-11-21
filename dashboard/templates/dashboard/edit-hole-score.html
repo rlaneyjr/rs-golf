@@ -4,7 +4,15 @@
 {% block page_name %}Edit: {{hole_score_data.hole.name}} for Player: {{hole_score_data.player.player.name}}{% endblock %}
 
 {% block content %}
-{% crispy form %}
+<div class="row">
+  <div class="col-4">
+    <div class="card">
+      <div class="card-body">
+        {% crispy form %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block page_styles %}{% endblock %}

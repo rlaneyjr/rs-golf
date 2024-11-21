@@ -204,3 +204,19 @@ def ajax_delete_hole_score(request):
         score_data.delete()
         return JsonResponse({"status": "success"})
     return JsonResponse({"status": "failed", "message": "Unable to find hole score"})
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
+)
+def ajax_delete_tee(request):
+    data = json.loads(request.body)
+    tee_id = data["tee_id"]
+    tee_data = models.Tee.objects.filter(pk=tee_id).first()
+    if tee_data:
+        tee_data.delete()
+        return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "failed", "message": "Unable to find tee"})

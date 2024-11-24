@@ -96,13 +96,14 @@ class StrokeChoices(models.IntegerChoices):
 
 
 class ScoreChoices(models.IntegerChoices):
-    ALBATROSS = -3, _("Albatross")
-    EAGLE = -2, _("Eagle")
-    BIRDIE = -1, _("Birdie")
-    PAR = 0, _("Par")
-    BOGEY = 1, _("Bogey")
-    DOUBLE_BOGEY = 2, _("Double Bogey")
-    TRIPLE_BOGEY = 3, _("Triple Bogey")
+    MINUS_FOUR = -4
+    MINUS_THREE = -3
+    MINUS_TWO = -2
+    MINUS_ONE = -1
+    ZERO = 0
+    PLUS_ONE = 1
+    PLUS_TWO = 2
+    PLUS_THREE = 3
 
 
 class HoleNameChoices(models.TextChoices):
@@ -217,7 +218,7 @@ class Tee(models.Model):
         return f"{self.hole} - {self.color}"
 
     class Meta:
-        unique_together = ["color", "hole"]
+        unique_together = ["hole", "color"]
         ordering = ["hole", "-distance"]
 
 
@@ -302,6 +303,12 @@ class Game(models.Model):
         num_players = utils.num_players_in_skins(self)
         return self.skin_cost * num_players * self.holes_played
 
+    def __str__(self):
+        if self.status == GameStatusChoices.COMPLETED:
+            return f"{self.course.initials} - {self.date_played.date()}"
+        else:
+            return f"{self.course.initials} - {self.status}"
+
     def start(
             self,
             holes_to_play=None,
@@ -311,9 +318,8 @@ class Game(models.Model):
             use_teams=None,
             league_game=None,
             payout_positions=None,
+            **kwargs,
         ):
-        # if not any([game_type, self.game_type]):
-        #     raise ValidationError("You must provide a game type")
         if holes_to_play is not None:
             self.holes_to_play = holes_to_play
         if game_type is not None:
@@ -352,12 +358,6 @@ class Game(models.Model):
         num_holes = self.course.hole_count - self.holes_to_play
         if num_holes == 9 and self.which_holes == WhichHolesChoices.ALL:
             raise ValidationError("Please choose front or back")
-
-    def __str__(self):
-        if self.status == GameStatusChoices.COMPLETED:
-            return f"{self.course.initials} - {self.date_played.date()}"
-        else:
-            return f"{self.course.initials} - {self.status}"
 
     class Meta:
         ordering = ["date_played", "status"]
@@ -513,28 +513,76 @@ class HoleScore(models.Model):
         choices=StrokeChoices.choices,
         default=StrokeChoices._0
     )
-    points = models.PositiveSmallIntegerField(
-        choices=StrokeChoices.choices,
-        default=StrokeChoices._0
-    )
-    score = models.SmallIntegerField(
-        choices=ScoreChoices.choices,
-        default=None,
-        blank=True,
-        null=True
-    )
+
+    @property
+    def is_scored(self):
+        if self.strokes == StrokeChoices._0:
+            return False
+        return True
+
+    @property
+    def points(self):
+        if self.is_scored:
+            return utils.stableford_map.get(self.strokes - self.hole.par)
+        return _("Hole not scored")
+
+    @property
+    def score(self):
+        if self.is_scored:
+            return self.strokes - self.hole.par
+        return _("Hole not scored")
+
+    @property
+    def score_name(self):
+        if not self.is_scored:
+            return _("Hole not scored")
+        if self.strokes == 1:
+            return _("Hole in One")
+        elif self.strokes == 2:
+            if self.hole.par == 3:
+                return _("Birdie")
+            elif self.hole.par == 4:
+                return _("Eagle")
+            elif self.hole.par == 5:
+                return _("Albatross")
+        elif self.strokes == 3:
+            if self.hole.par == 3:
+                return _("Par")
+            elif self.hole.par == 4:
+                return _("Birdie")
+            elif self.hole.par == 5:
+                return _("Eagle")
+        elif self.strokes == 4:
+            if self.hole.par == 3:
+                return _("Bogey")
+            elif self.hole.par == 4:
+                return _("Par")
+            elif self.hole.par == 5:
+                return _("Birdie")
+        elif self.strokes == 5:
+            if self.hole.par == 4:
+                return _("Bogey")
+            elif self.hole.par == 5:
+                return _("Par")
+        elif self.strokes == 6:
+            if self.hole.par == 5:
+                return _("Bogey")
+        return _("Double Bogey")
 
     def __str__(self):
         return f"{self.player} - {self.hole}"
 
-    def score_hole(self, strokes: int):
-        self.strokes = strokes
-        self.score = strokes - self.hole.par
-        self.points = utils.stableford_map.get(strokes - self.hole.par)
+    def score_hole(self, strokes: int=None):
+        if strokes is not None:
+            self.strokes = strokes
+            self.save()
+
+    def reset_score(self):
+        self.strokes = StrokeChoices._0
         self.save()
 
     class Meta:
-        ordering = ["player", "hole"]
+        ordering = ["player", "hole", "-strokes"]
         verbose_name_plural = "scores"
 
 

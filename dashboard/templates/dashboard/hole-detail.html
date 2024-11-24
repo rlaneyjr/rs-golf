@@ -80,7 +80,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="delete-tee-modal-label">Delete Tee?</h5>
+        <h5 class="modal-title" id="delete-tee-modal-label">Confirm Delete Tee</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -106,6 +106,9 @@
   const holeParUrl = "{% url 'dashboard:ajax_edit_hole' %}";
   const csrfToken = "{{csrf_token}}";
   const errorDiv = document.getElementById("par-error-message");
+  const deleteTeeUrl = "{% url 'dashboard:ajax_delete_tee' %}";
+  let deleteTeeId = null;
+
   document.getElementById("save-hole").addEventListener("click", async (event) => {
     const parNum = document.getElementById("id_par").value;
     const data = {
@@ -149,7 +152,6 @@
     if (deleteTeeId === null) {
       return;
     }
-    const deleteTeeUrl = "{% url 'dashboard:ajax_delete_tee' %}";
     const data = {
       tee_id: deleteTeeId,
     }

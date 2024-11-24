@@ -57,7 +57,7 @@ urlpatterns =  [
         views.ajax_edit_hole_score,
         name="ajax_edit_hole_score"
     ),
-    path("ajax/manage-tee-time/", views.ajax_manage_tee_time, name="ajax-manage-tee-time"),
-    path("ajax/delete-hole-score/", views.ajax_delete_hole_score, name="ajax-delete-hole-score"),
+    path("ajax/manage_tee_time/", views.ajax_manage_tee_time, name="ajax_manage_tee_time"),
+    path("ajax/delete_hole_score/", views.ajax_delete_hole_score, name="ajax_delete_hole_score"),
     path("ajax/delete-tee/", views.ajax_delete_tee, name="ajax_delete_tee"),
 ]

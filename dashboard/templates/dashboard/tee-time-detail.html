@@ -136,7 +136,7 @@
 {% block page_scripts %}
 <script>
   const teeTimeId = "{{ teetime_data.id }}";
-  const teeTimeManageUrl = "{% url 'dashboard:ajax-manage-tee-time' %}";
+  const teeTimeManageUrl = "{% url 'dashboard:ajax_manage_tee_time' %}";
   const csrfToken = "{{ csrf_token }}";
   document.getElementById("add-player-button").addEventListener("click", async (event) => {
     const data = {

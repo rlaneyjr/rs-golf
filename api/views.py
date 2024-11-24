@@ -30,7 +30,6 @@ class GameViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows games to be viewed or edited
     """
-
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.GameSerializer
 
@@ -78,33 +77,24 @@ class GameViewSet(viewsets.ModelViewSet):
     def set_hole_score(self, request, pk=None):
         queryset = models.Game.objects.all()
         game = get_object_or_404(queryset, pk=pk)
-
         score_list = request.data.get("score_list")
         for score_data in score_list:
-
             hole_score = models.HoleScore.objects.get(pk=score_data["id"])
             hole_score_serializer = serializers.HoleScoreSerializer(
                 hole_score, data=score_data, partial=True
             )
-
             if hole_score_serializer.is_valid():
                 hole_score_serializer.save()
             else:
                 return Response(hole_score_serializer.errors, status=400)
-
         serializer = serializers.GameSerializer(game, many=False)
-
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_name="start_game")
     def start_game(self, request, pk=None):
         queryset = models.Game.objects.all()
         game = get_object_or_404(queryset, pk=pk)
-        game_type = request.data.get("game_type")
-        holes_to_play = request.data.get("holes_to_play")
-        game.start(game_type=game_type, holes_to_play=holes_to_play)
-        utils.create_hole_scores_for_game(game)
-
+        game.start(**request.data)
         serializer = serializers.GameSerializer(game, many=False)
         return Response(serializer.data)
 
@@ -144,11 +134,11 @@ class TeeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = models.Tee.objects.all()
 
+    def list(self, request):
+        serializer = serializers.TeeSerializer(self.queryset, many=True)
+        return Response(serializer.data)
+
     def retrieve(self, request, pk=None):
         tee = get_object_or_404(self.queryset, pk=pk)
         serializer = serializers.TeeSerializer(tee, many=False)
-        return Response(serializer.data)
-
-    def list(self, request):
-        serializer = serializers.TeeSerializer(self.queryset, many=True)
         return Response(serializer.data)

@@ -302,15 +302,13 @@ class EditHoleScoreForm(forms.ModelForm):
             Fieldset(
                 "Edit Hole Score",
                 "strokes",
-                "points",
-                "score",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
 
     class Meta:
         model = HoleScore
-        fields = ["strokes", "points", "score"]
+        fields = ["strokes"]
 
 
 class TeeTimeForm(forms.ModelForm):

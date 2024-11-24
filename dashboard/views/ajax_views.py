@@ -59,11 +59,11 @@ def ajax_manage_game(request):
     if data["action"] == "start-game":
         game_data.start(
             holes_to_play=data.get("holes_to_play"),
-            # game_type=data.get("game_type"),
-            # buy_in=data.get("buy_in"),
-            # skin_cost=data.get("skin_cost"),
-            # use_teams=data.get("use_teams"),
-            # payout_positions=data.get("payout_positions"),
+            game_type=data.get("game_type"),
+            buy_in=data.get("buy_in"),
+            skin_cost=data.get("skin_cost"),
+            use_teams=data.get("use_teams"),
+            payout_positions=data.get("payout_positions"),
         )
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({"status": "success"})
@@ -185,7 +185,7 @@ def ajax_manage_tee_time(request):
         messages.add_message(request, messages.INFO, "Game Started.")
         return JsonResponse({
             "status": "success",
-            "game_url": settings.BASE_URL + reverse("dashboard:game-detail", args=[new_game.id])}
+            "game_url": settings.BASE_URL + reverse("dashboard:game_detail", args=[new_game.id])}
         )
     return JsonResponse({"status": "failed", "message": "Unknown Action"})
 
@@ -201,7 +201,7 @@ def ajax_delete_hole_score(request):
     score_id = data["score_id"]
     score_data = models.HoleScore.objects.filter(pk=score_id).first()
     if score_data:
-        score_data.delete()
+        score_data.reset_score()
         return JsonResponse({"status": "success"})
     return JsonResponse({"status": "failed", "message": "Unable to find hole score"})
 

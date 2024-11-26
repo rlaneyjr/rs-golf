@@ -295,25 +295,6 @@ def edit_course(request, pk):
     login_url="/no-permission/",
     redirect_field_name=None
 )
-def edit_hole(request, pk):
-    hole_data = get_object_or_404(models.Hole, pk=pk)
-    if request.method == "POST":
-        form = forms.EditHoleForm(request.POST, instance=hole_data)
-        if form.is_valid():
-            form.save()
-            messages.add_message(request, messages.INFO, "Hole updated.")
-            return redirect("dashboard:hole_detail", pk)
-    form = forms.EditHoleForm(instance=hole_data)
-    return render(request, "dashboard/edit-hole.html",
-                  {"form": form, "hole_data": hole_data})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/no-permission/",
-    redirect_field_name=None
-)
 def create_tee(request, hole_pk):
     hole_data = get_object_or_404(models.Hole, pk=hole_pk)
     if request.method == "POST":
@@ -328,6 +309,28 @@ def create_tee(request, hole_pk):
     return render(
         request,
         "dashboard/create-tee.html",
+        {"form": form, "hole_data": hole_data},
+    )
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
+)
+def edit_tee(request, hole_pk):
+    hole_data = get_object_or_404(models.Hole, pk=hole_pk)
+    if request.method == "POST":
+        form = forms.EditTeeForm(request.POST, instance=hole_data)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, "Tee updated.")
+            return redirect("dashboard:hole_detail", hole_pk)
+    form = forms.EditTeeForm(instance=hole_data)
+    return render(
+        request,
+        "dashboard/edit-tee.html",
         {"form": form, "hole_data": hole_data},
     )
 
@@ -431,6 +434,25 @@ def create_hole(request, pk):
         "dashboard/create-hole.html",
         {"form": form, "course_data": course_data},
     )
+
+
+@login_required
+@user_passes_test(
+    utils.is_admin,
+    login_url="/no-permission/",
+    redirect_field_name=None
+)
+def edit_hole(request, pk):
+    hole_data = get_object_or_404(models.Hole, pk=pk)
+    if request.method == "POST":
+        form = forms.EditHoleForm(request.POST, instance=hole_data)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, "Hole updated.")
+            return redirect("dashboard:hole_detail", pk)
+    form = forms.EditHoleForm(instance=hole_data)
+    return render(request, "dashboard/edit-hole.html",
+                  {"form": form, "hole_data": hole_data})
 
 
 @login_required

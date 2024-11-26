@@ -20,7 +20,8 @@ urlpatterns =  [
     path("courses/<int:pk>/add/", views.create_hole, name="create_hole"),
     path("holes/<int:pk>/", views.hole_detail, name="hole_detail"),
     path("holes/<int:pk>/edit/", views.edit_hole, name="edit_hole"),
-    path("tees/<int:hole_pk>/", views.create_tee, name="create_tee"),
+    path("tees/<int:hole_pk>/add/", views.create_tee, name="create_tee"),
+    path("tees/<int:hole_pk>/edit/", views.edit_tee, name="edit_tee"),
     path("games/", views.game_list, name="games"),
     path("games/<int:pk>/", views.game_detail, name="game_detail"),
     path("games/<int:pk>/edit", views.edit_game, name="edit_game"),
@@ -38,26 +39,31 @@ urlpatterns =  [
     path("tee-times/add/", views.create_tee_time, name="create_tee_time"),
     path("tee-times/<int:pk>/", views.tee_time_detail, name="tee_time_detail"),
     # ajax
+    path("ajax/manage-game/", views.ajax_manage_game, name="ajax_manage_game"),
+    path("ajax/delete-tee/", views.ajax_delete_tee, name="ajax_delete_tee"),
     path(
         "ajax/add-player-to-game/",
         views.ajax_manage_players_for_game,
         name="ajax_manage_players_for_game",
     ),
-    path("ajax/manage-game/", views.ajax_manage_game, name="ajax_manage_game"),
     path(
         "ajax/record-score-for-hole/",
         views.ajax_record_score_for_hole,
         name="ajax_record_score_for_hole",
     ),
     path(
-        "ajax/edit-hole/", views.ajax_edit_hole, name="ajax_edit_hole"
-    ),
-    path(
         "ajax/edit-hole-score/",
         views.ajax_edit_hole_score,
-        name="ajax_edit_hole_score"
+        name="ajax_edit_hole_score",
     ),
-    path("ajax/manage_tee_time/", views.ajax_manage_tee_time, name="ajax_manage_tee_time"),
-    path("ajax/delete_hole_score/", views.ajax_delete_hole_score, name="ajax_delete_hole_score"),
-    path("ajax/delete-tee/", views.ajax_delete_tee, name="ajax_delete_tee"),
+    path(
+        "ajax/manage_tee_time/",
+        views.ajax_manage_tee_time,
+        name="ajax_manage_tee_time",
+    ),
+    path(
+        "ajax/delete_hole_score/",
+        views.ajax_delete_hole_score,
+        name="ajax_delete_hole_score",
+    ),
 ]

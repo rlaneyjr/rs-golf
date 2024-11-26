@@ -105,41 +105,6 @@ def ajax_edit_hole_score(request):
     login_url="/no-permission/",
     redirect_field_name=None
 )
-def ajax_edit_hole(request):
-    data = json.loads(request.body)
-    hole_par = data["hole_par"]
-    hole_id = data["hole_id"]
-    hole_order = data["hole_order"]
-    hole_handicap = data["hole_handicap"]
-    hole_data = models.Hole.objects.filter(pk=hole_id).first()
-    # be sure we have a hole to deal with
-    if hole_data is None:
-        return JsonResponse(
-            {"status": "failed", "message": f"Unable to find hole with ID: {hole_id}"}
-        )
-    # be sure all is a number
-    try:
-        hole_par = int(hole_par)
-        hole_order = int(hole_order)
-        hole_handicap = int(hole_handicap)
-    except ValueError as e:
-        return JsonResponse(
-            {"status": "failed", "message": f"{e} does not appear to be a number"}
-        )
-    hole_data.par = hole_par
-    hole_data.order = hole_order
-    hole_data.handicap = hole_handicap
-    hole_data.save()
-    messages.add_message(request, messages.INFO, "Hole updated.")
-    return JsonResponse({"status": "success"})
-
-
-@login_required
-@user_passes_test(
-    utils.is_admin,
-    login_url="/no-permission/",
-    redirect_field_name=None
-)
 def ajax_manage_tee_time(request):
     data = json.loads(request.body)
     action = data["action"]

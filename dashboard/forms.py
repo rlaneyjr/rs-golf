@@ -97,6 +97,24 @@ class TeeForm(forms.ModelForm):
         fields = ["color", "distance"]
 
 
+class EditTeeForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                "Edit Tee",
+                "color",
+                "distance",
+            ),
+            Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
+        )
+
+    class Meta:
+        model = Tee
+        fields = ["color", "distance"]
+
+
 class EditTeamForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

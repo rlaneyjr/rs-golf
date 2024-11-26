@@ -3,7 +3,7 @@ from dashboard import models
 from djmoney.money import Money
 
 
-stableford_map = {
+points_map = {
     -4: 6,
     -3: 5,
     -2: 4,
@@ -658,5 +658,5 @@ def get_league_standings():
             "points": points
         }
         league_standings.append(player_standing)
-    league_standings.sort(key=lambda p: p["points"], reverse=True)
+    league_standings.sort(key=lambda p: p["hcp"])
     return league_standings

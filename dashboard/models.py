@@ -309,33 +309,24 @@ class Game(models.Model):
         else:
             return f"{self.course.initials} - {self.status}"
 
-    def start(
-            self,
-            holes_to_play=None,
-            game_type=None,
-            buy_in=None,
-            skin_cost=None,
-            use_teams=None,
-            league_game=None,
-            payout_positions=None,
-            **kwargs,
-        ):
-        if holes_to_play is not None:
-            self.holes_to_play = holes_to_play
-        if game_type is not None:
-            self.game_type = game_type
-        if buy_in is not None:
-            self.buy_in = buy_in
-        if skin_cost is not None:
-            self.skin_cost = skin_cost
-        if use_teams is not None:
-            self.use_teams = use_teams
-        if league_game is not None:
-            self.league_game = league_game
+    def start(self, **kwargs):
+        for key, value in kwargs:
+            if key == "holes_to_play":
+                self.holes_to_play = value
+            if key == "game_type":
+                self.game_type = value
+            if key == "buy_in":
+                self.buy_in = value
+            if key == "skin_cost":
+                self.skeyin_cost = value
+            if key == "use_teams":
+                self.use_teams = value
+            if key == "league_game":
+                self.league_game = value
+            if key == "payout_positions":
+                self.payout_positions = value
         if not self.date_played:
             self.date_played = timezone.now()
-        if payout_positions is not None:
-            self.payout_positions = payout_positions
         utils.create_hole_scores_for_game(self)
         if self.use_teams:
             utils.create_teams_for_game(self)
@@ -523,14 +514,14 @@ class HoleScore(models.Model):
     @property
     def points(self):
         if self.is_scored:
-            return utils.stableford_map.get(self.strokes - self.hole.par)
-        return _("Hole not scored")
+            return utils.points_map.get(self.strokes - self.hole.par)
+        return 0
 
     @property
     def score(self):
         if self.is_scored:
             return self.strokes - self.hole.par
-        return _("Hole not scored")
+        return 0
 
     @property
     def score_name(self):
@@ -578,8 +569,9 @@ class HoleScore(models.Model):
             self.save()
 
     def reset_score(self):
-        self.strokes = StrokeChoices._0
-        self.save()
+        if self.is_scored:
+            self.strokes = StrokeChoices._0
+            self.save()
 
     class Meta:
         ordering = ["player", "hole", "-strokes"]

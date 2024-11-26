@@ -14,11 +14,11 @@
       <div class="card-body">
         <div class="mb-3">
           <label class="fw-bold d-block">First Name:</label>
-          {{player_data.first_name}}
+          <div class="ps-3">{{player_data.first_name}}</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Last Name:</label>
-          {{player_data.last_name}}
+          <div class="ps-3">{{player_data.last_name}}</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Handicap:</label>
@@ -26,24 +26,25 @@
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Phone:</label>
-          {{player_data.phone}}
+          <div class="ps-3">{{player_data.phone}}</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Email:</label>
-          {{player_data.email}}
+          <div class="ps-3">{{player_data.email}}</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">User Account:</label>
-          {{player_data.user_account}}
+          <div class="ps-3">{{player_data.user_account}}</div>
         </div>
         <div class="mb-3">
           <label class="fw-bold d-block">Photo:</label>
           <div class="ps-3">
             {% if player_data.photo %}
-            <img src="{{player_data.photo.url}}" class="img-fluid" alt="..."></div>
+            <img src="{{player_data.photo.url}}" class="img-fluid" alt="...">
             {% else %}
             <p>Not Set</p>
             {% endif %}
+          </div>
         </div>
       </div>
       <div class="card-footer">

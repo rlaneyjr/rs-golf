@@ -659,4 +659,25 @@ def get_league_standings():
         }
         league_standings.append(player_standing)
     league_standings.sort(key=lambda p: p["hcp"])
+    rank = 0
+    for person in league_standings:
+        rank += 1
+        person.update({"rank": rank})
     return league_standings
+
+
+def get_ranked_players():
+    player_standings = []
+    for player in models.Player.objects.all():
+        _player = {
+            "player": player,
+            "hcp": player.handicap,
+        }
+        player_standings.append(_player)
+    player_standings.sort(key=lambda p: p["hcp"])
+    rank = 0
+    player_list = []
+    for person in player_standings:
+        rank += 1
+        player_list.append((rank, person["player"]))
+    return player_list

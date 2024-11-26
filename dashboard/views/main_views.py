@@ -87,7 +87,7 @@ def game_list(request):
 
 @login_required
 def player_list(request):
-    player_list = models.Player.objects.all()
+    player_list = utils.get_ranked_players()
     return render(request, "dashboard/players.html", {"player_list": player_list})
 
 
@@ -408,7 +408,11 @@ def edit_player(request, pk):
             return redirect("dashboard:player_detail", pk)
     else:
         form = forms.EditPlayerForm(instance=player_data)
-    return render(request, "dashboard/edit-player.html", {"form": form})
+    return render(
+        request,
+        "dashboard/edit-player.html",
+        {"form": form, "player_data": player_data},
+    )
 
 
 @login_required

@@ -15,7 +15,7 @@
         <table class="table">
           <thead>
             <tr>
-              <th style="width: 5%;">&nbsp;</th>
+              <th>Rank</th>
               <th>Player</th>
               <th>HCP</th>
               <th>Points Needed</th>
@@ -24,7 +24,7 @@
           <tbody class="align-middle">
             {% for player in league_standings %}
             <tr>
-              <td><a href="{% url 'dashboard:player_detail' player.id %}" class="btn btn-primary btn-sm">View</a></td>
+              <td>{{player.rank}}</td>
               <td>{{player.name}}</td>
               <td>{{player.hcp}}</td>
               <td>{{player.points}}</td>
@@ -35,7 +35,7 @@
       </div>
       <div class="card-footer">
         {% if is_admin %}
-        <a href="{% url 'dashboard:create_player' %}" class="btn btn-primary btn-sm">Add Player</a>
+        <a href="{% url 'dashboard:players' %}" class="btn btn-primary btn-sm">Players</a>
         {% endif %}
       </div>
     </div>

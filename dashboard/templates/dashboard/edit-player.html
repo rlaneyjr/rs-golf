@@ -1,7 +1,9 @@
 {% extends "base-dashboard.html" %}
 {% load crispy_forms_tags %}
 
-{% block page_name %}Edit Player: {{player_data.name}}{% endblock %}
+{% block button_bar %}
+<a href="{% url 'dashboard:player_detail' player_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Player</a>
+{% endblock %}
 
 {% block content %}
 <div class="row">

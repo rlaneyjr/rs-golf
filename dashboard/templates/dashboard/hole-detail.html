@@ -1,8 +1,10 @@
 {% extends "base-dashboard.html" %}
 {% load crispy_forms_tags %}
 
+{% block page_name %}Hole Detail{% endblock %}
+
 {% block button_bar %}
-<a href="{% url 'dashboard:course_detail' course_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Course</a>
+<a href="{% url 'dashboard:course_detail' course_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Course Detail</a>
 {% endblock %}
 
 {% block content %}

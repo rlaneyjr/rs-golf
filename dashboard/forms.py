@@ -189,7 +189,7 @@ class GameForm(forms.ModelForm):
                 "Create a new Game",
                 "course",
                 "game_type",
-                "holes_played",
+                "holes_to_play",
                 "which_holes",
                 "buy_in",
                 "skin_cost",
@@ -206,7 +206,7 @@ class GameForm(forms.ModelForm):
         fields = [
             "course",
             "game_type",
-            "holes_played",
+            "holes_to_play",
             "which_holes",
             "buy_in",
             "skin_cost",
@@ -227,7 +227,7 @@ class EditGameForm(forms.ModelForm):
                 "course",
                 "date_played",
                 "game_type",
-                "holes_played",
+                "holes_to_play",
                 "which_holes",
                 "buy_in",
                 "skin_cost",
@@ -235,8 +235,6 @@ class EditGameForm(forms.ModelForm):
                 "use_skins",
                 "league_game",
                 "payout_positions",
-                "players",
-                "status",
             ),
             Submit("submit", "Submit", css_class="btn btn-primary btn-sm"),
         )
@@ -247,7 +245,7 @@ class EditGameForm(forms.ModelForm):
             "course",
             "date_played",
             "game_type",
-            "holes_played",
+            "holes_to_play",
             "which_holes",
             "buy_in",
             "skin_cost",
@@ -255,8 +253,6 @@ class EditGameForm(forms.ModelForm):
             "use_skins",
             "league_game",
             "payout_positions",
-            "players",
-            "status",
         ]
 
 

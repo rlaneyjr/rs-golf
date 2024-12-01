@@ -54,6 +54,10 @@
           <label class="fw-bold d-block">Buy-in:</label>
           <span class="ps-2">{{ game_data.buy_in }}</span>
         </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Payout Positions:</label>
+          <span class="ps-2">{{ game_data.payout_positions }}</span>
+        </div>
           {% if game_data.use_skins %}
           <div class="mb-3">
             <label class="fw-bold d-block">Skin Cost:</label>
@@ -88,7 +92,7 @@
         {% elif game_data.status == "completed" %}
         <a href="{% url 'dashboard:game_score_detail' game_data.id %}" class="btn btn-primary btn-sm">Score Details</a>
         {% endif %}
-        {% if user_is_admin and game_data.status != "completed" %}
+        {% if user_is_admin %}
         <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-game-modal">Delete Game</button>
         {% endif %}
       </div>
@@ -103,6 +107,35 @@
       <div class="card-header">
         Players
       </div>
+      {% if game_data.status == "completed" %}
+      {% get_scores game_data as final_scores %}
+      <div class="card-body">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>HCP</th>
+              {% if game_data.game_type == "stableford" %}
+              <th>Points</th>
+              {% endif %}
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody class="align-middle">
+            {% for score in final_scores %}
+            <tr>
+              <td>{{ score.player_name }}</td>
+              <td>{{ score.hcp }}</td>
+              {% if game_data.game_type == "stableford" %}
+              <td>{{ score.game_points }}</td>
+              {% endif %}
+              <td>{{ score.player_score }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
       <div class="card-body">
         {% if game_data.players.all %}
         <table class="table table-striped">
@@ -143,6 +176,7 @@
         <p class="card-text">No Players Found</p>
         {% endif %}
       </div>
+      {% endif %}
       {% if game_data.status == "setup" %}
       <div class="card-footer">
         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-player-modal">Add Player</button>
@@ -246,15 +280,17 @@
             {% endfor %}
           </select>
         </div>
-        {% if game_data.use_skins %}
         <div>
           <label class="form-label">Skins:</label>
           <select id="player-skins" class="form-select">
+            {% if game_data.use_skins %}
             <option value="False">False</option>
             <option value="True">True</option>
+            {% else %}
+            <option value="False">False</option>
+            {% endif %}
           </select>
         </div>
-        {% endif %}
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -328,8 +364,8 @@
       <div class="modal-body">
         {% if game_data.course.hole_count == 18 %}
         <div>
-          <label class="form-label">Select holes to play:</label>
-          <select id="add-holes-to-play-select" class="form-select">
+          <label class="form-label">Select which holes:</label>
+          <select id="add-which-holes-select" class="form-select">
             <option value="all">All</option>
             <option value="front">Front</option>
             <option value="back">Back</option>
@@ -383,7 +419,7 @@
       return;
     }
     const data = {
-      playerId: playerId,
+      player_id: playerId,
       skins: playerSkins,
       game: gameId,
       action: "add-player"
@@ -403,9 +439,12 @@
       }
       const jsonData = await response.json();
       if (jsonData.status === "success") {
+        console.log("Player added: ", jsonData, data)
         return window.location.reload(true);
       }
     } catch(e) {
+      console.log("Error adding player: ", data)
+      console.log("Error: ", e.message)
       alert("Error: " + e.message);
     }
   });
@@ -425,7 +464,7 @@
     }
     const data = {
       action: "remove-player",
-      playerId: removePlayerId,
+      player_id: removePlayerId,
       game: gameId
     }
     try {
@@ -505,11 +544,11 @@
   });
 
   document.getElementById("start-game-button").addEventListener("click", async (event) => {
-    const holesToPlay = document.getElementById("add-holes-to-play-select").value;
+    const whichHoles = document.getElementById("add-which-holes-select").value;
     const data = {
       game_id: gameId,
       action: "start-game",
-      holes_to_play: holesToPlay
+      which_holes: whichHoles
     };
     const response = await fetch(manageGameUrl, {
       method: "POST",

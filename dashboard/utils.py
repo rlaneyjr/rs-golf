@@ -38,20 +38,20 @@ def get_first_course_id():
     return models.GolfCourse.objects.first().id
 
 
-def set_holes_for_game(game, holes_to_play):
+def set_holes_for_game(game, which_holes="all"):
     if game.course.hole_count == 18:
-        if holes_to_play == "front":
+        if which_holes == "front":
             game.which_holes = models.WhichHolesChoices.FRONT
-            game.holes_played = models.HolesToPlayChoices.HOLES_9
-        elif holes_to_play == "back":
+            game.holes_to_play = models.HolesToPlayChoices.HOLES_9
+        elif which_holes == "back":
             game.which_holes = models.WhichHolesChoices.BACK
-            game.holes_played = models.HolesToPlayChoices.HOLES_9
+            game.holes_to_play = models.HolesToPlayChoices.HOLES_9
         else:
             game.which_holes = models.WhichHolesChoices.ALL
-            game.holes_played = models.HolesToPlayChoices.HOLES_18
+            game.holes_to_play = models.HolesToPlayChoices.HOLES_18
     else:
         game.which_holes = models.WhichHolesChoices.ALL
-        game.holes_played = models.HolesToPlayChoices.HOLES_9
+        game.holes_to_play = models.HolesToPlayChoices.HOLES_9
 
 
 def set_game_type(game, game_type):
@@ -131,15 +131,17 @@ def get_par_for_game(game):
 
 
 def clean_game(game):
+    if game.league_game:
+        for player in game.players.all():
+            for score in game.score.get("scores"):
+                if score.get("player_id") == player.id:
+                    player.handicap = score.get("hcp")
+                    player.save()
     if game.use_teams:
         for team in get_teams_for_game(game):
             team.delete()
-    players = models.PlayerMembership.objects.filter(game=game)
-    for player_mem in players:
+    for player_mem in models.PlayerMembership.objects.filter(game=game):
         player_mem.delete()
-    if game.league_game:
-        for p in game.players.all():
-            p.revert_hcp()
 
 
 def create_holes_for_course(course):
@@ -329,7 +331,7 @@ def get_hole_list_for_game(game):
         for hole_num in range(10, 19):
             hole_list.append(f"{hole_num}")
     else:
-        for hole_num in range(1, game.holes_played + 1):
+        for hole_num in range(1, game.holes_to_play + 1):
             hole_list.append(f"{hole_num}")
     return hole_list
 
@@ -598,7 +600,8 @@ def score_hole_data(hole_data, pot, payout_positions, use_points=False):
 def update_player_hcp(hole_data):
     for pd in hole_data:
         player = models.Player.objects.filter(pk=pd["player_id"]).first()
-        player.update_hcp(pd["game_hcp"])
+        player.handicap = round(sum([player.handicap, pd["game_hcp"]])/2, 1)
+        player.save()
 
 
 def score_game(game):

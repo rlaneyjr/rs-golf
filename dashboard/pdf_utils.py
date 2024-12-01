@@ -22,11 +22,11 @@ PAGESIZE = (inch * 8, inch * 3)
 def generate_header_for_scorecard(game):
     data = []
     first_row = ["Hole"]
-    for i in range(int(game.holes_played)):
+    for i in range(int(game.holes_to_play)):
         first_row.append(str(i + 1))
 
     # if we played 18 we need to add in a separator
-    if game.holes_played == "18":
+    if game.holes_to_play == "18":
         first_row.insert(10, "Front")
         first_row.append("Back")
 
@@ -37,7 +37,7 @@ def generate_header_for_scorecard(game):
     hole_list = models.Hole.objects.filter(course=game.course).order_by("order")
     par_total = 0
 
-    if game.holes_played == "9":
+    if game.holes_to_play == "9":
         for hole in hole_list:
             second_row.append(str(hole.par))
             par_total += hole.par
@@ -79,7 +79,7 @@ def generate_score_data(game):
         score_list = models.HoleScore.objects.filter(game=player_link).order_by("hole__order")
         player_total_score = 0
 
-        if game.holes_played == "9":
+        if game.holes_to_play == "9":
             for score_item in score_list:
                 player_row.append(str(score_item.score))
                 player_total_score += score_item.score
@@ -143,7 +143,7 @@ def generate_scorecard(game):
         ("BACKGROUND", (10, 0), (10, -1), colors.red)
     ]
 
-    if game.holes_played == "18":
+    if game.holes_to_play == "18":
         styles.append(("BACKGROUND", (20, 0), (20, -1), colors.red))
         styles.append(("BACKGROUND", (21, 0), (21, -1), colors.red))
 

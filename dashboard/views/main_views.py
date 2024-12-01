@@ -369,7 +369,11 @@ def edit_game(request, pk):
             return redirect("dashboard:game_detail", pk)
     else:
         form = forms.EditGameForm(instance=game_data)
-    return render(request, "dashboard/edit-game.html", {"form": form})
+    return render(
+        request,
+        "dashboard/edit-game.html",
+        {"form": form, "game_data": game_data},
+    )
 
 
 @login_required

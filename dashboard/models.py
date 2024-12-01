@@ -234,7 +234,7 @@ class Game(models.Model):
         default=GameTypeChoices.STABLEFORD,
     )
     date_played = models.DateTimeField(blank=True, null=True)
-    holes_played = models.PositiveSmallIntegerField(
+    holes_to_play = models.PositiveSmallIntegerField(
         choices=HolesToPlayChoices.choices,
         default=HolesToPlayChoices.HOLES_18
     )
@@ -301,7 +301,7 @@ class Game(models.Model):
     @property
     def skin_pot(self):
         num_players = utils.num_players_in_skins(self)
-        return self.skin_cost * num_players * self.holes_played
+        return self.skin_cost * num_players * self.holes_to_play
 
     def __str__(self):
         if self.status == GameStatusChoices.COMPLETED:
@@ -310,9 +310,9 @@ class Game(models.Model):
             return f"{self.course.initials} - {self.status}"
 
     def start(self, **kwargs):
-        for key, value in kwargs:
-            if key == "holes_to_play":
-                self.holes_to_play = value
+        for key, value in kwargs.items():
+            if key == "which_holes":
+                utils.set_holes_for_game(self, value)
             if key == "game_type":
                 self.game_type = value
             if key == "buy_in":
@@ -349,6 +349,10 @@ class Game(models.Model):
         num_holes = self.course.hole_count - self.holes_to_play
         if num_holes == 9 and self.which_holes == WhichHolesChoices.ALL:
             raise ValidationError("Please choose front or back")
+
+    def delete(self, **kwargs):
+        utils.clean_game(self)
+        super().delete(**kwargs)
 
     class Meta:
         ordering = ["date_played", "status"]
@@ -404,13 +408,6 @@ class Player(models.Model):
         on_delete=models.PROTECT,
         related_name="added_by"
     )
-    previous_handicap = models.DecimalField(
-        max_digits=3,
-        decimal_places=1,
-        default=None,
-        blank=True,
-        null=True
-    )
 
     @property
     def name(self):
@@ -418,16 +415,6 @@ class Player(models.Model):
 
     def __str__(self):
         return self.name
-
-    def update_hcp(self, game_hcp):
-        self.previous_handicap = self.handicap
-        self.handicap = round(sum([self.handicap, float(game_hcp)])/2, 1)
-        self.save()
-
-    def revert_hcp(self):
-        if self.previous_handicap:
-            self.handicap = self.previous_handicap
-            self.save()
 
     class Meta:
         unique_together = ["first_name", "last_name"]

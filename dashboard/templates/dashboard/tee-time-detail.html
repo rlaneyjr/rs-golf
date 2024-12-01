@@ -27,9 +27,9 @@
         <div class="mb-3">
           <label class="fw-bold d-block">Players:</label>
           {% if teetime_data.players.all %}
-          {% for player in teetime_data.players.all %}
-          <p class="ps-2 mb-0">{{ player.name }}</p>    
-          {% endfor %}
+            {% for player in teetime_data.players.all %}
+            <p class="ps-2 mb-0">{{ player.name }}</p>    
+            {% endfor %}
           {% else %}
           <span class="ps-2">No Players Added Yet</span>
           {% endif %}
@@ -141,6 +141,7 @@
   document.getElementById("add-player-button").addEventListener("click", async (event) => {
     const data = {
       "player_id": document.getElementById("potential-players").value,
+      "skins": document.getElementById("player-skins").value,
       "tee_time_id": teeTimeId,
       "action": "add-player",
     };

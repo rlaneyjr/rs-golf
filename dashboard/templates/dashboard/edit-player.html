@@ -2,19 +2,11 @@
 {% load crispy_forms_tags %}
 
 {% block button_bar %}
-<a href="{% url 'dashboard:player_detail' player_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Player</a>
+<a href="{% url 'dashboard:player_detail' player_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Player Detail</a>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-4">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
 {% block page_styles %}{% endblock %}

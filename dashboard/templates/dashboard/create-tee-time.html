@@ -2,15 +2,7 @@
 {% load crispy_forms_tags static %}
 
 {% block content %}
-<div class="row">
-  <div class="col-4">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
 {% block page_styles %}

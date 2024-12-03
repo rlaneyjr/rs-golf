@@ -1,18 +1,14 @@
 {% extends "base-dashboard.html" %}
 {% load crispy_forms_tags %}
 
-{% block page_name %}{{hole_data.name}} Edit Tee:{% endblock %}
+{% block page_name %}{{hole_data.name}}{% endblock %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:hole_detail' hole_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Hole Detail</a>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-4">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
 {% block page_styles %}{% endblock %}

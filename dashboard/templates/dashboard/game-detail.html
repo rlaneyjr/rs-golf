@@ -2,7 +2,7 @@
 {% load djmoney %}
 {% load custom_parser %}
 
-{% block page_name %}{{ game_data.get_status_display }} {{ game_data.get_game_type_display }} Game{% endblock %}
+{% block page_name %}Game Detail{% endblock %}
 
 {% block button_bar %}
 <a href="{% url 'dashboard:games' %}" class="btn btn-sm btn-outline-secondary">Back to Game List</a>
@@ -76,6 +76,10 @@
         <div class="mb-3">
           <label class="fw-bold d-block">League Game:</label>
           <span class="ps-2">{{game_data.league_game}}</span>
+        </div>
+        <div class="mb-3">
+          <label class="fw-bold d-block">Status:</label>
+          <span class="ps-2">{{ game_data.get_status_display }}</span>
         </div>
       </div>
       <div class="card-footer">

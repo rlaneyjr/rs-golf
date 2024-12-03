@@ -1,24 +1,27 @@
 {% extends "base-dashboard.html" %}
-{% load crispy_forms_tags %}
-
-{% block page_name %}Edit Game{% endblock %}
+{% load crispy_forms_tags static %}
 
 {% block button_bar %}
 <a href="{% url 'dashboard:game_detail' game_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Game Detail</a>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-4">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
-{% block page_styles %}{% endblock %}
+{% block page_styles %}
+<link href="{% static 'css/jquery.datetimepicker.min.css' %}" rel="stylesheet">
+{% endblock %}
 
-{% block page_scripts %}{% endblock %}
+{% block page_scripts %}
+<script src="{% static 'js/jquery.datetimepicker.full.js' %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    $('#id_date_played').datetimepicker({
+      format: 'm-d-Y H:i',
+      hours12: false,
+      step: 15,
+    });        
+  });
+</script>
+{% endblock %}

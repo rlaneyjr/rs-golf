@@ -459,8 +459,10 @@ def edit_hole(request, pk):
             messages.add_message(request, messages.INFO, "Hole updated.")
             return redirect("dashboard:hole_detail", pk)
     form = forms.EditHoleForm(instance=hole_data)
-    return render(request, "dashboard/edit-hole.html",
-                  {"form": form, "hole_data": hole_data})
+    return render(
+        request, "dashboard/edit-hole.html",
+        {"form": form, "hole_data": hole_data}
+    )
 
 
 @login_required
@@ -478,5 +480,11 @@ def edit_hole_score(request, pk):
             messages.add_message(request, messages.INFO, "Hole score updated.")
             return redirect("dashboard:hole_score_detail", pk)
     form = forms.EditHoleScoreForm(instance=hole_score_data)
-    return render(request, "dashboard/edit-hole-score.html",
-                  {"form": form, "hole_score_data": hole_score_data})
+    return render(
+        request, "dashboard/edit-hole-score.html",
+        {
+            "form": form,
+            "hole_score_data": hole_score_data,
+            "hole_score_id": pk
+        }
+    )

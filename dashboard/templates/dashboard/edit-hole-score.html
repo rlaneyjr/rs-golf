@@ -1,18 +1,14 @@
 {% extends "base-dashboard.html" %}
 {% load crispy_forms_tags %}
 
-{% block page_name %}Edit: {{hole_score_data.hole.name}} for Player: {{hole_score_data.player.player.name}}{% endblock %}
+{% block page_name %}{{hole_score_data.hole.name}} {{hole_score_data.player.player.name}}{% endblock %}
+
+{% block button_bar %}
+<a href="{% url 'dashboard:hole_score_detail' hole_score_id %}" class="btn btn-sm btn-outline-secondary">Back to Hole Score Detail</a>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-4">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
 {% block page_styles %}{% endblock %}

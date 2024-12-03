@@ -1,22 +1,12 @@
 {% extends "base-dashboard.html" %}
 {% load crispy_forms_tags %}
 
-{% block page_name %}Edit Course{% endblock %}
-
 {% block button_bar %}
 <a href="{% url 'dashboard:course_detail' course_data.id %}" class="btn btn-sm btn-outline-secondary">Back to Course Detail</a>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-6">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
 {% block page_styles %}{% endblock %}

@@ -1,7 +1,8 @@
 from django import forms
+from django.forms.widgets import SplitDateTimeWidget
 from django_json_widget.widgets import JSONEditorWidget
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Submit
+from crispy_forms.layout import Layout, Field, Div, Fieldset, Submit
 from .models import GolfCourse, Tee, Team, Player, Game, Hole, HoleScore, TeeTime
 
 
@@ -11,7 +12,7 @@ class GolfCourseForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new course",
+                "Create Course",
                 "name",
                 "initials",
                 "hole_count",
@@ -48,7 +49,7 @@ class EditGolfCourseForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Edit course",
+                "Edit Course",
                 "name",
                 "initials",
                 "hole_count",
@@ -85,7 +86,7 @@ class TeeForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new tee",
+                "Create Tee",
                 "color",
                 "distance",
             ),
@@ -140,7 +141,7 @@ class PlayerForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new Player",
+                "Create Player",
                 "first_name",
                 "last_name",
                 "phone",
@@ -186,7 +187,7 @@ class GameForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new Game",
+                "Create Game",
                 "course",
                 "game_type",
                 "holes_to_play",
@@ -218,6 +219,14 @@ class GameForm(forms.ModelForm):
 
 
 class EditGameForm(forms.ModelForm):
+    date_played = forms.DateTimeField(input_formats=["%m-%d-%Y %H:%M"])
+    # date_played = forms.SplitDateTimeField(
+    #     widget=SplitDateTimeWidget(
+    #         date_format='%Y-%m-%d',
+    #         time_format='%H:%M',
+    #     ),
+    # )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -254,6 +263,12 @@ class EditGameForm(forms.ModelForm):
             "league_game",
             "payout_positions",
         ]
+        # widgets = {
+        #     "date_played": SplitDateTimeWidget(
+        #         date_format='%m-%d-%Y',
+        #         time_format='%H:%M',
+        #     ),
+        # }
 
 
 class HoleForm(forms.ModelForm):
@@ -262,7 +277,7 @@ class HoleForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new Hole",
+                "Create Hole",
                 "name",
                 "nickname",
                 "par",
@@ -333,7 +348,7 @@ class TeeTimeForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                "Create a new Tee Time",
+                "Create Tee Time",
                 "course",
                 "tee_time",
                 "players",

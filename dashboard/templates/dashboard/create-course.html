@@ -1,21 +1,11 @@
 {% extends "base-dashboard.html" %}
 {% load crispy_forms_tags %}
 
-{% block page_name %}Add Course{% endblock %}
-
 {% block button_bar %}
 {% endblock %}
 
 {% block content %}
-<div class="row">
-  <div class="col-6">
-    <div class="card">
-      <div class="card-body">
-        {% crispy form %}
-      </div>
-    </div>
-  </div>
-</div>
+{% crispy form %}
 {% endblock %}
 
 {% block page_styles %}{% endblock %}

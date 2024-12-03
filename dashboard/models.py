@@ -28,37 +28,37 @@ class GameStatusChoices(models.TextChoices):
     COMPLETED = "completed", _("Completed")
 
 
-class HolesToPlayChoices(models.IntegerChoices):
-    HOLES_9 = 9, _("9 Holes")
-    HOLES_18 = 18, _("18 Holes")
+class PayoutChoices(models.IntegerChoices):
+    _1 = 1
+    _2 = 2
+    _3 = 3
 
 
-class WhichHolesChoices(models.TextChoices):
-    ALL = "all", _("All")
-    FRONT = "front", _("Front 9")
-    BACK = "back", _("Back 9")
-
-
-class TeeColorChoices(models.TextChoices):
-    BLACK = "black", _("Black")
-    BLUE = "blue", _("Blue")
-    GOLD = "gold", _("Gold")
-    WHITE = "white", _("White")
-    GREEN = "green", _("Green")
-    RED = "red", _("Red")
-    ORANGE = "orange", _("Orange")
+class HoleNameChoices(models.TextChoices):
+    HOLE_1 = "Hole1", _("Hole 1")
+    HOLE_2 = "Hole2", _("Hole 2")
+    HOLE_3 = "Hole3", _("Hole 3")
+    HOLE_4 = "Hole4", _("Hole 4")
+    HOLE_5 = "Hole5", _("Hole 5")
+    HOLE_6 = "Hole6", _("Hole 6")
+    HOLE_7 = "Hole7", _("Hole 7")
+    HOLE_8 = "Hole8", _("Hole 8")
+    HOLE_9 = "Hole9", _("Hole 9")
+    HOLE_10 = "Hole10", _("Hole 10")
+    HOLE_11 = "Hole11", _("Hole 11")
+    HOLE_12 = "Hole12", _("Hole 12")
+    HOLE_13 = "Hole13", _("Hole 13")
+    HOLE_14 = "Hole14", _("Hole 14")
+    HOLE_15 = "Hole15", _("Hole 15")
+    HOLE_16 = "Hole16", _("Hole 16")
+    HOLE_17 = "Hole17", _("Hole 17")
+    HOLE_18 = "Hole18", _("Hole 18")
 
 
 class ParChoices(models.IntegerChoices):
     PAR_3 = 3, _("Par 3")
     PAR_4 = 4, _("Par 4")
     PAR_5 = 5, _("Par 5")
-
-
-class PayoutChoices(models.IntegerChoices):
-    _1 = 1
-    _2 = 2
-    _3 = 3
 
 
 class OrderChoices(models.IntegerChoices):
@@ -82,6 +82,27 @@ class OrderChoices(models.IntegerChoices):
     _18 = 18
 
 
+class TeeColorChoices(models.TextChoices):
+    BLACK = "black", _("Black")
+    BLUE = "blue", _("Blue")
+    GOLD = "gold", _("Gold")
+    WHITE = "white", _("White")
+    GREEN = "green", _("Green")
+    RED = "red", _("Red")
+    ORANGE = "orange", _("Orange")
+
+
+class HolesToPlayChoices(models.IntegerChoices):
+    HOLES_9 = 9, _("9 Holes")
+    HOLES_18 = 18, _("18 Holes")
+
+
+class WhichHolesChoices(models.TextChoices):
+    ALL = "all", _("All")
+    FRONT = "front", _("Front 9")
+    BACK = "back", _("Back 9")
+
+
 class StrokeChoices(models.IntegerChoices):
     _0 = 0
     _1 = 1
@@ -93,38 +114,6 @@ class StrokeChoices(models.IntegerChoices):
     _7 = 7
     _8 = 8
     _9 = 9
-
-
-class ScoreChoices(models.IntegerChoices):
-    MINUS_FOUR = -4
-    MINUS_THREE = -3
-    MINUS_TWO = -2
-    MINUS_ONE = -1
-    ZERO = 0
-    PLUS_ONE = 1
-    PLUS_TWO = 2
-    PLUS_THREE = 3
-
-
-class HoleNameChoices(models.TextChoices):
-    HOLE_1 = "Hole1", _("Hole 1")
-    HOLE_2 = "Hole2", _("Hole 2")
-    HOLE_3 = "Hole3", _("Hole 3")
-    HOLE_4 = "Hole4", _("Hole 4")
-    HOLE_5 = "Hole5", _("Hole 5")
-    HOLE_6 = "Hole6", _("Hole 6")
-    HOLE_7 = "Hole7", _("Hole 7")
-    HOLE_8 = "Hole8", _("Hole 8")
-    HOLE_9 = "Hole9", _("Hole 9")
-    HOLE_10 = "Hole10", _("Hole 10")
-    HOLE_11 = "Hole11", _("Hole 11")
-    HOLE_12 = "Hole12", _("Hole 12")
-    HOLE_13 = "Hole13", _("Hole 13")
-    HOLE_14 = "Hole14", _("Hole 14")
-    HOLE_15 = "Hole15", _("Hole 15")
-    HOLE_16 = "Hole16", _("Hole 16")
-    HOLE_17 = "Hole17", _("Hole 17")
-    HOLE_18 = "Hole18", _("Hole 18")
 
 
 class GolfCourse(models.Model):
@@ -233,7 +222,7 @@ class Game(models.Model):
         choices=GameTypeChoices.choices,
         default=GameTypeChoices.STABLEFORD,
     )
-    date_played = models.DateTimeField(blank=True, null=True)
+    date_played = models.DateTimeField(default=timezone.now)
     holes_to_play = models.PositiveSmallIntegerField(
         choices=HolesToPlayChoices.choices,
         default=HolesToPlayChoices.HOLES_18
@@ -325,8 +314,6 @@ class Game(models.Model):
                 self.league_game = value
             if key == "payout_positions":
                 self.payout_positions = value
-        if not self.date_played:
-            self.date_played = timezone.now()
         utils.create_hole_scores_for_game(self)
         if self.use_teams:
             utils.create_teams_for_game(self)
@@ -545,7 +532,7 @@ class HoleScore(models.Model):
         elif self.strokes == 6:
             if self.hole.par == 5:
                 return _("Bogey")
-        return _("Double Bogey")
+        return _("Double Bogey Max")
 
     def __str__(self):
         return f"{self.player} - {self.hole}"
@@ -591,3 +578,4 @@ class TeeTime(models.Model):
     class Meta:
         ordering = ["tee_time"]
         verbose_name_plural = "tee_times"
+
